@@ -3,13 +3,19 @@ package main
 import (
 	"encoding/json"
 	log "github.com/Sirupsen/logrus"
+	"github.com/ant0ine/go-json-rest/rest"
 	"golang.org/x/net/websocket"
 	"net/http"
 )
 
-type Protocol struct {
+type ProtocolReq struct {
 	Type string
 	Data interface{}
+}
+
+type ProtocolRcv struct {
+	Type string
+	Data json.RawMessage
 }
 
 // Send a request through websocket
@@ -17,7 +23,7 @@ func Send(ws *websocket.Conn, t string, data interface{}) error {
 
 	log.Printf(" <-- %s '%+v'", t, data)
 
-	send, err := json.Marshal(Protocol{
+	send, err := json.Marshal(ProtocolReq{
 		Type: t,
 		Data: data,
 	})
@@ -41,56 +47,42 @@ func SendError(ws *websocket.Conn, err error) error {
 	return Send(ws, "error", err.Error())
 }
 
-var interfaces = map[string]Interface{
-	"newDirectory": OnNewDirectory,
+var websockets = map[string]Websocket{
+	"new-directory": new(NewDirectory),
 }
 
 // ServerStart launches web server
 func ServerStart() {
 
-	log.Println("Serving at localhost:8080...")
+	api := rest.NewApi()
 
-	http.Handle("/socket", websocket.Handler(func(ws *websocket.Conn) {
+	api.Use(rest.DefaultDevStack...)
 
-		log.Info("Connection OK")
+	// Init websocket
+	wsHandler := websocket.Handler(handleWebSocket)
 
-		// Handling websocket
-		for {
+	router, err := rest.MakeRouter(
 
-			var input string
+		// Handle collections
+		rest.Post("/collections", ApiPostCollection),
+		rest.Get("/collections", ApiGetCollections),
+		rest.Get("/collections/:name", ApiGetCollectionByName),
+		rest.Delete("/collections/:name", ApiDeleteCollectionByName),
 
-			// Get received message
-			if err := websocket.Message.Receive(ws, &input); err != nil {
-				log.Error("Can't receive: " + err.Error())
-				return
-			}
+		rest.Get("/ws", func(w rest.ResponseWriter, r *rest.Request) {
+			wsHandler.ServeHTTP(w.(http.ResponseWriter), r.Request)
+		}),
+	)
+	if err != nil {
+		log.Fatal(err)
+	}
 
-			// Handle message
-			var rcv Protocol
-
-			if err := json.Unmarshal([]byte(input), &rcv); err != nil {
-				log.Error("Unexpected message received")
-				continue
-			}
-
-			log.Printf(" --> '%+v'", rcv)
-
-			method, ok := interfaces[rcv.Type]
-			if ok == false {
-				log.Error("Unknown method")
-				continue
-			}
-
-			if err := method(ws, rcv.Data); err != nil {
-				log.Error(err.Error())
-				continue
-			}
-		}
-	}))
+	api.SetApp(router)
 
 	http.Handle("/", http.FileServer(http.Dir("www")))
 
-	err := http.ListenAndServe(":8080", nil)
+	log.Println("Serving at localhost:8080...")
+	http.ListenAndServe(":8080", api.MakeHandler())
 	if err != nil {
 		panic("ListenAndServe: " + err.Error())
 	}
@@ -98,4 +90,48 @@ func ServerStart() {
 
 // ServerStop stop web server
 func ServerStop() {
+}
+
+// handleWebSocket handles websockets requests & responses
+func handleWebSocket(ws *websocket.Conn) {
+
+	log.Info("Connection OK")
+
+	// Handling websocket
+	for {
+
+		var input string
+
+		// Get received message
+		if err := websocket.Message.Receive(ws, &input); err != nil {
+			log.Error("Can't receive: " + err.Error())
+			return
+		}
+
+		// Handle message
+		var rcv ProtocolRcv
+
+		if err := json.Unmarshal([]byte(input), &rcv); err != nil {
+			log.Error("Unexpected message received")
+			continue
+		}
+
+		rsp, ok := websockets[rcv.Type]
+		if ok == false {
+			log.Error("Unknown method")
+			continue
+		}
+
+		if err := json.Unmarshal([]byte(rcv.Data), &rsp); err != nil {
+			log.Error("Unexpected message received")
+			continue
+		}
+
+		log.Printf(" --> '%s' %+v", rcv.Type, rsp)
+
+		if err := rsp.Handle(ws); err != nil {
+			log.Error(err.Error())
+			continue
+		}
+	}
 }
