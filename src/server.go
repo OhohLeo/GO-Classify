@@ -58,10 +58,26 @@ func ServerStart() {
 
 	api.Use(rest.DefaultDevStack...)
 
+	// Enable CORS
+	api.Use(&rest.CorsMiddleware{
+		RejectNonCorsRequests: false,
+		OriginValidator: func(origin string, request *rest.Request) bool {
+			return origin == "http://localhost"
+		},
+		AllowedMethods: []string{"GET", "POST", "PUT"},
+		AllowedHeaders: []string{
+			"Accept", "Content-Type", "X-Custom-Header", "Origin"},
+		AccessControlAllowCredentials: true,
+		AccessControlMaxAge:           3600,
+	})
+
 	// Init websocket
 	wsHandler := websocket.Handler(handleWebSocket)
 
 	router, err := rest.MakeRouter(
+
+		// Handle references
+		rest.Get("/references", ApiGetReferences),
 
 		// Handle collections
 		rest.Post("/collections", ApiPostCollection),

@@ -114,6 +114,21 @@ type NewDirectory struct {
 	Path string `json:"path"`
 }
 
+type APIGetReferences struct {
+	Websites []string `json:"websites"`
+	Types    []string `json:"types"`
+}
+
+// GetReferences returns the website & type of collections available
+// GET /references
+func ApiGetReferences(w rest.ResponseWriter, r *rest.Request) {
+
+	w.WriteJson(APIGetReferences{
+		Websites: classify.GetWebsites(),
+		Types:    classify.GetCollectionTypes(),
+	})
+}
+
 // OnNewDirectory handle new directory input interface
 func (rsp *NewDirectory) Handle(ws *websocket.Conn) error {
 

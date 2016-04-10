@@ -7,9 +7,14 @@ import (
 )
 
 type IMDB struct {
+	Url string
 }
 
-const IMDB_URL = "imdb.wemakesites.net/api/"
+func New() *IMDB {
+	return &IMDB{
+		Url: "imdb.wemakesites.net/api/",
+	}
+}
 
 type Response struct {
 	Status    string `json:"status"`
@@ -68,7 +73,7 @@ func (i *IMDB) search(input string) chan *Results {
 
 		// Send the request
 		if err := requests.SendSimple(
-			"GET", IMDB_URL+"search?q="+input, &rsp); err != nil {
+			"GET", i.Url+"search?q="+input, &rsp); err != nil {
 			close(c)
 		}
 
@@ -92,7 +97,7 @@ func (i *IMDB) getResource(id string) chan *Data {
 	go func() {
 		var rsp Response
 		if err := requests.SendSimple(
-			"GET", IMDB_URL+id, &rsp); err != nil {
+			"GET", i.Url+id, &rsp); err != nil {
 			close(c)
 		}
 

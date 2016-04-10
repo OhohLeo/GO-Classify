@@ -6,7 +6,16 @@ import (
 	"github.com/ohohleo/classify/collections"
 	"github.com/ohohleo/classify/imports"
 	"github.com/ohohleo/classify/websites"
+	"github.com/ohohleo/classify/websites/IMDB"
 )
+
+var newCollections = map[string]func() Collection{
+	"movies": func() Collection { return new(collections.Movies) },
+}
+
+var newWebsites = map[string]websites.Website{
+	"IMDB": IMDB.New(),
+}
 
 type Classify struct {
 	collections map[string]Collection
@@ -35,10 +44,6 @@ type Collection interface {
 	GetType() string
 	Register(string, websites.Website)
 	OnInput(imports.Data) chan websites.Data
-}
-
-var newCollections = map[string]func() Collection{
-	"movies": func() Collection { return new(collections.Movies) },
 }
 
 // AddCollection add a new collection
@@ -96,22 +101,42 @@ func (c *Classify) DeleteCollection(name string) (err error) {
 	return
 }
 
-var collectionsList []string
+var collectionTypes []string
 
-// GetCollectionTypes returns the type of collections
+// GetCollectionTypes returns the type of collection
 func (c *Classify) GetCollectionTypes() []string {
 
-	if collectionsList == nil {
+	if collectionTypes == nil {
 
-		collectionsList = make([]string, len(newCollections))
+		collectionTypes = make([]string, len(newCollections))
 
-		var id int = 0
+		id := 0
 
 		for name, _ := range newCollections {
-			collectionsList[id] = name
+			collectionTypes[id] = name
 			id++
 		}
 	}
 
-	return collectionsList
+	return collectionTypes
+}
+
+var websitesList []string
+
+// GetWebsites returns the list of websites available
+func (c *Classify) GetWebsites() []string {
+
+	if websitesList == nil {
+
+		websitesList = make([]string, len(newWebsites))
+
+		id := 0
+
+		for name, _ := range newWebsites {
+			websitesList[id] = name
+			id++
+		}
+	}
+
+	return websitesList
 }

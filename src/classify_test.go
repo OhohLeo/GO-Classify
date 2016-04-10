@@ -25,4 +25,8 @@ func TestCollection(t *testing.T) {
 	assert.Equal([]string{
 		"movies",
 	}, c.GetCollectionTypes())
+
+	assert.Equal([]string{
+		"IMDB",
+	}, c.GetWebsites())
 }
