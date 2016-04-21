@@ -1,3 +1,6 @@
 classify
 *#
 *~
+www/typings
+www/node_modules
+www/app/**/*.js*

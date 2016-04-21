@@ -1,0 +1,39 @@
+{
+  "name": "classify",
+  "version": "1.0.0",
+  "description": "Classify web interface",
+  "main": "main.js",
+  "scripts": {
+    "start": "tsc && concurrently \"npm run tsc:w\" \"npm run lite\" ",
+    "tsc": "tsc",
+    "tsc:w": "tsc -w",
+    "lite": "lite-server",
+    "typings": "typings",
+    "postinstall": "typings install"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ohohleo/GO-Classify.git"
+  },
+  "author": "Léo Martin",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/ohohleo/GO-Classify/issues"
+  },
+  "homepage": "https://github.com/ohohleo/GO-Classify#readme",
+  "devDependencies": {
+    "jshint": "^2.9.1",
+	"concurrently": "^2.0.0",
+    "lite-server": "^2.2.0",
+    "typescript": "^1.8.9",
+    "typings":"^0.7.12"
+  },
+  "dependencies": {
+    "angular2": "^2.0.0-beta.14",
+    "es6-shim": "^0.35.0",
+    "reflect-metadata": "^0.1.2",
+    "rxjs": "^5.0.0-beta.2",
+    "zone.js": "^0.6.10",
+    "systemjs": "0.19.25"
+  }
+}

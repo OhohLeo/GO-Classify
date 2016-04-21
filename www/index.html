@@ -1,60 +1,36 @@
-
-<!DOCTYPE html>
 <html>
-	<head>
-		<meta charset="UTF-8" />
-		<title>Classify</title>
-		<meta name="viewport" content="width=device-width, initial-scale=1">
-		<link href='css/knacss-min.css' rel='stylesheet'/>
-		<link href='css/classify.css' rel='stylesheet'/>
-	</head>
-	<body>
-		<nav id="menu" class="grid-1-4 txtcenter">
-            <h2 id="collection-name"></h2>
-    		<ul class="unstyled grid-5">
-                <li class="menu">Collection</li>
-                <li class="menu">Import</li>
-				<li class="menu">Export</li>
-				<li class="menu">Config</li>
-			</ul>
-		</nav>
-		<div>
-			<nav id="collections">
-				<ul id="collections">
-				</ul>
-			</nav>
-			<div id="main-area" class="txtcenter">
-                <div id="log" class="warning"></div>
-                <div id="collection" class="menu hide"></div>
-                <div id="import" class="menu hide"></div>
-                <div id="config" class="menu hide"">
-                    <h2 class="config">Create Collection</h2>
-                    <form id="collection-create" class="config hide">
-                        <label>Name</label>
-                        <input id="collection-create-name">
-                        <label>Type</label>
-                        <select id="collection-create-type"></select>
-                        <label>Websites</label>
-                        <ul id="collection-create-websites"></ul>
-                        <button>Create</button>
-                    </form>
-                    <h2 class="config with-collection hide">Modify Collection</h2>
-                    <form id="collection-modify" class="config hide">
-                        <label>Rename</label>
-                        <input id="collection-modify-name">
-                        <label>Websites</label>
-                        <ul id="collection-modify-websites"></ul>
-                        <button>Modify</button>
-                    </form>
-                    <h2 class="config with-collection hide">Delete Collection</h2>
-                    <form id="collection-delete" class="config hide">
-                        <button>Delete</button>
-                    </form>
-                </div>
-                </div>
-            </div>
-		</div>
-	</body>
-	<script src='js/jquery-2.1.4.min.js'></script>
-	<script src='js/classify.js'></script>
+  <head>
+    <title>Classify</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <!-- 1. Load libraries -->
+    <!-- IE required polyfills, in this exact order -->
+    <script src="node_modules/es6-shim/es6-shim.min.js"></script>
+    <script src="node_modules/systemjs/dist/system-polyfills.js"></script>
+    <script src="node_modules/angular2/es6/dev/src/testing/shims_for_IE.js"></script>
+
+    <script src="node_modules/angular2/bundles/angular2-polyfills.js"></script>
+    <script src="node_modules/systemjs/dist/system.src.js"></script>
+    <script src="node_modules/rxjs/bundles/Rx.js"></script>
+    <script src="node_modules/angular2/bundles/angular2.dev.js"></script>
+
+    <!-- 2. Configure SystemJS -->
+    <script>
+      System.config({
+        packages: {
+          app: {
+            format: 'register',
+            defaultExtension: 'js'
+          }
+        }
+      });
+      System.import('app/main')
+            .then(null, console.error.bind(console));
+    </script>
+  </head>
+
+  <!-- 3. Display the application -->
+  <body>
+    <classify>Loading...</classify>
+  </body>
 </html>
