@@ -88,7 +88,53 @@ func (c *Classify) GetCollection(name string) (Collection, error) {
 	return collection, nil
 }
 
-// DeleteCollection remove an existing collection
+// ModifyCollection modify an existing collection
+func (c *Classify) ModifyCollection(
+	name string, newName string, newType string) (isModified bool, err error) {
+
+	// Check that the name of the collection exists
+	collection, ok := c.collections[name]
+	if ok == false {
+		err = fmt.Errorf("collection '%s' not existing", name)
+		return
+	}
+
+	isModified = false
+
+	if newType != "" && newType != collection.GetType() {
+
+		// Check the collection type
+		newCollection, ok := newCollections[newType]
+		if ok == false {
+			err = fmt.Errorf("invalid collection type '%s'", newType)
+			return
+		}
+
+		delete(c.collections, name)
+		collection = newCollection()
+		c.collections[name] = newCollection()
+		isModified = true
+	}
+
+	if newName != "" && newName != name {
+
+		// Check that a collection called as newName doesn't exist
+		_, ok := c.collections[newName]
+		if ok {
+			isModified = false
+			err = fmt.Errorf("collection '%s' already existing", newName)
+			return
+		}
+
+		delete(c.collections, name)
+		c.collections[newName] = collection
+		isModified = true
+	}
+
+	return
+}
+
+// DeleteCollection remove an existing exists
 func (c *Classify) DeleteCollection(name string) (err error) {
 
 	// Check that the name of the collection is unique

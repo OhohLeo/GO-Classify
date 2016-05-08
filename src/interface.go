@@ -7,7 +7,7 @@ import (
 	"net/http"
 )
 
-type APIPostCollectionReq struct {
+type ApiCollectionBody struct {
 	Name string `json:"name"`
 	Type string `json:"type"`
 }
@@ -16,7 +16,7 @@ type APIPostCollectionReq struct {
 // POST /collections
 func ApiPostCollection(w rest.ResponseWriter, r *rest.Request) {
 
-	var body APIPostCollectionReq
+	var body ApiCollectionBody
 	if err := r.DecodeJsonPayload(&body); err != nil {
 		rest.Error(w, err.Error(), http.StatusBadRequest)
 		return
@@ -43,7 +43,7 @@ func ApiPostCollection(w rest.ResponseWriter, r *rest.Request) {
 	w.WriteHeader(http.StatusNoContent)
 }
 
-type APICollections struct {
+type APICollection struct {
 	Name  string `json:"name"`
 	Type  string `json:"type"`
 	Image string `json:"image"`
@@ -57,7 +57,7 @@ var imagesByCollectionType = map[string]string{
 // GET /collections
 func ApiGetCollections(w rest.ResponseWriter, r *rest.Request) {
 
-	collections := make([]APICollections, len(classify.collections))
+	collections := make([]APICollection, len(classify.collections))
 	i := 0
 
 	for name, c := range classify.collections {
@@ -69,7 +69,7 @@ func ApiGetCollections(w rest.ResponseWriter, r *rest.Request) {
 			image = "www/img/collections/" + image
 		}
 
-		collections[i] = APICollections{
+		collections[i] = APICollection{
 			Name:  name,
 			Type:  collectionType,
 			Image: image,
@@ -92,6 +92,31 @@ func ApiGetCollectionByName(w rest.ResponseWriter, r *rest.Request) {
 	}
 
 	w.WriteJson(collection)
+}
+
+// ApiPatchCollection modify the collection specified
+// PATCH /collection/:name
+func ApiPatchCollection(w rest.ResponseWriter, r *rest.Request) {
+
+	var body ApiCollectionBody
+	if err := r.DecodeJsonPayload(&body); err != nil {
+		rest.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	isModified, err := classify.ModifyCollection(r.PathParam("name"),
+		body.Name, body.Type)
+	if err != nil {
+		rest.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	if isModified {
+		w.WriteHeader(http.StatusNoContent)
+		return
+	}
+
+	w.WriteHeader(http.StatusNotModified)
 }
 
 // DeleteCollectionByName delete the collection specified

@@ -62,11 +62,10 @@ func ServerStart() {
 	api.Use(&rest.CorsMiddleware{
 		RejectNonCorsRequests: false,
 		OriginValidator: func(origin string, request *rest.Request) bool {
-			return origin == "http://localhost"
+			return true
 		},
-		AllowedMethods: []string{"GET", "POST", "PUT"},
-		AllowedHeaders: []string{
-			"Accept", "Content-Type", "X-Custom-Header", "Origin"},
+		AllowedMethods:                []string{"GET", "POST", "PATCH", "DELETE"},
+		AllowedHeaders:                []string{"Accept", "Content-Type", "Origin"},
 		AccessControlAllowCredentials: true,
 		AccessControlMaxAge:           3600,
 	})
@@ -83,6 +82,7 @@ func ServerStart() {
 		rest.Post("/collections", ApiPostCollection),
 		rest.Get("/collections", ApiGetCollections),
 		rest.Get("/collections/:name", ApiGetCollectionByName),
+		rest.Patch("/collections/:name", ApiPatchCollection),
 		rest.Delete("/collections/:name", ApiDeleteCollectionByName),
 
 		rest.Get("/ws", func(w rest.ResponseWriter, r *rest.Request) {
