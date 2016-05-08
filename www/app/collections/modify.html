@@ -1,12 +1,23 @@
-<h2>Modify Collection</h2>
-<form>
+<h2>Modify '{{title}}' Collection</h2>
+<form (ngSubmit)="onSubmit()">
 	<div>
 		<label>Rename</label>
-		<input>
+		<input name="name"
+               placeholder=[title]
+               type="text"
+               [(ngModel)]="collection.name">
 	</div>
 	<div>
 		<label>Websites</label>
-		<ul></ul>
+        <select name="website"
+                [(ngModel)]="collection.websites"
+                class="browser-default">
+            <option *ngFor="#website of websites" [value]="website">{{website}}</option>
+        </select>
 	</div>
-    <button>Modify</button>
+    <button type="submit"
+            class="btn waves-effect waves-light">
+        Modify
+        <i class="material-icons right">send</i>
+    </button>
 </form>

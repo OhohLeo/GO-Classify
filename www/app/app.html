@@ -1,6 +1,55 @@
-<h2>{{title}}</h2>
-<nav-menus></nav-menus>
-<div>
-	<nav-collections></nav-collections>
-	<dashboard></dashboard>
+<nav>
+    <div class="nav-wrapper">
+        <a class="brand-logo center" (click)="onChooseCollection(undefined)">{{title}}</a>
+        <a data-activates="mobile-demo" class="button-collapse">
+            <i class="material-icons">menu</i>
+        </a>
+        <a class="right" (click)="onNewCollection()">
+            <i class="material-icons medium">add</i>
+        </a>
+        <ul class="left hide-on-med-and-down">
+            <li><a (click)="onHome()">Home</a></li>
+            <li><a (click)="onImport()">Import</a></li>
+            <li><a (click)="onExport()">Export</a></li>
+            <li><a (click)="onConfig()">Config</a></li>
+        </ul>
+        <ul class="side-nav" id="mobile-demo">
+            <li><a (click)="onHome()">Home</a></li>
+            <li><a (click)="onImport()">Import</a></li>
+            <li><a (click)="onExport()">Export</a></li>
+            <li><a (click)="onConfig()">Config</a></li>
+        </ul>
+    </div>
+</nav>
+<div class="row">
+    <div class="col s6 offset-s3" [ngSwitch]="collectionState">
+        <ul class="collection" *ngSwitchWhen="collectionStatus.CHOOSE">
+            <template ngFor #item [ngForOf]="collections">
+                <li class="collection-item">
+                    <span class="title" (click)="onSelectCollection(item)">
+                        {{item.name}}
+                    </span>
+                    <a class="secondary-content" (click)="onDeleteCollection(item)">
+                        <i class="material-icons">delete</i>
+                    </a>
+                    <a class="secondary-content" (click)="onModifyCollection(item)">
+                        <i class="material-icons">mode_edit</i>
+                    </a>
+                </li>
+            </template>
+        </ul>
+        <collection-create *ngSwitchWhen="collectionStatus.CREATE"></collection-create>
+        <collection-modify *ngSwitchWhen="collectionStatus.MODIFY"></collection-modify>
+        <collection-delete *ngSwitchWhen="collectionStatus.DELETE"></collection-delete>
+    </div>
+</div>
+<div class="row">
+    <div class="col s3">
+    </div>
+    <div class="col s9" [ngSwitch]="display">
+        <div *ngSwitchWhen="status.HOME">HOME</div>
+        <div *ngSwitchWhen="status.IMPORT">IMPORT</div>
+        <div *ngSwitchWhen="status.EXPORT">EXPORT</div>
+        <div *ngSwitchWhen="status.CONFIG">CONFIG</div>
+    </div>
 </div>
