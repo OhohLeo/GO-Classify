@@ -11,13 +11,11 @@ type Movie struct {
 	Import []imports.Data
 	Match  websites.Movie
 	Founds []websites.Movie
-	// Exports  []Export
 }
 
 type Movies struct {
-	movies   []Movie
-	websites map[string]websites.Website
-
+	Collection
+	movies            []Movie
 	searchSubtitles   bool
 	subtitleLanguages []string
 	subtitles         map[string]websites.Website
@@ -26,16 +24,6 @@ type Movies struct {
 // GetType returns the type of collection
 func (m *Movies) GetType() string {
 	return "movies"
-}
-
-// Add new movie website
-func (m *Movies) Register(name string, website websites.Website) {
-
-	if m.websites == nil {
-		m.websites = make(map[string]websites.Website)
-	}
-
-	m.websites[name] = website
 }
 
 // OnInput handle new data to classify

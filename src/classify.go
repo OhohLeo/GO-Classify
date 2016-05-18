@@ -4,10 +4,14 @@ import (
 	"fmt"
 	log "github.com/Sirupsen/logrus"
 	"github.com/ohohleo/classify/collections"
-	"github.com/ohohleo/classify/imports"
 	"github.com/ohohleo/classify/websites"
 	"github.com/ohohleo/classify/websites/IMDB"
 )
+
+// Collection methods
+type Collection interface {
+	GetType() string
+}
 
 var newCollections = map[string]func() Collection{
 	"movies": func() Collection { return new(collections.Movies) },
@@ -37,13 +41,6 @@ func Start() {
 
 // Application stop
 func (c *Classify) Stop() {
-}
-
-// Collection methods
-type Collection interface {
-	GetType() string
-	Register(string, websites.Website)
-	OnInput(imports.Data) chan websites.Data
 }
 
 // AddCollection add a new collection
