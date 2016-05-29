@@ -25,6 +25,6 @@ type Movie struct {
 	Genres      []string
 }
 
-func (m *Movie) GetType() string {
+func (m Movie) GetType() string {
 	return "movie"
 }

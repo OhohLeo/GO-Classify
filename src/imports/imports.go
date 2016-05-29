@@ -6,6 +6,7 @@ import (
 
 type Import interface {
 	Launch() (chan Data, error)
+	GetType() string
 }
 
 type Data interface {
@@ -19,10 +20,10 @@ type File struct {
 	FileInfo os.FileInfo
 }
 
-func (f *File) GetType() string {
+func (f File) GetType() string {
 	return "file"
 }
 
-func (f *File) String() string {
+func (f File) String() string {
 	return f.Path
 }

@@ -1,9 +1,13 @@
 package main
 
 import (
+	"encoding/json"
+	"errors"
 	"fmt"
 	log "github.com/Sirupsen/logrus"
 	"github.com/ohohleo/classify/collections"
+	"github.com/ohohleo/classify/imports"
+	"github.com/ohohleo/classify/imports/directory"
 	"github.com/ohohleo/classify/websites"
 	"github.com/ohohleo/classify/websites/IMDB"
 )
@@ -11,6 +15,10 @@ import (
 // Collection methods
 type Collection interface {
 	GetType() string
+	AddImport(string, imports.Import) error
+	GetImports() map[string]map[string]imports.Import
+	DeleteImport(string) error
+	LaunchImport(name string) (chan imports.Data, error)
 }
 
 var newCollections = map[string]func() Collection{
@@ -19,6 +27,17 @@ var newCollections = map[string]func() Collection{
 
 var newWebsites = map[string]websites.Website{
 	"IMDB": IMDB.New(),
+}
+
+var newImports = map[string]func(json.RawMessage) (imports.Import, error){
+	"directory": func(input json.RawMessage) (i imports.Import, err error) {
+		var directory directory.Directory
+		err = json.Unmarshal(input, &directory)
+		if err == nil {
+			i = directory
+		}
+		return
+	},
 }
 
 type Classify struct {
@@ -182,4 +201,40 @@ func (c *Classify) GetWebsites() []string {
 	}
 
 	return websitesList
+}
+
+type Mapping struct {
+	Name   string          `json:"name"`
+	Type   string          `json:"type"`
+	Params json.RawMessage `json:"params"`
+}
+
+// CreateNewImport returns the import module depending on the parameter
+// given
+func (c *Classify) CreateNewImport(m Mapping) (name string, i imports.Import, err error) {
+
+	if m.Name == "" {
+		err = errors.New("Name field is mandatory!")
+		return
+	}
+
+	name = m.Name
+
+	if m.Type == "" {
+		err = errors.New("Type field is mandatory!")
+		return
+	}
+
+	createImport, ok := newImports[m.Type]
+	if ok == false {
+		err = errors.New("Import type '" + m.Type + "' not handled!")
+		return
+	}
+
+	i, err = createImport(m.Params)
+	if err != nil {
+		return
+	}
+
+	return
 }

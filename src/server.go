@@ -85,6 +85,14 @@ func ServerStart() {
 		rest.Patch("/collections/:name", ApiPatchCollection),
 		rest.Delete("/collections/:name", ApiDeleteCollectionByName),
 
+		// Handle collection's imports
+		rest.Post("/collections/:name/imports", ApiPostCollectionImport),
+		rest.Get("/collections/:name/imports", ApiGetCollectionImports),
+		rest.Delete("/collections/:name/imports/:import",
+			ApiDeleteCollectionImport),
+		rest.Put("/collections/:name/imports/:import/launch",
+			ApiLaunchCollectionImport),
+
 		rest.Get("/ws", func(w rest.ResponseWriter, r *rest.Request) {
 			wsHandler.ServeHTTP(w.(http.ResponseWriter), r.Request)
 		}),

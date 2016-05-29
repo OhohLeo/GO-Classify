@@ -3,6 +3,7 @@ package directory
 import (
 	"github.com/ohohleo/classify/imports"
 	"io/ioutil"
+	"log"
 	"os"
 )
 
@@ -12,14 +13,14 @@ type Directory struct {
 }
 
 // Return a channel of files in the directory
-func (r *Directory) Launch() (chan imports.File, error) {
+func (r Directory) Launch() (chan imports.Data, error) {
 
 	// Check we have an existing directory
 	if _, err := os.Stat(r.Path); os.IsNotExist(err) {
 		return nil, err
 	}
 
-	c := make(chan imports.File)
+	c := make(chan imports.Data)
 
 	go func() {
 		readDirectory(c, r.Path, r.IsRecursive)
@@ -29,7 +30,7 @@ func (r *Directory) Launch() (chan imports.File, error) {
 	return c, nil
 }
 
-func readDirectory(c chan imports.File, path string, isRecursive bool) {
+func readDirectory(c chan imports.Data, path string, isRecursive bool) {
 
 	// Read directory
 	files, _ := ioutil.ReadDir(path)
@@ -49,10 +50,15 @@ func readDirectory(c chan imports.File, path string, isRecursive bool) {
 		}
 
 		// Send file info through channel
+		log.Printf("DIRECTORY %s\n", fullpath)
 		c <- imports.File{
 			Path:     path,
 			FullPath: fullpath,
 			FileInfo: f,
 		}
 	}
+}
+
+func (r Directory) GetType() string {
+	return "directory"
 }

@@ -4,6 +4,7 @@ import (
 	"github.com/ant0ine/go-json-rest/rest"
 	"github.com/ohohleo/classify/imports/directory"
 	"golang.org/x/net/websocket"
+	"log"
 	"net/http"
 )
 
@@ -81,17 +82,24 @@ func ApiGetCollections(w rest.ResponseWriter, r *rest.Request) {
 	w.WriteJson(&collections)
 }
 
-// GetCollectionByName returns the content of each collection
-// GET /collection/:name
-func ApiGetCollectionByName(w rest.ResponseWriter, r *rest.Request) {
+func GetCollectionByName(w rest.ResponseWriter, r *rest.Request) Collection {
 
 	collection, err := classify.GetCollection(r.PathParam("name"))
 	if err != nil {
 		rest.Error(w, err.Error(), http.StatusBadRequest)
-		return
+		return nil
 	}
 
-	w.WriteJson(collection)
+	return collection
+}
+
+// GetCollectionByName returns the content of each collection
+// GET /collection/:name
+func ApiGetCollectionByName(w rest.ResponseWriter, r *rest.Request) {
+
+	if collection := GetCollectionByName(w, r); collection != nil {
+		w.WriteJson(collection)
+	}
 }
 
 // ApiPatchCollection modify the collection specified
@@ -127,6 +135,102 @@ func ApiDeleteCollectionByName(w rest.ResponseWriter, r *rest.Request) {
 		rest.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
+
+	w.WriteHeader(http.StatusNoContent)
+}
+
+// ApiPostCollectionImport add a new import to the collection specified
+// POST /collection/:name/imports
+func ApiPostCollectionImport(w rest.ResponseWriter, r *rest.Request) {
+
+	// Check the collection exist
+	collection := GetCollectionByName(w, r)
+	if collection == nil {
+		return
+	}
+
+	// Get mapping
+	var m Mapping
+	err := r.DecodeJsonPayload(&m)
+	if err != nil {
+		return
+	}
+
+	// Create the new import
+	name, i, err := classify.CreateNewImport(m)
+	if err != nil {
+		rest.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	err = collection.AddImport(name, i)
+	if err != nil {
+		rest.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	w.WriteHeader(http.StatusNoContent)
+}
+
+// ApiGetCollectionImport list all the imports used by the collection specified
+// GET /collection/:name/imports
+func ApiGetCollectionImports(w rest.ResponseWriter, r *rest.Request) {
+
+	// Check the collection exist
+	collection := GetCollectionByName(w, r)
+	if collection == nil {
+		return
+	}
+
+	w.WriteJson(collection.GetImports())
+}
+
+// ApiDeleteCollectionImport remove specified imports used by the collection specified
+// DELETE /collection/:name/imports/:import
+func ApiDeleteCollectionImport(w rest.ResponseWriter, r *rest.Request) {
+
+	// Check the collection exist
+	collection := GetCollectionByName(w, r)
+	if collection == nil {
+		return
+	}
+
+	if err := collection.DeleteImport(r.PathParam("import")); err != nil {
+		rest.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	w.WriteHeader(http.StatusNoContent)
+}
+
+// ApiLaunchCollectionImport launch the reading of specified imports
+// used by the collection specified
+// PUT /collection/:name/imports/:import/launch
+func ApiLaunchCollectionImport(w rest.ResponseWriter, r *rest.Request) {
+
+	// Check the collection exist
+	collection := GetCollectionByName(w, r)
+	if collection == nil {
+		return
+	}
+
+	channel, err := collection.LaunchImport(r.PathParam("import"))
+	if err != nil {
+		rest.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	go func() {
+		for {
+			if input, ok := <-channel; ok {
+				//Send(ws, "newFile", input)
+
+				log.Printf("API %+v\n", input)
+				continue
+			}
+			break
+		}
+	}()
 
 	w.WriteHeader(http.StatusNoContent)
 }
