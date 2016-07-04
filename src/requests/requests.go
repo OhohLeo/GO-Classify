@@ -15,12 +15,17 @@ type Callback interface {
 }
 
 type Request struct {
-	Method string
-	Url    string
-	Header map[string]string
-	Body   interface{}
+	Method  string
+	Url     string
+	Headers map[string]string
+	Body    interface{}
 
 	Callback Callback
+}
+
+type Response struct {
+	Status int
+	Body   interface{}
 }
 
 type RequestsPool struct {
@@ -45,21 +50,23 @@ func New(sizeMax int, debug bool) *RequestsPool {
 	return pool
 }
 
-func SendSimple(method string, url string, rsp interface{}) error {
+func Send(method string, url string, headers map[string]string, body interface{}, rsp interface{}) (chan *Response, error) {
 
 	if pool == nil {
-		return fmt.Errorf(
+		return nil, fmt.Errorf(
 			"%s %s: pool not initialised", method, url)
 	}
 
 	return pool.send(&Request{
-		Method: method,
-		Url:    "http://" + url,
+		Method:  method,
+		Url:     url,
+		Body:    body,
+		Headers: headers,
 	}, rsp)
 }
 
 // Send the requests and wait for the answer
-func (p *RequestsPool) send(r *Request, rsp interface{}) (err error) {
+func (p *RequestsPool) send(r *Request, rsp interface{}) (res chan *Response, err error) {
 
 	var body io.Reader
 	if r.Body != nil {
@@ -73,39 +80,54 @@ func (p *RequestsPool) send(r *Request, rsp interface{}) (err error) {
 		body = strings.NewReader(string(b))
 	}
 
-	log.Printf("--> %s %s", r.Method, r.Url)
-	if p.debug {
-	}
-
-	// Send the request
-	var req *http.Request
-	req, err = http.NewRequest(r.Method, r.Url, body)
-	if err != nil {
-		return
-	}
-
-	// Receive the answer
-	httpRsp, err := p.client.Do(req)
-
-	if err != nil {
-		log.Printf("--> FAILED %s", err.Error())
-		return
-	}
-
-	// Get the buffer
-	buf := new(bytes.Buffer)
-	buf.ReadFrom(httpRsp.Body)
-
 	var debugStr string
 	if p.debug {
-		debugStr = fmt.Sprintf("Body:%s", buf.String())
+		debugStr = fmt.Sprintf(" body: %s", body)
+	}
+	log.Printf("--> %s %s %s", r.Method, r.Url, debugStr)
+
+	// Create the request
+	req, err := http.NewRequest(r.Method, r.Url, body)
+	if err != nil {
+		return
 	}
 
-	log.Printf("<-- %s%s", httpRsp.Status, debugStr)
-
-	if rsp != nil {
-		err = json.Unmarshal(buf.Bytes(), rsp)
+	// Add headers
+	for key, value := range r.Headers {
+		req.Header.Add(key, value)
 	}
+
+	res = make(chan *Response)
+
+	go func() {
+
+		// Receive the answer
+		httpRsp, err := p.client.Do(req)
+
+		if err != nil {
+			log.Printf("--> FAILED %s", err.Error())
+			close(res)
+			return
+		}
+
+		// Get the buffer
+		buf := new(bytes.Buffer)
+		buf.ReadFrom(httpRsp.Body)
+
+		if p.debug {
+			debugStr = fmt.Sprintf(" body: %s", buf.String())
+		}
+
+		log.Printf("<-- %s%s", httpRsp.Status, debugStr)
+
+		if rsp != nil {
+			err = json.Unmarshal(buf.Bytes(), rsp)
+		}
+
+		res <- &Response{
+			Status: httpRsp.StatusCode,
+		}
+	}()
 
 	return
 }

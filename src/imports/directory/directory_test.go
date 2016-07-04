@@ -16,7 +16,7 @@ func TestReadDirectory(t *testing.T) {
 		IsRecursive: false,
 	}
 
-	c, err := directory.Launch()
+	c, err := directory.Start()
 	if assert.Nil(err) {
 		for {
 

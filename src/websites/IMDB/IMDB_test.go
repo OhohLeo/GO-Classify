@@ -9,9 +9,9 @@ import (
 func TestSearch(t *testing.T) {
 
 	requests.New(2, false)
-	imdb := new(IMDB)
+	imdb := New()
 
-	c := imdb.SearchMovies("Star+Wars")
+	c := imdb.Search("Star+Wars")
 
 	for {
 		movie, ok := <-c

@@ -10,5 +10,5 @@ func TestRequests(t *testing.T) {
 	pool.send(&Request{
 		Method: "GET",
 		Url:    "https://google.fr",
-	})
+	}, nil)
 }

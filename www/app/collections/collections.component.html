@@ -1,0 +1,20 @@
+<div class="col s6 offset-s3" [ngSwitch]="collectionState">
+    <ul class="collection" *ngSwitchWhen="collectionStatus.CHOOSE">
+        <template ngFor #item [ngForOf]="collections">
+            <li class="collection-item">
+                <span class="title" (click)="onSelectCollection(item)">
+                    {{item.name}}
+                </span>
+                <a class="secondary-content" (click)="onDeleteCollection(item)">
+                    <i class="material-icons">delete</i>
+                </a>
+                <a class="secondary-content" (click)="onModifyCollection(item)">
+                    <i class="material-icons">mode_edit</i>
+                </a>
+            </li>
+        </template>
+    </ul>
+    <collection-create *ngSwitchWhen="collectionStatus.CREATE"></collection-create>
+    <collection-modify *ngSwitchWhen="collectionStatus.MODIFY"></collection-modify>
+    <collection-delete *ngSwitchWhen="collectionStatus.DELETE"></collection-delete>
+</div>

@@ -4,9 +4,13 @@ import (
 	"encoding/json"
 	log "github.com/Sirupsen/logrus"
 	"github.com/ant0ine/go-json-rest/rest"
+	"github.com/hydrogen18/stoppableListener"
 	"golang.org/x/net/websocket"
+	"net"
 	"net/http"
 )
+
+var stoppable *stoppableListener.StoppableListener
 
 type ProtocolReq struct {
 	Type string
@@ -52,7 +56,17 @@ var websockets = map[string]Websocket{
 }
 
 // ServerStart launches web server
-func ServerStart() {
+func ServerStart() error {
+
+	listener, err := net.Listen("tcp", ":3333")
+	if err != nil {
+		return err
+	}
+
+	stoppable, err = stoppableListener.New(listener)
+	if err != nil {
+		return err
+	}
 
 	api := rest.NewApi()
 
@@ -75,6 +89,11 @@ func ServerStart() {
 
 	router, err := rest.MakeRouter(
 
+		// Establish connection to the web-services
+		rest.Get("/ws", func(w rest.ResponseWriter, r *rest.Request) {
+			wsHandler.ServeHTTP(w.(http.ResponseWriter), r.Request)
+		}),
+
 		// Handle references
 		rest.Get("/references", ApiGetReferences),
 
@@ -85,17 +104,16 @@ func ServerStart() {
 		rest.Patch("/collections/:name", ApiPatchCollection),
 		rest.Delete("/collections/:name", ApiDeleteCollectionByName),
 
+		rest.Put("/collections/:name/start",
+			ApiStartCollection),
+		rest.Put("/collections/:name/stop",
+			ApiStopCollection),
+
 		// Handle collection's imports
 		rest.Post("/collections/:name/imports", ApiPostCollectionImport),
 		rest.Get("/collections/:name/imports", ApiGetCollectionImports),
 		rest.Delete("/collections/:name/imports/:import",
 			ApiDeleteCollectionImport),
-		rest.Put("/collections/:name/imports/:import/launch",
-			ApiLaunchCollectionImport),
-
-		rest.Get("/ws", func(w rest.ResponseWriter, r *rest.Request) {
-			wsHandler.ServeHTTP(w.(http.ResponseWriter), r.Request)
-		}),
 	)
 	if err != nil {
 		log.Fatal(err)
@@ -105,15 +123,16 @@ func ServerStart() {
 
 	http.Handle("/", http.FileServer(http.Dir("www")))
 
-	log.Println("Serving at localhost:8080...")
-	http.ListenAndServe(":8080", api.MakeHandler())
-	if err != nil {
-		panic("ListenAndServe: " + err.Error())
-	}
+	log.Println("Serving at localhost:3333...")
+	http.Serve(stoppable, api.MakeHandler())
+
+	return nil
 }
 
 // ServerStop stop web server
 func ServerStop() {
+	log.Println("Stop server")
+	stoppable.Stop()
 }
 
 // handleWebSocket handles websockets requests & responses

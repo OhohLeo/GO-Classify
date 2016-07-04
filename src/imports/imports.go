@@ -5,13 +5,15 @@ import (
 )
 
 type Import interface {
-	Launch() (chan Data, error)
+	Start() (chan Data, error)
+	Stop()
 	GetType() string
 }
 
 type Data interface {
 	GetType() string
 	String() string
+	GetUniqKey() string
 }
 
 type File struct {
@@ -26,4 +28,8 @@ func (f File) GetType() string {
 
 func (f File) String() string {
 	return f.Path
+}
+
+func (f File) GetUniqKey() string {
+	return f.GetType() + ":" + f.FullPath
 }

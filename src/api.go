@@ -45,13 +45,8 @@ func ApiPostCollection(w rest.ResponseWriter, r *rest.Request) {
 }
 
 type APICollection struct {
-	Name  string `json:"name"`
-	Type  string `json:"type"`
-	Image string `json:"image"`
-}
-
-var imagesByCollectionType = map[string]string{
-	"movies": "movies.png",
+	Name string `json:"name"`
+	Type string `json:"type"`
 }
 
 // GetCollections returns the name & the specificity of each collection
@@ -65,15 +60,9 @@ func ApiGetCollections(w rest.ResponseWriter, r *rest.Request) {
 
 		collectionType := c.GetType()
 
-		image, ok := imagesByCollectionType[collectionType]
-		if ok {
-			image = "www/img/collections/" + image
-		}
-
 		collections[i] = APICollection{
-			Name:  name,
-			Type:  collectionType,
-			Image: image,
+			Name: name,
+			Type: collectionType,
 		}
 
 		i++
@@ -203,10 +192,9 @@ func ApiDeleteCollectionImport(w rest.ResponseWriter, r *rest.Request) {
 	w.WriteHeader(http.StatusNoContent)
 }
 
-// ApiLaunchCollectionImport launch the reading of specified imports
-// used by the collection specified
-// PUT /collection/:name/imports/:import/launch
-func ApiLaunchCollectionImport(w rest.ResponseWriter, r *rest.Request) {
+// ApiStartCollection launch the analysis of the collection
+// PUT /collection/:name/start
+func ApiStartCollection(w rest.ResponseWriter, r *rest.Request) {
 
 	// Check the collection exist
 	collection := GetCollectionByName(w, r)
@@ -214,7 +202,7 @@ func ApiLaunchCollectionImport(w rest.ResponseWriter, r *rest.Request) {
 		return
 	}
 
-	channel, err := collection.LaunchImport(r.PathParam("import"))
+	channel, err := collection.Start()
 	if err != nil {
 		rest.Error(w, err.Error(), http.StatusBadRequest)
 		return
@@ -222,15 +210,30 @@ func ApiLaunchCollectionImport(w rest.ResponseWriter, r *rest.Request) {
 
 	go func() {
 		for {
-			if input, ok := <-channel; ok {
+			if item, ok := <-channel; ok {
 				//Send(ws, "newFile", input)
 
-				log.Printf("API %+v\n", input)
+				log.Printf("API %+v\n", item)
 				continue
 			}
 			break
 		}
 	}()
+
+	w.WriteHeader(http.StatusNoContent)
+}
+
+// ApiStopCollection stop the analysis of the collection
+// PUT /collection/:name/stop
+func ApiStopCollection(w rest.ResponseWriter, r *rest.Request) {
+
+	// Check the collection exist
+	collection := GetCollectionByName(w, r)
+	if collection == nil {
+		return
+	}
+
+	collection.Stop()
 
 	w.WriteHeader(http.StatusNoContent)
 }
@@ -266,7 +269,7 @@ func (rsp *NewDirectory) Handle(ws *websocket.Conn) error {
 		IsRecursive: true,
 	}
 
-	c, err := d.Launch()
+	c, err := d.Start()
 
 	if err != nil {
 		SendError(ws, err)

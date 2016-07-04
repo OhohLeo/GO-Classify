@@ -1,13 +1,10 @@
 package collections
 
 import (
-	"github.com/ohohleo/classify/imports"
 	"github.com/ohohleo/classify/websites"
-	"log"
 )
 
 type Movie struct {
-	CollectionData
 	Status int
 	Match  websites.Movie
 	Founds []websites.Movie

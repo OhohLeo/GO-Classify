@@ -14,11 +14,12 @@ import (
 
 // Collection methods
 type Collection interface {
+	Start() (chan *collections.Item, error)
+	Stop()
 	GetType() string
 	AddImport(string, imports.Import) error
-	GetImports() map[string]map[string]imports.Import
 	DeleteImport(string) error
-	LaunchImport(name string) (chan imports.Data, error)
+	GetImports() map[string]map[string]imports.Import
 }
 
 var newCollections = map[string]func() Collection{
@@ -34,7 +35,7 @@ var newImports = map[string]func(json.RawMessage) (imports.Import, error){
 		var directory directory.Directory
 		err = json.Unmarshal(input, &directory)
 		if err == nil {
-			i = directory
+			i = &directory
 		}
 		return
 	},
@@ -47,7 +48,7 @@ type Classify struct {
 var classify *Classify
 
 // Application startup
-func Start() {
+func Start() *Classify {
 
 	classify = new(Classify)
 
@@ -56,10 +57,13 @@ func Start() {
 	log.SetLevel(log.DebugLevel)
 	log.Info("Start Classify")
 	ServerStart()
+
+	return classify
 }
 
 // Application stop
 func (c *Classify) Stop() {
+	ServerStop()
 }
 
 // AddCollection add a new collection

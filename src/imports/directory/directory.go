@@ -10,10 +10,11 @@ import (
 type Directory struct {
 	Path        string `json:"path"`
 	IsRecursive bool   `json:"is_recursive"`
+	needToStop  bool
 }
 
 // Return a channel of files in the directory
-func (r Directory) Launch() (chan imports.Data, error) {
+func (r *Directory) Start() (chan imports.Data, error) {
 
 	// Check we have an existing directory
 	if _, err := os.Stat(r.Path); os.IsNotExist(err) {
@@ -23,19 +24,27 @@ func (r Directory) Launch() (chan imports.Data, error) {
 	c := make(chan imports.Data)
 
 	go func() {
-		readDirectory(c, r.Path, r.IsRecursive)
+		r.readDirectory(c, r.Path, r.IsRecursive)
 		close(c)
 	}()
 
 	return c, nil
 }
 
-func readDirectory(c chan imports.Data, path string, isRecursive bool) {
+func (r *Directory) Stop() {
+	r.needToStop = true
+}
+
+func (r *Directory) readDirectory(c chan imports.Data, path string, isRecursive bool) {
 
 	// Read directory
 	files, _ := ioutil.ReadDir(path)
 
 	for _, f := range files {
+
+		if r.needToStop {
+			break
+		}
 
 		fullpath := path + "/" + f.Name()
 
@@ -43,7 +52,7 @@ func readDirectory(c chan imports.Data, path string, isRecursive bool) {
 
 			// Read recursively
 			if isRecursive {
-				readDirectory(c, fullpath, isRecursive)
+				r.readDirectory(c, fullpath, isRecursive)
 			}
 
 			continue
@@ -59,6 +68,10 @@ func readDirectory(c chan imports.Data, path string, isRecursive bool) {
 	}
 }
 
-func (r Directory) GetType() string {
+func (r *Directory) GetType() string {
 	return "directory"
+}
+
+func (r *Directory) GetUniqKey() string {
+	return ""
 }

@@ -7,14 +7,39 @@ import (
 	"log"
 )
 
-type CollectionData struct {
-	Import []imports.Data
+type Collection struct {
+	imports  map[string]imports.Import
+	websites map[string]websites.Website
+	// exports map[exports.Export][]string
+
+	importsToItem map[string]*Item
+	items         chan *Item
 }
 
-type Collection struct {
-	imports map[string]imports.Import
-	// exports map[exports.Export][]string
-	websites map[string]websites.Website
+// Starts the analysis of the import specified
+func (c *Collection) Start() (chan *Item, error) {
+
+	if c.items == nil {
+		c.items = make(chan *Item)
+	} else {
+		return c.items, nil
+	}
+
+	// Start by analysing all imports
+	for _, imported := range c.imports {
+		c.startImport(imported)
+	}
+
+	return c.items, nil
+}
+
+// Stop analysis of the collection
+func (c *Collection) Stop() {
+
+	// Stop imported process
+	for _, imported := range c.imports {
+		imported.Stop()
+	}
 }
 
 // GetType returns the type of the collection (mandatory)
@@ -35,7 +60,23 @@ func (c *Collection) AddImport(name string, imported imports.Import) error {
 
 	c.imports[name] = imported
 
+	if c.items != nil {
+		c.startImport(imported)
+	}
+
 	return nil
+}
+
+// DeleteImport delete specified import
+func (c *Collection) DeleteImport(name string) error {
+
+	if imported, ok := c.imports[name]; ok {
+		imported.Stop()
+		delete(c.imports, name)
+		return nil
+	}
+
+	return errors.New("import '" + name + "' not found")
 }
 
 // GetImports get the list of imports
@@ -61,29 +102,20 @@ func (c *Collection) GetImports() map[string]map[string]imports.Import {
 	return result
 }
 
-// LaunchImport starts the import specified
-func (c *Collection) LaunchImport(name string) (chan imports.Data, error) {
-
-	res := make(chan imports.Data)
-
-	// Get the import item
-	imported, ok := c.imports[name]
-	if ok == false {
-		return nil, errors.New("import '" + name + "' not found")
-	}
+// startImports launch the process of importation of specified import
+func (c *Collection) startImport(imported imports.Import) error {
 
 	// Get the import channel
-	channel, err := imported.Launch()
+	channel, err := imported.Start()
 	if err != nil {
-		return nil, err
+		return err
 	}
 
 	// Send all data imported to the collection
 	go func() {
 		for {
 			if input, ok := <-channel; ok {
-				res <- input
-				c.OnInput(input)
+				c.items <- c.OnInput(input)
 				log.Printf("COLLECTION %+v\n", input.GetType())
 				continue
 			}
@@ -91,18 +123,7 @@ func (c *Collection) LaunchImport(name string) (chan imports.Data, error) {
 		}
 	}()
 
-	return res, nil
-}
-
-// Delete delete specified import
-func (c *Collection) DeleteImport(name string) error {
-
-	if _, ok := c.imports[name]; ok {
-		delete(c.imports, name)
-		return nil
-	}
-
-	return errors.New("import '" + name + "' not found")
+	return nil
 }
 
 // AddExport add new export process
@@ -127,6 +148,7 @@ func (c *Collection) AddWebsite(name string, website websites.Website) {
 func (c *Collection) DeleteWebsite(name string) error {
 
 	if _, ok := c.websites[name]; ok {
+
 		delete(c.websites, name)
 		return nil
 	}
@@ -135,30 +157,47 @@ func (c *Collection) DeleteWebsite(name string) error {
 }
 
 // OnInput handle new data to classify
-func (c *Collection) OnInput(input imports.Data) chan websites.Data {
+func (c *Collection) OnInput(input imports.Data) (item *Item) {
 
-	channel := make(chan websites.Data)
+	// Check if a similar input doesn't exist yet
+	inputKey := input.GetUniqKey()
 
-	// Send a request to all websites registered
-	for _, w := range c.websites {
-
-		go func() {
-			resultChan := w.Search(input.String())
-
-			for {
-				if data, ok := <-resultChan; ok {
-					channel <- data
-					log.Printf("continue!")
-					continue
-				}
-
-				log.Printf("break!")
-				break
-			}
-
-			close(channel)
-		}()
+	if _, ok := c.importsToItem[inputKey]; ok {
+		// No need to add similar input
+		return
 	}
 
-	return channel
+	// Create a new item
+	item = new(Item)
+
+	// Add the input to the item
+	item.AddImportData(input)
+
+	// Store the inputs to the collection
+	c.importsToItem[inputKey] = item
+
+	// channel = make(chan websites.Data)
+
+	// // Send a request to all websites registered
+	// for _, w := range c.websites {
+
+	// 	go func() {
+	// 		resultChan := w.Search(input.String())
+
+	// 		for {
+	// 			if data, ok := <-resultChan; ok {
+	// 				channel <- data
+	// 				log.Printf("continue!")
+	// 				continue
+	// 			}
+
+	// 			log.Printf("break!")
+	// 			break
+	// 		}
+
+	// 		close(channel)
+	// 	}()
+	// }
+
+	return
 }

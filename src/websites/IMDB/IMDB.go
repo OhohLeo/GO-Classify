@@ -12,7 +12,7 @@ type IMDB struct {
 
 func New() *IMDB {
 	return &IMDB{
-		Url: "imdb.wemakesites.net/api/",
+		Url: "http://imdb.wemakesites.net/api/",
 	}
 }
 
@@ -72,8 +72,13 @@ func (i *IMDB) search(input string) chan *Results {
 		input = strings.Replace(input, " ", "+", -1)
 
 		// Send the request
-		if err := requests.SendSimple(
-			"GET", i.Url+"search?q="+input, &rsp); err != nil {
+		channel, err := requests.Send("GET", i.Url+"search?q="+input, nil, nil, &rsp)
+		if err != nil {
+			close(c)
+		}
+
+		_, ok := <-channel
+		if ok == false {
 			close(c)
 		}
 
@@ -96,8 +101,14 @@ func (i *IMDB) getResource(id string) chan *Data {
 
 	go func() {
 		var rsp Response
-		if err := requests.SendSimple(
-			"GET", i.Url+id, &rsp); err != nil {
+		channel, err := requests.Send("GET", i.Url+id, nil, nil, &rsp)
+		if err != nil {
+			close(c)
+		}
+
+		// Wait for the result
+		_, ok := <-channel
+		if ok == false {
 			close(c)
 		}
 
