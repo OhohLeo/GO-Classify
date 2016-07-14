@@ -16,6 +16,8 @@ import (
 type Collection interface {
 	Start() (chan *collections.Item, error)
 	Stop()
+	SetName(string)
+	GetName() string
 	GetType() string
 	AddImport(string, imports.Import) error
 	DeleteImport(string) error
@@ -42,28 +44,37 @@ var newImports = map[string]func(json.RawMessage) (imports.Import, error){
 }
 
 type Classify struct {
+	Server      *Server
 	collections map[string]Collection
 }
 
 var classify *Classify
 
 // Application startup
-func Start() *Classify {
+func Start() (*Classify, error) {
 
 	classify = new(Classify)
 
 	// TODO: Reload all collections saved
 
 	log.SetLevel(log.DebugLevel)
-	log.Info("Start Classify")
-	ServerStart()
 
-	return classify
+	log.Info("Start Classify")
+
+	server, err := CreateServer()
+	if err != nil {
+		return nil, err
+	}
+
+	// Store server
+	classify.Server = server
+
+	return classify, nil
 }
 
 // Application stop
 func (c *Classify) Stop() {
-	ServerStop()
+	c.Server.Stop()
 }
 
 // AddCollection add a new collection
@@ -90,7 +101,11 @@ func (c *Classify) AddCollection(
 		c.collections = make(map[string]Collection)
 	}
 
+	// Store the collection
 	c.collections[name] = new
+
+	// Set the collection name
+	new.SetName(name)
 
 	return new, nil
 }
@@ -207,7 +222,7 @@ func (c *Classify) GetWebsites() []string {
 	return websitesList
 }
 
-type Mapping struct {
+type MappingParams struct {
 	Name   string          `json:"name"`
 	Type   string          `json:"type"`
 	Params json.RawMessage `json:"params"`
@@ -215,23 +230,22 @@ type Mapping struct {
 
 // CreateNewImport returns the import module depending on the parameter
 // given
-func (c *Classify) CreateNewImport(m Mapping) (name string, i imports.Import, err error) {
-
+func (c *Classify) CreateNewImport(m MappingParams) (name string, i imports.Import, err error) {
 	if m.Name == "" {
-		err = errors.New("Name field is mandatory!")
+		err = errors.New("name field is mandatory")
 		return
 	}
 
 	name = m.Name
 
 	if m.Type == "" {
-		err = errors.New("Type field is mandatory!")
+		err = errors.New("type field is mandatory")
 		return
 	}
 
 	createImport, ok := newImports[m.Type]
 	if ok == false {
-		err = errors.New("Import type '" + m.Type + "' not handled!")
+		err = errors.New("import type '" + m.Type + "' not handled")
 		return
 	}
 

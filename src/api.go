@@ -2,9 +2,7 @@ package main
 
 import (
 	"github.com/ant0ine/go-json-rest/rest"
-	"github.com/ohohleo/classify/imports/directory"
 	"golang.org/x/net/websocket"
-	"log"
 	"net/http"
 )
 
@@ -139,9 +137,10 @@ func ApiPostCollectionImport(w rest.ResponseWriter, r *rest.Request) {
 	}
 
 	// Get mapping
-	var m Mapping
+	var m MappingParams
 	err := r.DecodeJsonPayload(&m)
 	if err != nil {
+		rest.Error(w, "invalid json body", http.StatusBadRequest)
 		return
 	}
 
@@ -211,9 +210,7 @@ func ApiStartCollection(w rest.ResponseWriter, r *rest.Request) {
 	go func() {
 		for {
 			if item, ok := <-channel; ok {
-				//Send(ws, "newFile", input)
-
-				log.Printf("API %+v\n", item)
+				classify.Server.Send(collection.GetName(), "newFile", item)
 				continue
 			}
 			break
@@ -259,31 +256,4 @@ func ApiGetReferences(w rest.ResponseWriter, r *rest.Request) {
 		Websites: classify.GetWebsites(),
 		Types:    classify.GetCollectionTypes(),
 	})
-}
-
-// OnNewDirectory handle new directory input interface
-func (rsp *NewDirectory) Handle(ws *websocket.Conn) error {
-
-	d := &directory.Directory{
-		Path:        rsp.Path,
-		IsRecursive: true,
-	}
-
-	c, err := d.Start()
-
-	if err != nil {
-		SendError(ws, err)
-		return err
-	}
-
-	for {
-		newFile, ok := <-c
-		if ok == false {
-			return nil
-		}
-
-		Send(ws, "newFile", newFile)
-	}
-
-	return nil
 }

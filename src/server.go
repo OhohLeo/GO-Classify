@@ -10,62 +10,31 @@ import (
 	"net/http"
 )
 
-var stoppable *stoppableListener.StoppableListener
+type Server struct {
+	api        *rest.Api
+	stoppable  *stoppableListener.StoppableListener
+	websockets []*websocket.Conn
+}
 
 type ProtocolReq struct {
-	Type string
-	Data interface{}
-}
-
-type ProtocolRcv struct {
-	Type string
-	Data json.RawMessage
-}
-
-// Send a request through websocket
-func Send(ws *websocket.Conn, t string, data interface{}) error {
-
-	log.Printf(" <-- %s '%+v'", t, data)
-
-	send, err := json.Marshal(ProtocolReq{
-		Type: t,
-		Data: data,
-	})
-
-	if err != nil {
-		log.Error("Can't convert msg: " + err.Error())
-		return err
-	}
-
-	if err := websocket.Message.Send(ws, string(send)); err != nil {
-		log.Error("Can't send msg: " + err.Error())
-		return err
-	}
-
-	return nil
-}
-
-// Send an error request through websocket
-func SendError(ws *websocket.Conn, err error) error {
-
-	return Send(ws, "error", err.Error())
-}
-
-var websockets = map[string]Websocket{
-	"new-directory": new(NewDirectory),
+	Collection string
+	Type       string
+	Data       interface{}
 }
 
 // ServerStart launches web server
-func ServerStart() error {
+func CreateServer() (*Server, error) {
+
+	server := new(Server)
 
 	listener, err := net.Listen("tcp", ":3333")
 	if err != nil {
-		return err
+		return nil, err
 	}
 
-	stoppable, err = stoppableListener.New(listener)
+	server.stoppable, err = stoppableListener.New(listener)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	api := rest.NewApi()
@@ -85,7 +54,7 @@ func ServerStart() error {
 	})
 
 	// Init websocket
-	wsHandler := websocket.Handler(handleWebSocket)
+	wsHandler := websocket.Handler(server.handleWebSocket)
 
 	router, err := rest.MakeRouter(
 
@@ -116,65 +85,75 @@ func ServerStart() error {
 			ApiDeleteCollectionImport),
 	)
 	if err != nil {
-		log.Fatal(err)
+		return nil, err
 	}
 
 	api.SetApp(router)
 
+	// Store api
+	server.api = api
+
+	return server, nil
+}
+
+func (s *Server) Start() {
+
 	http.Handle("/", http.FileServer(http.Dir("www")))
 
 	log.Println("Serving at localhost:3333...")
-	http.Serve(stoppable, api.MakeHandler())
+	http.Serve(s.stoppable, s.api.MakeHandler())
+}
+
+// ServerStop stop web server
+func (s *Server) Stop() {
+	log.Println("Stop server")
+	s.stoppable.Stop()
+}
+
+// handleWebSocket store all connections established
+func (s *Server) handleWebSocket(ws *websocket.Conn) {
+
+	if s.websockets == nil {
+		s.websockets = make([]*websocket.Conn, 0)
+	}
+
+	log.Info("Connection OK")
+	s.websockets = append(s.websockets, ws)
+}
+
+// Send a request through websocket
+func (s *Server) Send(collectionName string, itemType string, data interface{}) error {
+
+	log.Printf(" <-- [%s] %s '%+v'", collectionName, itemType, data)
+
+	send, err := json.Marshal(ProtocolReq{
+		Collection: collectionName,
+		Type:       itemType,
+		Data:       data,
+	})
+
+	if err != nil {
+		log.Error("Can't convert msg: " + err.Error())
+		return err
+	}
+
+	for _, ws := range s.websockets {
+
+		if ws.IsClientConn() == false {
+			log.Error("Client not connected!")
+			continue
+		}
+
+		if err := websocket.Message.Send(ws, string(send)); err != nil {
+			log.Error("Can't send msg: " + err.Error())
+		}
+	}
 
 	return nil
 }
 
-// ServerStop stop web server
-func ServerStop() {
-	log.Println("Stop server")
-	stoppable.Stop()
-}
+// Send an error request through websocket
+func (s *Server) SendError(collectionName string, err error) error {
 
-// handleWebSocket handles websockets requests & responses
-func handleWebSocket(ws *websocket.Conn) {
-
-	log.Info("Connection OK")
-
-	// Handling websocket
-	for {
-
-		var input string
-
-		// Get received message
-		if err := websocket.Message.Receive(ws, &input); err != nil {
-			log.Error("Can't receive: " + err.Error())
-			return
-		}
-
-		// Handle message
-		var rcv ProtocolRcv
-
-		if err := json.Unmarshal([]byte(input), &rcv); err != nil {
-			log.Error("Unexpected message received")
-			continue
-		}
-
-		rsp, ok := websockets[rcv.Type]
-		if ok == false {
-			log.Error("Unknown method")
-			continue
-		}
-
-		if err := json.Unmarshal([]byte(rcv.Data), &rsp); err != nil {
-			log.Error("Unexpected message received")
-			continue
-		}
-
-		log.Printf(" --> '%s' %+v", rcv.Type, rsp)
-
-		if err := rsp.Handle(ws); err != nil {
-			log.Error(err.Error())
-			continue
-		}
-	}
+	return s.Send(collectionName, "error", err.Error())
 }

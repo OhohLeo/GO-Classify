@@ -1,10 +1,11 @@
 package main
 
 import (
+	"github.com/ohohleo/classify/imports"
 	"github.com/ohohleo/classify/requests"
 	"github.com/stretchr/testify/assert"
-	// "golang.org/x/net/websocket"
-	//"log"
+	"golang.org/x/net/websocket"
+	"log"
 	"testing"
 )
 
@@ -22,13 +23,20 @@ func TestApi(t *testing.T) {
 		checkPostCollection(assert)
 		checkGetCollections(assert)
 		checkGetCollectionByName(assert)
+		checkPostCollectionImport(assert)
+		checkGetCollectionImports(assert)
 		checkStartCollection(assert)
 		checkStopCollection(assert)
 		checkDeleteCollection(assert)
 		classify.Stop()
 	}()
 
-	classify = Start()
+	var err error
+	classify, err = Start()
+	assert.Nil(err)
+
+	// Launch server
+	classify.Server.Start()
 }
 
 func checkGetReferences(assert *assert.Assertions) {
@@ -155,9 +163,177 @@ func checkGetCollectionByName(assert *assert.Assertions) {
 	}, rspError)
 }
 
+func checkPostCollectionImport(assert *assert.Assertions) {
+
+	// Success : staet specified collection
+	c, err := requests.Send("POST", URL+"/collections/test/imports",
+		map[string]string{
+			"Content-Type": "application/json",
+		},
+		map[string]interface{}{
+			"name": "test",
+			"type": "directory",
+			"params": map[string]interface{}{
+				"path":         "/tmp",
+				"is_recursive": false,
+			},
+		}, nil)
+	assert.Nil(err)
+
+	result, ok := <-c
+	assert.True(ok)
+	assert.Equal(204, result.Status)
+
+	// Failure : the collection doesn't exist
+	var rsp map[string]string
+
+	c, err = requests.Send("POST", URL+"/collections/error/imports",
+		map[string]string{
+			"Content-Type": "application/json",
+		}, nil, &rsp)
+	assert.Nil(err)
+
+	result, ok = <-c
+	assert.True(ok)
+	assert.Equal(400, result.Status)
+
+	assert.Equal(map[string]string{
+		"Error": "collection 'error' not existing",
+	}, rsp)
+
+	// Failure : the import name is not defined
+	c, err = requests.Send("POST", URL+"/collections/test/imports",
+		map[string]string{
+			"Content-Type": "application/json",
+		},
+		map[string]interface{}{
+			"name": "",
+			"type": "directory",
+			"params": map[string]interface{}{
+				"path":         "/tmp",
+				"is_recursive": false,
+			},
+		}, &rsp)
+	assert.Nil(err)
+
+	result, ok = <-c
+	assert.True(ok)
+	assert.Equal(400, result.Status)
+
+	assert.Equal(map[string]string{
+		"Error": "name field is mandatory",
+	}, rsp)
+
+	// Failure : the import type is not defined
+	c, err = requests.Send("POST", URL+"/collections/test/imports",
+		map[string]string{
+			"Content-Type": "application/json",
+		},
+		map[string]interface{}{
+			"name": "error",
+			"type": "",
+			"params": map[string]interface{}{
+				"path":         "/tmp",
+				"is_recursive": false,
+			},
+		}, &rsp)
+	assert.Nil(err)
+
+	result, ok = <-c
+	assert.True(ok)
+	assert.Equal(400, result.Status)
+
+	assert.Equal(map[string]string{
+		"Error": "type field is mandatory",
+	}, rsp)
+
+	// Failure : the import type is not defined
+	c, err = requests.Send("POST", URL+"/collections/test/imports",
+		map[string]string{
+			"Content-Type": "application/json",
+		},
+		map[string]interface{}{
+			"name": "ok",
+			"type": "error",
+			"params": map[string]interface{}{
+				"path":         "/tmp",
+				"is_recursive": false,
+			},
+		}, &rsp)
+	assert.Nil(err)
+
+	result, ok = <-c
+	assert.True(ok)
+	assert.Equal(400, result.Status)
+
+	assert.Equal(map[string]string{
+		"Error": "import type 'error' not handled",
+	}, rsp)
+}
+
+func checkGetCollectionImports(assert *assert.Assertions) {
+
+	var rspOk map[string]map[string]imports.Import
+
+	// Success : get collections list
+	c, err := requests.Send("GET", URL+"/collections/test/imports",
+		nil, nil, &rspOk)
+	assert.Nil(err)
+
+	result, ok := <-c
+	assert.True(ok)
+	assert.Equal(200, result.Status)
+
+	assert.Equal(1, len(rspOk))
+	_, ok = rspOk["directory"]
+	assert.True(ok)
+
+	// Failure : the collection doesn't exist
+	var rsp map[string]string
+
+	c, err = requests.Send("GET", URL+"/collections/error/imports",
+		nil, nil, &rsp)
+	assert.Nil(err)
+
+	result, ok = <-c
+	assert.True(ok)
+	assert.Equal(400, result.Status)
+
+	assert.Equal(map[string]string{
+		"Error": "collection 'error' not existing",
+	}, rsp)
+
+}
+
+var ws *websocket.Conn
+
 func checkStartCollection(assert *assert.Assertions) {
 
-	// Success : delete specified collection
+	var err error
+
+	// Establish a web socket connection
+	ws, err = websocket.Dial(
+		"ws://localhost:3333/ws", "", "http://localhost/")
+	assert.Nil(err)
+
+	// Receive data from the web socket
+	go func() {
+		var msg = make([]byte, 512)
+		for {
+			n, err := ws.Read(msg)
+			if n == 0 {
+				continue
+			}
+
+			if err != nil {
+				log.Printf("Error: %s\n", err.Error())
+			}
+
+			log.Printf("Received: %d %s\n", n, msg[:n])
+		}
+	}()
+
+	// Success : state specified collection
 	c, err := requests.Send("PUT", URL+"/collections/test/start",
 		nil, nil, nil)
 	assert.Nil(err)
@@ -169,7 +345,7 @@ func checkStartCollection(assert *assert.Assertions) {
 
 func checkStopCollection(assert *assert.Assertions) {
 
-	// Success : delete specified collection
+	// Success : stop specified collection
 	c, err := requests.Send("PUT", URL+"/collections/test/stop",
 		nil, nil, nil)
 	assert.Nil(err)
@@ -182,13 +358,13 @@ func checkStopCollection(assert *assert.Assertions) {
 func checkPatchCollection(assert *assert.Assertions) {
 
 	// Success : patch collection 'test'
-	c, err := requests.Send("GET", URL+"/collections/test",
-		nil, nil, &rsp)
+	c, err := requests.Send("PATCH", URL+"/collections/test",
+		nil, nil, nil)
 	assert.Nil(err)
 
 	result, ok := <-c
 	assert.True(ok)
-	assert.Equal(200, result.Status)
+	assert.Equal(204, result.Status)
 }
 
 func checkDeleteCollection(assert *assert.Assertions) {

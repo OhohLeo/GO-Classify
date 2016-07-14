@@ -4,10 +4,11 @@ import (
 	"errors"
 	"github.com/ohohleo/classify/imports"
 	"github.com/ohohleo/classify/websites"
-	"log"
+	//	"log"
 )
 
 type Collection struct {
+	name     string
 	imports  map[string]imports.Import
 	websites map[string]websites.Website
 	// exports map[exports.Export][]string
@@ -16,7 +17,7 @@ type Collection struct {
 	items         chan *Item
 }
 
-// Starts the analysis of the import specified
+// Start the analysis of the import specified
 func (c *Collection) Start() (chan *Item, error) {
 
 	if c.items == nil {
@@ -40,6 +41,16 @@ func (c *Collection) Stop() {
 	for _, imported := range c.imports {
 		imported.Stop()
 	}
+}
+
+// SetName fix the name of the collection
+func (c *Collection) SetName(name string) {
+	c.name = name
+}
+
+// GetName returns the name of the collection
+func (c *Collection) GetName() string {
+	return c.name
 }
 
 // GetType returns the type of the collection (mandatory)
@@ -116,7 +127,6 @@ func (c *Collection) startImport(imported imports.Import) error {
 		for {
 			if input, ok := <-channel; ok {
 				c.items <- c.OnInput(input)
-				log.Printf("COLLECTION %+v\n", input.GetType())
 				continue
 			}
 			break
@@ -174,6 +184,10 @@ func (c *Collection) OnInput(input imports.Data) (item *Item) {
 	item.AddImportData(input)
 
 	// Store the inputs to the collection
+	if c.importsToItem == nil {
+		c.importsToItem = make(map[string]*Item)
+	}
+
 	c.importsToItem[inputKey] = item
 
 	// channel = make(chan websites.Data)

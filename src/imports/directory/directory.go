@@ -3,7 +3,7 @@ package directory
 import (
 	"github.com/ohohleo/classify/imports"
 	"io/ioutil"
-	"log"
+	//"log"
 	"os"
 )
 
@@ -59,7 +59,6 @@ func (r *Directory) readDirectory(c chan imports.Data, path string, isRecursive 
 		}
 
 		// Send file info through channel
-		log.Printf("DIRECTORY %s\n", fullpath)
 		c <- imports.File{
 			Path:     path,
 			FullPath: fullpath,
