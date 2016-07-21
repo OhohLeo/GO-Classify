@@ -12,7 +12,7 @@
         <select name="website"
                 [(ngModel)]="collection.websites"
                 class="browser-default">
-            <option *ngFor="#website of websites" [value]="website">{{website}}</option>
+            <option *ngFor="let website of websites" [value]="website">{{website}}</option>
         </select>
 	</div>
     <button type="submit"

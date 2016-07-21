@@ -1,0 +1,48 @@
+0 info it worked if it ends with ok
+1 verbose cli [ '/home/leo/.nvm/versions/node/v5.9.0/bin/node',
+1 verbose cli   '/home/leo/.nvm/versions/node/v5.9.0/bin/npm',
+1 verbose cli   'start' ]
+2 info using npm@3.7.3
+3 info using node@v5.9.0
+4 verbose run-script [ 'prestart', 'start', 'poststart' ]
+5 info lifecycle classify@1.0.0~prestart: classify@1.0.0
+6 silly lifecycle classify@1.0.0~prestart: no script for prestart, continuing
+7 info lifecycle classify@1.0.0~start: classify@1.0.0
+8 verbose lifecycle classify@1.0.0~start: unsafe-perm in lifecycle true
+9 verbose lifecycle classify@1.0.0~start: PATH: /home/leo/.nvm/versions/node/v5.9.0/lib/node_modules/npm/bin/node-gyp-bin:/home/leo/perso/GO-Classify/web/node_modules/.bin:/home/leo/.nvm/versions/node/v5.9.0/bin:/home/leo/Android/Sdk/tools:/home/leo/Android/Sdk/platform-tools:/usr/local/android-studio/bin/:/home/leo/.nvm/versions/node/v5.9.0/bin:/home/leo/.gvm/pkgsets/go1.6/global/bin:/home/leo/.gvm/gos/go1.6/bin:/home/leo/.gvm/pkgsets/go1.6/global/overlay/bin:/home/leo/.gvm/bin:/home/leo/.gvm/bin:/home/leo/.plenv/shims:/home/leo/ijenko/git/plenv/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/home/leo/local/maven/bin:/home/leo/ijenko/git/poc-symfony.edens.fr/go/bin:/home/leo/ijenko/git/gapi/bin
+10 verbose lifecycle classify@1.0.0~start: CWD: /home/leo/perso/GO-Classify/web
+11 silly lifecycle classify@1.0.0~start: Args: [ '-c',
+11 silly lifecycle   'tsc && concurrently "npm run tsc:w" "webpack-dev-server --inline --progress --port 3000"' ]
+12 silly lifecycle classify@1.0.0~start: Returned: code: 2  signal: null
+13 info lifecycle classify@1.0.0~start: Failed to exec start script
+14 verbose stack Error: classify@1.0.0 start: `tsc && concurrently "npm run tsc:w" "webpack-dev-server --inline --progress --port 3000"`
+14 verbose stack Exit status 2
+14 verbose stack     at EventEmitter.<anonymous> (/home/leo/.nvm/versions/node/v5.9.0/lib/node_modules/npm/lib/utils/lifecycle.js:239:16)
+14 verbose stack     at emitTwo (events.js:100:13)
+14 verbose stack     at EventEmitter.emit (events.js:185:7)
+14 verbose stack     at ChildProcess.<anonymous> (/home/leo/.nvm/versions/node/v5.9.0/lib/node_modules/npm/lib/utils/spawn.js:24:14)
+14 verbose stack     at emitTwo (events.js:100:13)
+14 verbose stack     at ChildProcess.emit (events.js:185:7)
+14 verbose stack     at maybeClose (internal/child_process.js:850:16)
+14 verbose stack     at Process.ChildProcess._handle.onexit (internal/child_process.js:215:5)
+15 verbose pkgid classify@1.0.0
+16 verbose cwd /home/leo/perso/GO-Classify/web/src
+17 error Linux 3.13.0-69-generic
+18 error argv "/home/leo/.nvm/versions/node/v5.9.0/bin/node" "/home/leo/.nvm/versions/node/v5.9.0/bin/npm" "start"
+19 error node v5.9.0
+20 error npm  v3.7.3
+21 error code ELIFECYCLE
+22 error classify@1.0.0 start: `tsc && concurrently "npm run tsc:w" "webpack-dev-server --inline --progress --port 3000"`
+22 error Exit status 2
+23 error Failed at the classify@1.0.0 start script 'tsc && concurrently "npm run tsc:w" "webpack-dev-server --inline --progress --port 3000"'.
+23 error Make sure you have the latest version of node.js and npm installed.
+23 error If you do, this is most likely a problem with the classify package,
+23 error not with npm itself.
+23 error Tell the author that this fails on your system:
+23 error     tsc && concurrently "npm run tsc:w" "webpack-dev-server --inline --progress --port 3000"
+23 error You can get information on how to open an issue for this project with:
+23 error     npm bugs classify
+23 error Or if that isn't available, you can get their info via:
+23 error     npm owner ls classify
+23 error There is likely additional logging output above.
+24 verbose exit [ 1, true ]

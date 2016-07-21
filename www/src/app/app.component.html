@@ -31,11 +31,11 @@
     <div class="col s3">
     </div>
     <div class="col s9" [ngSwitch]="display">
-        <div *ngSwitchWhen="status.HOME">HOME</div>
-        <div *ngSwitchWhen="status.IMPORT">
+        <div *ngSwitchCase="status.HOME">HOME</div>
+        <div *ngSwitchCase="status.IMPORT">
             <import-directory></import-directory>
         </div>
-        <div *ngSwitchWhen="status.EXPORT">EXPORT</div>
-        <div *ngSwitchWhen="status.CONFIG">CONFIG</div>
+        <div *ngSwitchCase="status.EXPORT">EXPORT</div>
+        <div *ngSwitchCase="status.CONFIG">CONFIG</div>
     </div>
 </div>

@@ -1,4 +1,4 @@
-import {Component, OnInit, ViewChild} from 'angular2/core';
+import {Component, OnInit, ViewChild} from '@angular/core';
 import {ClassifyService} from './classify.service';
 import {Collection} from './collections/collection';
 import {CollectionsComponent} from './collections/collections.component';
@@ -15,7 +15,7 @@ enum AppStatus {
 
 @Component({
     selector: 'classify',
-    templateUrl: 'app/app.html',
+    templateUrl: 'app/app.component.html',
     providers: [ClassifyService],
     directives: [CollectionsComponent,
                  ImportDirectoryComponent]

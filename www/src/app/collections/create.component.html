@@ -10,7 +10,7 @@
                 [(ngModel)]="collection.type"
                 class="browser-default"
                 required>
-            <option *ngFor="#type of types" [value]="type">{{type}}</option>
+            <option *ngFor="let type of types" [value]="type">{{type}}</option>
         </select>
 	</div>
 	<div>
@@ -19,7 +19,7 @@
                 [(ngModel)]="collection.websites"
                 class="browser-default"
                 required>
-            <option *ngFor="#website of websites" [value]="website">{{website}}</option>
+            <option *ngFor="let website of websites" [value]="website">{{website}}</option>
         </select>
 	</div>
 	<button type="submit"

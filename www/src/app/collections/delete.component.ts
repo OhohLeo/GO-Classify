@@ -1,10 +1,10 @@
-import {Component} from 'angular2/core';
+import {Component} from '@angular/core';
 import {ClassifyService} from '../classify.service';
 import {Collection} from './collection';
 
 @Component({
     selector: 'collection-delete',
-    templateUrl: 'app/collections/delete.html',
+    templateUrl: 'app/collections/delete.component.html',
 })
 
 export class DeleteCollectionComponent {

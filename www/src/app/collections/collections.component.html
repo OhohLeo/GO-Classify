@@ -1,5 +1,5 @@
 <div class="col s6 offset-s3" [ngSwitch]="collectionState">
-    <ul class="collection" *ngSwitchWhen="collectionStatus.CHOOSE">
+    <ul class="collection" *ngSwitchCase="collectionStatus.CHOOSE">
         <template ngFor #item [ngForOf]="collections">
             <li class="collection-item">
                 <span class="title" (click)="onSelectCollection(item)">
@@ -14,7 +14,7 @@
             </li>
         </template>
     </ul>
-    <collection-create *ngSwitchWhen="collectionStatus.CREATE"></collection-create>
-    <collection-modify *ngSwitchWhen="collectionStatus.MODIFY"></collection-modify>
-    <collection-delete *ngSwitchWhen="collectionStatus.DELETE"></collection-delete>
+    <collection-create *ngSwitchCase="collectionStatus.CREATE"></collection-create>
+    <collection-modify *ngSwitchCase="collectionStatus.MODIFY"></collection-modify>
+    <collection-delete *ngSwitchCase="collectionStatus.DELETE"></collection-delete>
 </div>

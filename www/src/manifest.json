@@ -1,0 +1,34 @@
+{
+    "manifest_version": 2,
+    "name": "Ijenko",
+    "version": "1.0.0-beta",
+    "default_locale": "en",
+    "icons": { "16": "img/logo-16.png",
+               "30": "img/logo-30.png",
+               "36": "img/logo-36.png",
+               "48": "img/logo-48.png",
+               "72": "img/logo-72.png",
+               "96": "img/logo-96.png",
+               "144": "img/logo-144.png",
+               "192": "img/logo-192.png"
+             },
+    "locales": {
+        "fr": {
+            "description": "Votre maison sur votre mobile!",
+        },
+        "en": {
+            "description": "Your home on your phone!",
+        }
+    },
+    "background": {
+        "persistent": false
+    },
+    "developer": {
+        "name": "IJENKO",
+        "url": "http://developers.ijenko.com"
+    },
+    "fullscreen": "true",
+    "display": "standalone",
+    "orientation": "portrait",
+    "start_url": "index.html"
+}

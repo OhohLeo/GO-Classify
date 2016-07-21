@@ -1,10 +1,10 @@
-import {Component} from 'angular2/core';
+import {Component} from '@angular/core';
 import {ClassifyService} from '../classify.service';
 import {Collection} from './collection';
 
 @Component({
     selector: 'collection-modify',
-    templateUrl: 'app/collections/modify.html',
+    templateUrl: 'app/collections/modify.component.html',
 })
 
 export class ModifyCollectionComponent {

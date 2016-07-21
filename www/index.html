@@ -9,29 +9,79 @@
 
     <!-- 1. Load libraries -->
     <!-- IE required polyfills, in this exact order -->
-    <script src="node_modules/es6-shim/es6-shim.min.js"></script>
-    <script src="node_modules/systemjs/dist/system-polyfills.js"></script>
-    <script src="node_modules/angular2/es6/dev/src/testing/shims_for_IE.js"></script>
-
-    <script src="node_modules/angular2/bundles/angular2-polyfills.js"></script>
+    <script src="node_modules/core-js/client/shim.min.js"></script>
+    <script src="node_modules/zone.js/dist/zone.js"></script>
+    <script src="node_modules/reflect-metadata/Reflect.js"></script>
     <script src="node_modules/systemjs/dist/system.src.js"></script>
-    <script src="node_modules/rxjs/bundles/Rx.js"></script>
-    <script src="node_modules/angular2/bundles/angular2.dev.js"></script>
-    <script src="node_modules/angular2/bundles/http.dev.js"></script>
+
     <script src="node_modules/jquery/dist/jquery.min.js"></script>
     <script src="node_modules/materialize-css/dist/js/materialize.min.js"></script>
+
     <!-- 2. Configure SystemJS -->
     <script>
-      System.config({
-        packages: {
-          app: {
-            format: 'register',
-            defaultExtension: 'js'
-          }
-        }
-      });
-      System.import('app/main')
-            .then(null, console.error.bind(console));
+
+       // map tells the System loader where to look for things
+       var map = {
+           'app':           'src/app',
+           '@angular':      'node_modules/@angular',
+           'rxjs':          'node_modules/rxjs',
+       };
+     // packages tells the System loader how to load when no filename and/or no extension
+       var packages = {
+           'app':  {
+               main: 'main.js',
+               defaultExtension: 'js'
+           },
+           '@angular/router' : {
+               main: 'index.js',
+               defaultExtension: 'js'
+           },
+           'rxjs': {
+               defaultExtension: 'js'
+           },
+           'ijApi': {
+               defaultExtension: 'js'
+           },
+           'ng2-translate': {
+               defaultExtension: 'js'
+           },
+           'highcharts': {
+               defaultExtension: 'js'
+           },
+       };
+
+       var ngPackageNames = [
+           'common',
+           'compiler',
+           'core',
+           'forms',
+           'http',
+           'platform-browser',
+           'platform-browser-dynamic',
+           'upgrade',
+       ];
+
+       // Individual files (~300 requests):
+       function packIndex(pkgName) {
+           packages['@angular/'+pkgName] = { main: 'index.js', defaultExtension: 'js' };
+       }
+       // Bundled (~40 requests):
+       function packUmd(pkgName) {
+           packages['@angular/'+pkgName] = { main: '/bundles/' + pkgName + '.umd.js', defaultExtension: 'js' };
+       }
+
+       // Most environments should use UMD; some (Karma) need the individual index files
+       var setPackageConfig = System.packageWithIndex ? packIndex : packUmd;
+       // Add package entries for angular packages
+       ngPackageNames.forEach(setPackageConfig);
+
+       System.config({
+           map: map,
+           packages: packages
+       });
+
+       System.import('src/main.js')
+             .then(null, console.error.bind(console));
     </script>
   </head>
 

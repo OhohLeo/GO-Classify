@@ -1,4 +1,4 @@
-import {Component, Input} from 'angular2/core';
+import {Component, Input} from '@angular/core';
 import {ClassifyService} from '../classify.service';
 import {Collection} from '../collections/collection';
 import {CreateCollectionComponent} from './create.component';
