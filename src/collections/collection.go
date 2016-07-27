@@ -190,28 +190,5 @@ func (c *Collection) OnInput(input imports.Data) (item *Item) {
 
 	c.importsToItem[inputKey] = item
 
-	// channel = make(chan websites.Data)
-
-	// // Send a request to all websites registered
-	// for _, w := range c.websites {
-
-	// 	go func() {
-	// 		resultChan := w.Search(input.String())
-
-	// 		for {
-	// 			if data, ok := <-resultChan; ok {
-	// 				channel <- data
-	// 				log.Printf("continue!")
-	// 				continue
-	// 			}
-
-	// 			log.Printf("break!")
-	// 			break
-	// 		}
-
-	// 		close(channel)
-	// 	}()
-	// }
-
 	return
 }

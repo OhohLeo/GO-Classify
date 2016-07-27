@@ -124,6 +124,11 @@ func (s *Server) handleWebSocket(ws *websocket.Conn) {
 // Send a request through websocket
 func (s *Server) Send(collectionName string, itemType string, data interface{}) error {
 
+	// No websockets : nothing to do
+	if len(s.websockets) == 0 {
+		return nil
+	}
+
 	log.Printf(" <-- [%s] %s '%+v'", collectionName, itemType, data)
 
 	send, err := json.Marshal(ProtocolReq{
