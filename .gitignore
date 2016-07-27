@@ -1,6 +1,7 @@
 classify
 *#
 *~
-www/typings
-www/node_modules
-www/app/**/*.js*
+web/typings
+web/node_modules
+web/src/**/*.js*
+*.log

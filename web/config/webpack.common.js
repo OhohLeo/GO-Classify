@@ -38,7 +38,11 @@ module.exports = {
         new ProvidePlugin({
             jQuery: 'jquery',
             $: 'jquery',
-            jquery: 'jquery'
+            jquery: 'jquery',
+            'window.$': 'jquery',
+            'window.jQuery': 'jquery',
+            'root.jQuery': 'jquery',
+            Hammer : 'hammerjs/hammer'
         }),
 
         // Copy all files
