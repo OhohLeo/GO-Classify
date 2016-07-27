@@ -117,8 +117,19 @@ func (s *Server) handleWebSocket(ws *websocket.Conn) {
 		s.websockets = make([]*websocket.Conn, 0)
 	}
 
-	log.Info("Connection OK")
+	log.Info("WebSocket Connection OK")
 	s.websockets = append(s.websockets, ws)
+
+	s.Read(ws)
+}
+
+func (s *Server) Read(ws *websocket.Conn) {
+
+	msg := make([]byte, 512)
+	_, err := ws.Read(msg)
+	if err != nil {
+		return
+	}
 }
 
 // Send a request through websocket
