@@ -3,27 +3,130 @@ import {Http, Response, RequestOptions, Headers} from '@angular/http';
 import {Observable} from 'rxjs/Rx';
 import {Collection} from './collections/collection';
 
+export enum WebSocketStatus {
+    NONE = 0,
+    CONNECTING,
+    OPEN,
+    CLOSING,
+    CLOSE,
+    ERROR,
+}
+
 @Injectable()
 export class ClassifyService {
 
-    private url = "http://localhost:8080/"
+    private url = "http://localhost:3333/"
     private references: any
     private collections: Collection[]
-
+    private websocket: any
+    private websocketStatus = {
+        'open': WebSocketStatus.OPEN,
+        'error': WebSocketStatus.ERROR,
+        'close': WebSocketStatus.CLOSE,
+    }
+    private websocketTimer
 
     private onChanges: (collection: Collection) => void
+    private onErrors: (title: string, msg: string) => void
+
+    public status = WebSocketStatus.NONE
 
     public collectionSelected: Collection
 
     constructor (private http: Http) {}
 
-    setOnChanges(changes: (collection: Collection) => void) {
-        this.onChanges = changes
+    setOnChanges(changesCb: (collection: Collection) => void) {
+        this.onChanges = changesCb
+    }
+
+    setOnErrors(errorsCb: (title: string, msg: string) => void) {
+        this.onErrors = errorsCb
     }
 
 
     selectCollection(collection: Collection) {
         this.collectionSelected = collection
+    }
+
+    initWebSocket(): Observable<WebSocketStatus>{
+        return Observable.create(
+            observer => this.connectWebSocket(observer))
+    }
+
+    connectWebSocket(observer) {
+
+        console.log("websocket connecting...")
+
+        // Etablissement de la connexion avec la websocket
+        this.websocket = new WebSocket('ws://localhost:3333/ws')
+
+        observer.next(WebSocketStatus.CONNECTING)
+
+        let handleWebSocketStatus = (expected) => {
+            return (evt) => {
+                let status = this.getWebSocketStatus(evt, expected)
+
+                // Vérification de l'état du status
+                if (status == undefined) {
+                    return
+                }
+
+                // Vérification que le status a bien changé
+                if (this.status == expected) {
+                    return
+                }
+
+                // Attribution du nouveau status
+                this.status = expected
+
+                // En cas de status d'erreur ou de fermeture
+                // inattendue, lorsque le timer n'est pas défini : on
+                // relance périodiquement la tentative de connexion
+                if (this.websocketTimer === undefined
+                    && (this.status === WebSocketStatus.ERROR
+                        || this.status === WebSocketStatus.CLOSE))  {
+                    console.log(
+                        "websocket ",
+                        this.status === WebSocketStatus.CLOSE ? "close" : "error")
+                    this.websocketTimer = setTimeout(
+                        () => {
+                            console.log("websocket retry ...")
+                            this.websocketTimer = undefined
+                            this.connectWebSocket(observer)
+                        }, 5000)
+                }
+
+                observer.next(expected)
+            }
+        }
+
+        this.websocket.onopen = handleWebSocketStatus(WebSocketStatus.OPEN)
+        this.websocket.onerror = handleWebSocketStatus(WebSocketStatus.ERROR)
+        this.websocket.onclose = handleWebSocketStatus(WebSocketStatus.CLOSE)
+        this.websocket.onmessage = (evt) => {
+            console.log("RECEIVED: " + evt.data)
+        }
+    }
+
+    getWebSocketStatus(evt, expected: WebSocketStatus): WebSocketStatus{
+
+        let status = this.websocketStatus[evt.type]
+        if (status == undefined) {
+            console.error("Unknown received websocket status type: " + evt.type)
+            return undefined
+        }
+
+        if (status != expected) {
+            console.error("Websocket status error: expected " + expected
+                          + ", received " + status)
+            return undefined
+        }
+
+        return status
+    }
+
+    getWebSocket(): Observable<any>{
+        return Observable.fromEvent(this.websocket,'message')
     }
 
     getOptions() {
@@ -169,7 +272,10 @@ export class ClassifyService {
 
     private handleError (error: any) {
         let errMsg = error.message || 'Server error';
-        console.error(errMsg);
+        if (this.onErrors) {
+            this.onErrors("request error", errMsg)
+        }
+
         return Observable.throw(errMsg);
     }
 }

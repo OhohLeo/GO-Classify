@@ -30,12 +30,19 @@
 <div class="row">
     <div class="col s3">
     </div>
-    <div class="col s9" [ngSwitch]="display">
-        <div *ngSwitchCase="status.HOME">HOME</div>
-        <div *ngSwitchCase="status.IMPORT">
+    <div class="col s9" [ngSwitch]="status">
+        <div *ngSwitchCase="appStatus.HOME">HOME</div>
+        <div *ngSwitchCase="appStatus.IMPORT">
             <import-directory></import-directory>
         </div>
-        <div *ngSwitchCase="status.EXPORT">EXPORT</div>
-        <div *ngSwitchCase="status.CONFIG">CONFIG</div>
+        <div *ngSwitchCase="appStatus.EXPORT">EXPORT</div>
+        <div *ngSwitchCase="appStatus.CONFIG">CONFIG</div>
+
+    </div>
+</div>
+<div id="modal" class="modal">
+    <div class="modal-content">
+        <h4>{{modalTitle}}</h4>
+        <p>{{modalMsg}}</p>
     </div>
 </div>

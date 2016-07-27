@@ -1,5 +1,5 @@
 import {Component, OnInit, ViewChild} from '@angular/core';
-import {ClassifyService} from './classify.service';
+import {ClassifyService, WebSocketStatus} from './classify.service';
 import {Collection} from './collections/collection';
 import {CollectionsComponent} from './collections/collections.component';
 import {ImportDirectoryComponent} from './imports/directory.component';
@@ -10,7 +10,7 @@ enum AppStatus {
     HOME = 1,
     IMPORT,
     EXPORT,
-    CONFIG,
+    CONFIG
 }
 
 @Component({
@@ -24,53 +24,91 @@ enum AppStatus {
 export class AppComponent implements OnInit {
     @ViewChild(CollectionsComponent) collections: CollectionsComponent
 
-    public status = AppStatus
-    public display = AppStatus.HOME
+    public appStatus = AppStatus
+    public status = AppStatus.HOME
+    public websocketStatus: WebSocketStatus
+
     public title = "Classify"
 
     public collection: Collection
 
-    constructor (private classifyService: ClassifyService) {
-    }
+    public modalTitle: string
+    public modalMsg: string
+
+    constructor (private classifyService: ClassifyService) {}
 
     ngOnInit() {
+
+        // Initialisation de la side bar
         jQuery(".button-collapse").sideNav();
+
+        // Initialisation de la websocket
+        this.classifyService.initWebSocket()
+            .subscribe((status: WebSocketStatus) => {
+                if (this.classifyService.status == WebSocketStatus.ERROR) {
+                    this.onError("Websocket", "Impossible to connect the websocket!")
+                }
+                else if (this.classifyService.status == WebSocketStatus.OPEN) {
+                    console.log("websocket ok")
+                    this.stopModal()
+                    this.onHome()
+                }
+            })
+
+        this.classifyService.setOnErrors(this.onError)
     }
 
     onHome() {
-        this.resetCollectionState()
-        this.display = AppStatus.HOME
+        this.onNewState(AppStatus.HOME)
     }
 
     onImport() {
-        this.resetCollectionState()
-        this.display = AppStatus.IMPORT
+        this.onNewState(AppStatus.IMPORT)
     }
 
     onExport() {
-        this.resetCollectionState()
-        this.display = AppStatus.EXPORT
+        this.onNewState(AppStatus.EXPORT)
     }
 
     onConfig() {
+        this.onNewState(AppStatus.CONFIG)
+    }
+
+    onNewState(nextStatus: AppStatus) {
         this.resetCollectionState()
-        this.display = AppStatus.CONFIG
+        this.status = nextStatus
+    }
+
+    onError(title: string, msg: string) {
+
+        console.error(title + "error :" + msg)
+
+        this.modalTitle = title + " error!"
+        this.modalMsg = msg
+        jQuery('#modal').openModal()
+    }
+
+    stopModal() {
+        jQuery('#modal').closeModal()
     }
 
     onNewCollection() {
-        this.collections.onNewCollection()
+        if (this.collections) {
+            this.collections.onNewCollection()
+        }
     }
 
     onSelectCollection() {
-        this.display = AppStatus.HOME
+        this.status = AppStatus.HOME
     }
 
     onCollectionChoosed(collection: Collection) {
-        this.display = AppStatus.HOME
+        this.status = AppStatus.HOME
         console.log("COLLECTION", collection)
     }
 
     resetCollectionState() {
-        this.collections.resetCollectionState()
+        if (this.collections)
+            this.collections.resetCollectionState()
     }
 }

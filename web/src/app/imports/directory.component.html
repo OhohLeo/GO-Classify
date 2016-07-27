@@ -2,12 +2,14 @@
 <p>list of directories</p>
 <form (ngSubmit)="onSubmit()" #createForm="ngForm">
 	<div>
-		<input type="text"
+		<input name="path"
+               type="text"
                placholder="Path"
                [(ngModel)]="newDirectory.path" required />
 	</div>
 	<p>
-		<input type="checkbox"
+		<input name="isRecursive"
+               type="checkbox"
                id="isRecursive"
                [(ngModel)]="newDirectory.isRecursive" />
         <label for="isRecursive">with sub-directories</label>
