@@ -4,6 +4,10 @@ import (
 	"os"
 )
 
+type ImportBase struct {
+	Name string `json:"name"`
+}
+
 type Import interface {
 	Start() (chan Data, error)
 	Stop()

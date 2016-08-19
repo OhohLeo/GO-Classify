@@ -8,6 +8,7 @@ import (
 )
 
 type Directory struct {
+	imports.ImportBase
 	Path        string `json:"path"`
 	IsRecursive bool   `json:"is_recursive"`
 	needToStop  bool

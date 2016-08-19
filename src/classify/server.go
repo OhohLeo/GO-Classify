@@ -1,4 +1,4 @@
-package main
+package classify
 
 import (
 	"encoding/json"
@@ -23,7 +23,7 @@ type ProtocolReq struct {
 }
 
 // ServerStart launches web server
-func CreateServer() (*Server, error) {
+func (c *Classify) CreateServer() (*Server, error) {
 
 	server := new(Server)
 
@@ -64,25 +64,30 @@ func CreateServer() (*Server, error) {
 		}),
 
 		// Handle references
-		rest.Get("/references", ApiGetReferences),
+		rest.Get("/references", c.GetReferences),
 
 		// Handle collections
-		rest.Post("/collections", ApiPostCollection),
-		rest.Get("/collections", ApiGetCollections),
-		rest.Get("/collections/:name", ApiGetCollectionByName),
-		rest.Patch("/collections/:name", ApiPatchCollection),
-		rest.Delete("/collections/:name", ApiDeleteCollectionByName),
+		rest.Post("/collections", c.PostCollection),
+		rest.Get("/collections", c.GetCollections),
+		rest.Get("/collections/:name", c.GetCollectionByName),
+		rest.Patch("/collections/:name", c.PatchCollection),
+		rest.Delete("/collections/:name", c.DeleteCollectionByName),
 
 		rest.Put("/collections/:name/start",
-			ApiStartCollection),
+			c.StartCollection),
 		rest.Put("/collections/:name/stop",
-			ApiStopCollection),
+			c.StopCollection),
 
 		// Handle collection's imports
-		rest.Post("/collections/:name/imports", ApiPostCollectionImport),
-		rest.Get("/collections/:name/imports", ApiGetCollectionImports),
+		rest.Post("/collections/:name/imports", c.PostCollectionImport),
+		rest.Get("/collections/:name/imports", c.GetCollectionImports),
 		rest.Delete("/collections/:name/imports/:import",
-			ApiDeleteCollectionImport),
+			c.DeleteCollectionImport),
+
+		rest.Put("/collections/:name/imports/:import/start",
+			c.StartCollectionImport),
+		rest.Put("/collections/:name/imports/:import/stop",
+			c.StopCollectionImport),
 	)
 	if err != nil {
 		return nil, err

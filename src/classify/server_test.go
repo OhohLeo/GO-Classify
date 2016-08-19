@@ -1,4 +1,4 @@
-package main
+package classify
 
 import (
 	"github.com/ohohleo/classify/imports"
@@ -40,7 +40,7 @@ func TestApi(t *testing.T) {
 }
 
 func checkGetReferences(assert *assert.Assertions) {
-	var rsp APIGetReferences
+	var rsp GetReferences
 	c, err := requests.Send("GET", URL+"/references", nil, nil, &rsp)
 	assert.Nil(err)
 
@@ -48,7 +48,7 @@ func checkGetReferences(assert *assert.Assertions) {
 	assert.True(ok)
 	assert.Equal(200, result.Status)
 
-	assert.Equal(APIGetReferences{
+	assert.Equal(GetReferences{
 		Websites: []string{"IMDB"},
 		Types:    []string{"movies"},
 	}, rsp)
@@ -113,7 +113,7 @@ func checkPostCollection(assert *assert.Assertions) {
 
 func checkGetCollections(assert *assert.Assertions) {
 
-	var rsp []APICollection
+	var rsp []ApiCollection
 
 	// Success : get collections list
 	c, err := requests.Send("GET", URL+"/collections",
@@ -124,8 +124,8 @@ func checkGetCollections(assert *assert.Assertions) {
 	assert.True(ok)
 	assert.Equal(200, result.Status)
 
-	assert.Equal([]APICollection{
-		APICollection{
+	assert.Equal([]ApiCollection{
+		ApiCollection{
 			Name: "test",
 			Type: "movies",
 		},
@@ -171,7 +171,6 @@ func checkPostCollectionImport(assert *assert.Assertions) {
 			"Content-Type": "application/json",
 		},
 		map[string]interface{}{
-			"name": "test",
 			"type": "directory",
 			"params": map[string]interface{}{
 				"path":         "/tmp",
@@ -199,29 +198,6 @@ func checkPostCollectionImport(assert *assert.Assertions) {
 
 	assert.Equal(map[string]string{
 		"Error": "collection 'error' not existing",
-	}, rsp)
-
-	// Failure : the import name is not defined
-	c, err = requests.Send("POST", URL+"/collections/test/imports",
-		map[string]string{
-			"Content-Type": "application/json",
-		},
-		map[string]interface{}{
-			"name": "",
-			"type": "directory",
-			"params": map[string]interface{}{
-				"path":         "/tmp",
-				"is_recursive": false,
-			},
-		}, &rsp)
-	assert.Nil(err)
-
-	result, ok = <-c
-	assert.True(ok)
-	assert.Equal(400, result.Status)
-
-	assert.Equal(map[string]string{
-		"Error": "name field is mandatory",
 	}, rsp)
 
 	// Failure : the import type is not defined

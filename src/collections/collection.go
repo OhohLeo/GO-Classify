@@ -17,21 +17,26 @@ type Collection struct {
 	items         chan *Item
 }
 
-// Start the analysis of the import specified
-func (c *Collection) Start() (chan *Item, error) {
+func (c *Collection) initItems() chan *Item {
 
 	if c.items == nil {
 		c.items = make(chan *Item)
-	} else {
-		return c.items, nil
 	}
+
+	return c.items
+}
+
+// Start the analysis of the import specified
+func (c *Collection) Start() (chan *Item, error) {
+
+	items := c.initItems()
 
 	// Start by analysing all imports
 	for _, imported := range c.imports {
 		c.startImport(imported)
 	}
 
-	return c.items, nil
+	return items, nil
 }
 
 // Stop analysis of the collection
@@ -56,84 +61,6 @@ func (c *Collection) GetName() string {
 // GetType returns the type of the collection (mandatory)
 func (c *Collection) GetType() string {
 	panic("collection type should be specified!")
-}
-
-// AddImport add new import
-func (c *Collection) AddImport(name string, imported imports.Import) error {
-
-	if _, ok := c.imports[name]; ok {
-		return errors.New("import '" + name + "' already exists")
-	}
-
-	if c.imports == nil {
-		c.imports = make(map[string]imports.Import)
-	}
-
-	c.imports[name] = imported
-
-	if c.items != nil {
-		c.startImport(imported)
-	}
-
-	return nil
-}
-
-// DeleteImport delete specified import
-func (c *Collection) DeleteImport(name string) error {
-
-	if imported, ok := c.imports[name]; ok {
-		imported.Stop()
-		delete(c.imports, name)
-		return nil
-	}
-
-	return errors.New("import '" + name + "' not found")
-}
-
-// GetImports get the list of imports
-func (c *Collection) GetImports() map[string]map[string]imports.Import {
-
-	result := make(map[string]map[string]imports.Import)
-
-	if c.imports == nil {
-		return result
-	}
-
-	for name, imported := range c.imports {
-
-		t := imported.GetType()
-
-		if result[t] == nil {
-			result[t] = make(map[string]imports.Import)
-		}
-
-		result[t][name] = imported
-	}
-
-	return result
-}
-
-// startImports launch the process of importation of specified import
-func (c *Collection) startImport(imported imports.Import) error {
-
-	// Get the import channel
-	channel, err := imported.Start()
-	if err != nil {
-		return err
-	}
-
-	// Send all data imported to the collection
-	go func() {
-		for {
-			if input, ok := <-channel; ok {
-				c.items <- c.OnInput(input)
-				continue
-			}
-			break
-		}
-	}()
-
-	return nil
 }
 
 // AddExport add new export process

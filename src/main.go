@@ -2,6 +2,7 @@ package main
 
 import (
 	"github.com/codegangsta/cli"
+	"github.com/ohohleo/classify/classify"
 	"log"
 	"os"
 )
@@ -13,7 +14,7 @@ func main() {
 	app.Version = "0.0.1"
 	app.Usage = "Collections' classification tool"
 	app.Action = func(c *cli.Context) {
-		classify, err := Start()
+		classify, err := classify.Start()
 		if err != nil {
 			log.Fatal(err.Error())
 		}
