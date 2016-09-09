@@ -1,4 +1,4 @@
-package classify
+package core
 
 import (
 	"fmt"
@@ -8,20 +8,32 @@ import (
 
 // Collection common methods
 type Collection interface {
-	Start() (chan *collections.Item, error)
-	Stop()
 	SetName(string)
 	GetName() string
 	GetType() string
-	AddImport(string, imports.Import) error
-	DeleteImport(string) error
-	GetImports() map[string]map[string]imports.Import
-	GetImportByName(name string) (imports.Import, error)
+	OnInput(input imports.Data) (item *collections.Item)
 }
 
 // Type of collections
 var newCollections = map[string]func() Collection{
 	"movies": func() Collection { return new(collections.Movies) },
+}
+
+// Check collection names, returns the list of selected collections
+func (c *Classify) GetCollectionsByNames(collectionNames []string) (collections map[string]Collection, err error) {
+
+	var collection Collection
+
+	for _, name := range collectionNames {
+		collection, err = c.GetCollection(name)
+		if err != nil {
+			return
+		}
+
+		collections[name] = collection
+	}
+
+	return
 }
 
 // Add a new collection

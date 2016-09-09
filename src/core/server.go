@@ -1,4 +1,4 @@
-package classify
+package core
 
 import (
 	"encoding/json"
@@ -64,30 +64,21 @@ func (c *Classify) CreateServer() (*Server, error) {
 		}),
 
 		// Handle references
-		rest.Get("/references", c.GetReferences),
+		rest.Get("/references", c.ApiGetReferences),
 
 		// Handle collections
-		rest.Post("/collections", c.PostCollection),
-		rest.Get("/collections", c.GetCollections),
-		rest.Get("/collections/:name", c.GetCollectionByName),
-		rest.Patch("/collections/:name", c.PatchCollection),
-		rest.Delete("/collections/:name", c.DeleteCollectionByName),
+		rest.Post("/collections", c.ApiPostCollection),
+		rest.Get("/collections", c.ApiGetCollections),
+		rest.Get("/collections/:name", c.ApiGetCollectionByName),
+		rest.Patch("/collections/:name", c.ApiPatchCollection),
+		rest.Delete("/collections/:name", c.ApiDeleteCollectionByName),
 
-		rest.Put("/collections/:name/start",
-			c.StartCollection),
-		rest.Put("/collections/:name/stop",
-			c.StopCollection),
-
-		// Handle collection's imports
-		rest.Post("/collections/:name/imports", c.PostCollectionImport),
-		rest.Get("/collections/:name/imports", c.GetCollectionImports),
-		rest.Delete("/collections/:name/imports/:import",
-			c.DeleteCollectionImport),
-
-		rest.Put("/collections/:name/imports/:import/start",
-			c.StartCollectionImport),
-		rest.Put("/collections/:name/imports/:import/stop",
-			c.StopCollectionImport),
+		// Handle imports
+		rest.Post("/imports", c.ApiAddImport),
+		rest.Get("/imports", c.ApiGetImports),
+		rest.Delete("/imports/:import", c.ApiDeleteImport),
+		rest.Put("/imports/start", c.ApiStartImport),
+		rest.Put("/imports/stop", c.ApiStopImport),
 	)
 	if err != nil {
 		return nil, err

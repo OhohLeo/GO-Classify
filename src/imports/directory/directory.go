@@ -8,7 +8,6 @@ import (
 )
 
 type Directory struct {
-	imports.ImportBase
 	Path        string `json:"path"`
 	IsRecursive bool   `json:"is_recursive"`
 	needToStop  bool
@@ -72,6 +71,8 @@ func (r *Directory) GetType() string {
 	return "directory"
 }
 
-func (r *Directory) GetUniqKey() string {
-	return ""
+func (r *Directory) Eq(new imports.Import) bool {
+	newDirectory, _ := new.(*Directory)
+	return r.Path == newDirectory.Path &&
+		r.IsRecursive == newDirectory.IsRecursive
 }

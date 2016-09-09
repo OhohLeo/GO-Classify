@@ -9,7 +9,6 @@ import (
 
 type Collection struct {
 	name     string
-	imports  map[string]imports.Import
 	websites map[string]websites.Website
 	// exports map[exports.Export][]string
 
@@ -24,28 +23,6 @@ func (c *Collection) initItems() chan *Item {
 	}
 
 	return c.items
-}
-
-// Start the analysis of the import specified
-func (c *Collection) Start() (chan *Item, error) {
-
-	items := c.initItems()
-
-	// Start by analysing all imports
-	for _, imported := range c.imports {
-		c.startImport(imported)
-	}
-
-	return items, nil
-}
-
-// Stop analysis of the collection
-func (c *Collection) Stop() {
-
-	// Stop imported process
-	for _, imported := range c.imports {
-		imported.Stop()
-	}
 }
 
 // SetName fix the name of the collection

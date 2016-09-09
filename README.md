@@ -14,7 +14,12 @@ DELETE /collections/:name
 
 ## Imports
 
-POST   /collections/:name/imports
-GET    /collections/:name/imports
-PUT    /collections/:name/imports/:import/launch
-DELETE /collections/:name/imports/:import
+POST   /imports
+GET    /imports
+PUT    /imports/:import/start
+PUT    /imports/:import/stop
+DELETE /imports/:import
+
+### Websites
+
+### Exports

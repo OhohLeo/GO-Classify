@@ -1,11 +1,11 @@
-package classify
+package core
 
 import (
 	"github.com/ohohleo/classify/imports"
 	"github.com/ohohleo/classify/requests"
 	"github.com/stretchr/testify/assert"
-	"golang.org/x/net/websocket"
-	"log"
+	//"golang.org/x/net/websocket"
+	//"log"
 	"testing"
 )
 
@@ -23,10 +23,10 @@ func TestApi(t *testing.T) {
 		checkPostCollection(assert)
 		checkGetCollections(assert)
 		checkGetCollectionByName(assert)
-		checkPostCollectionImport(assert)
-		checkGetCollectionImports(assert)
-		checkStartCollection(assert)
-		checkStopCollection(assert)
+		//checkAddImport(assert)
+		//checkGetImports(assert)
+		// checkStartImport(assert)
+		// checkStopImport(assert)
 		checkDeleteCollection(assert)
 		classify.Stop()
 	}()
@@ -163,10 +163,10 @@ func checkGetCollectionByName(assert *assert.Assertions) {
 	}, rspError)
 }
 
-func checkPostCollectionImport(assert *assert.Assertions) {
+func checkAddImport(assert *assert.Assertions) {
 
 	// Success : staet specified collection
-	c, err := requests.Send("POST", URL+"/collections/test/imports",
+	c, err := requests.Send("POST", URL+"/imports",
 		map[string]string{
 			"Content-Type": "application/json",
 		},
@@ -186,7 +186,7 @@ func checkPostCollectionImport(assert *assert.Assertions) {
 	// Failure : the collection doesn't exist
 	var rsp map[string]string
 
-	c, err = requests.Send("POST", URL+"/collections/error/imports",
+	c, err = requests.Send("POST", URL+"/imports",
 		map[string]string{
 			"Content-Type": "application/json",
 		}, nil, &rsp)
@@ -201,7 +201,7 @@ func checkPostCollectionImport(assert *assert.Assertions) {
 	}, rsp)
 
 	// Failure : the import type is not defined
-	c, err = requests.Send("POST", URL+"/collections/test/imports",
+	c, err = requests.Send("POST", URL+"/imports",
 		map[string]string{
 			"Content-Type": "application/json",
 		},
@@ -224,7 +224,7 @@ func checkPostCollectionImport(assert *assert.Assertions) {
 	}, rsp)
 
 	// Failure : the import type is not defined
-	c, err = requests.Send("POST", URL+"/collections/test/imports",
+	c, err = requests.Send("POST", URL+"/imports",
 		map[string]string{
 			"Content-Type": "application/json",
 		},
@@ -247,12 +247,12 @@ func checkPostCollectionImport(assert *assert.Assertions) {
 	}, rsp)
 }
 
-func checkGetCollectionImports(assert *assert.Assertions) {
+func checkGetImports(assert *assert.Assertions) {
 
 	var rspOk map[string]map[string]imports.Import
 
 	// Success : get collections list
-	c, err := requests.Send("GET", URL+"/collections/test/imports",
+	c, err := requests.Send("GET", URL+"/imports",
 		nil, nil, &rspOk)
 	assert.Nil(err)
 
@@ -267,7 +267,7 @@ func checkGetCollectionImports(assert *assert.Assertions) {
 	// Failure : the collection doesn't exist
 	var rsp map[string]string
 
-	c, err = requests.Send("GET", URL+"/collections/error/imports",
+	c, err = requests.Send("GET", URL+"/imports",
 		nil, nil, &rsp)
 	assert.Nil(err)
 
@@ -281,55 +281,55 @@ func checkGetCollectionImports(assert *assert.Assertions) {
 
 }
 
-var ws *websocket.Conn
+// var ws *websocket.Conn
 
-func checkStartCollection(assert *assert.Assertions) {
+// func checkStartImport(assert *assert.Assertions) {
 
-	var err error
+// 	var err error
 
-	// Establish a web socket connection
-	ws, err = websocket.Dial(
-		"ws://localhost:3333/ws", "", "http://localhost/")
-	assert.Nil(err)
+// 	// Establish a web socket connection
+// 	ws, err = websocket.Dial(
+// 		"ws://localhost:3333/ws", "", "http://localhost/")
+// 	assert.Nil(err)
 
-	// Receive data from the web socket
-	go func() {
-		var msg = make([]byte, 512)
-		for {
-			n, err := ws.Read(msg)
-			if n == 0 {
-				continue
-			}
+// 	// Receive data from the web socket
+// 	go func() {
+// 		var msg = make([]byte, 512)
+// 		for {
+// 			n, err := ws.Read(msg)
+// 			if n == 0 {
+// 				continue
+// 			}
 
-			if err != nil {
-				log.Printf("Error: %s\n", err.Error())
-			}
+// 			if err != nil {
+// 				log.Printf("Error: %s\n", err.Error())
+// 			}
 
-			log.Printf("Received: %d %s\n", n, msg[:n])
-		}
-	}()
+// 			log.Printf("Received: %d %s\n", n, msg[:n])
+// 		}
+// 	}()
 
-	// Success : state specified collection
-	c, err := requests.Send("PUT", URL+"/collections/test/start",
-		nil, nil, nil)
-	assert.Nil(err)
+// 	// Success : state specified collection
+// 	c, err := requests.Send("PUT", URL+"/import//start",
+// 		nil, nil, nil)
+// 	assert.Nil(err)
 
-	result, ok := <-c
-	assert.True(ok)
-	assert.Equal(204, result.Status)
-}
+// 	result, ok := <-c
+// 	assert.True(ok)
+// 	assert.Equal(204, result.Status)
+// }
 
-func checkStopCollection(assert *assert.Assertions) {
+// func checkStopImport(assert *assert.Assertions) {
 
-	// Success : stop specified collection
-	c, err := requests.Send("PUT", URL+"/collections/test/stop",
-		nil, nil, nil)
-	assert.Nil(err)
+// 	// Success : stop specified collection
+// 	c, err := requests.Send("PUT", URL+"/import//stop",
+// 		nil, nil, nil)
+// 	assert.Nil(err)
 
-	result, ok := <-c
-	assert.True(ok)
-	assert.Equal(204, result.Status)
-}
+// 	result, ok := <-c
+// 	assert.True(ok)
+// 	assert.Equal(204, result.Status)
+// }
 
 func checkPatchCollection(assert *assert.Assertions) {
 

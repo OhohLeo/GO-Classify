@@ -1,7 +1,6 @@
-package classify
+package core
 
 import (
-	"encoding/json"
 	log "github.com/Sirupsen/logrus"
 	"math/rand"
 )
@@ -37,11 +36,6 @@ func Start() (*Classify, error) {
 // Application stop
 func (c *Classify) Stop() {
 	c.Server.Stop()
-}
-
-type MappingParams struct {
-	Type   string          `json:"type"`
-	Params json.RawMessage `json:"params"`
 }
 
 const nameLetters = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"

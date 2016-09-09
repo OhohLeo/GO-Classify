@@ -1,4 +1,4 @@
-package classify
+package core
 
 import (
 	"github.com/ohohleo/classify/websites"
