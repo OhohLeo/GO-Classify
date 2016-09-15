@@ -61,19 +61,19 @@ export class ImportDirectoryComponent {
 
         console.log("new Directory", this.path, this.isRecursive)
 
-        // this.classifyService.newCollectionImport({
-        //     "type": "directory",
-        //     "params": {
-        //         "path": this.path,
-        //         "isRecursive": this.isRecursive
-        //     }
-        // })
-        //     .subscribe(status => {
+        this.classifyService.newImport({
+            "type": "directory",
+            "params": {
+                "path": this.path,
+                "isRecursive": this.isRecursive
+            }
+        })
+            .subscribe(status => {
 
-        //         this.directories.push(
-        //             new Directory("test", this.path, this.isRecursive))
-        //         console.log("OK", status)
-        //     })
+                this.directories.push(
+                    new Directory("test", this.path, this.isRecursive))
+                console.log("OK", status)
+            })
     }
 }
 

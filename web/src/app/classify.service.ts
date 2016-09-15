@@ -81,12 +81,12 @@ export class ClassifyService {
             return (evt) => {
                 let status = this.getWebSocketStatus(evt, expected)
 
-                // Vérification de l'état du status
+                // VÃ©rification de l'Ã©tat du status
                 if (status == undefined) {
                     return
                 }
 
-                // Vérification que le status a bien changé
+                // VÃ©rification que le status a bien changÃ©
                 if (this.status == expected) {
                     return
                 }
@@ -95,8 +95,8 @@ export class ClassifyService {
                 this.status = expected
 
                 // En cas de status d'erreur ou de fermeture
-                // inattendue, lorsque le timer n'est pas défini : on
-                // relance périodiquement la tentative de connexion
+                // inattendue, lorsque le timer n'est pas dÃ©fini : on
+                // relance pÃ©riodiquement la tentative de connexion
                 if (this.websocketTimer === undefined
                     && (this.status === WebSocketStatus.ERROR
                         || this.status === WebSocketStatus.CLOSE))  {
@@ -171,7 +171,7 @@ export class ClassifyService {
                     throw new Error('Impossible to create new collection: ' + res.status);
                 }
 
-                // Ajoute la collection nouvellement créée
+                // Ajoute la collection nouvellement crÃ©Ã©e
                 this.collections.push(collection)
 
                 // Choisit automatiquement la nouvelle collection
@@ -277,14 +277,14 @@ export class ClassifyService {
         })
     }
 
-    newCollectionImport(newImport: any) {
+    newImport(newImport: any) {
 
         let collectionUrl = this.getCollectionUrl()
         if (collectionUrl == undefined) {
             return
         }
 
-        return this.http.post(collectionUrl + "/imports",
+        return this.http.post("imports",
                               JSON.stringify(newImport),
                               this.getOptions())
             .map((res: Response) => {

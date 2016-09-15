@@ -69,8 +69,6 @@ export class AppComponent implements OnInit {
                 switch (status)
                 {
                 case CollectionStatus.CREATED:
-                    this.onImport()
-                    break;
                 case CollectionStatus.MODIFIED:
                 case CollectionStatus.SELECTED:
                     this.onHome()
