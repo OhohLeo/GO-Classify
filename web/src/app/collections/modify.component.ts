@@ -29,12 +29,9 @@ export class ModifyCollectionComponent {
 
         // Check that the parameters of the collection differ
 
-        console.log("MODIFY", this.collection)
-
         // Modify the collection
         this.classifySercice.modifyCollection(this.title, this.collection)
             .subscribe(status => {
-                console.log(status)
 
                 // Reset the collection
                 this.collection = new Collection('', '')

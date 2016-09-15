@@ -19,8 +19,6 @@ export class DeleteCollectionComponent {
 
     onDelete() {
 
-        console.log("DELETE", this.title)
-
         // Delete the collection
         this.classifySercice.deleteCollection(this.title)
             .subscribe(status => {

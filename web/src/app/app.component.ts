@@ -1,5 +1,5 @@
 import {Component, OnInit, ViewChild} from '@angular/core';
-import {ClassifyService, WebSocketStatus} from './classify.service';
+import {ClassifyService, WebSocketStatus, CollectionStatus} from './classify.service';
 import {Collection} from './collections/collection';
 import {CollectionsComponent} from './collections/collections.component';
 import {ImportDirectoryComponent} from './imports/directory.component';
@@ -7,7 +7,8 @@ import {ImportDirectoryComponent} from './imports/directory.component';
 declare var jQuery:any;
 
 enum AppStatus {
-    HOME = 1,
+    NONE = 0,
+    HOME,
     IMPORT,
     EXPORT,
     CONFIG
@@ -25,7 +26,7 @@ export class AppComponent implements OnInit {
     @ViewChild(CollectionsComponent) collections: CollectionsComponent
 
     public appStatus = AppStatus
-    public status = AppStatus.HOME
+    public status = AppStatus.NONE
     public websocketStatus: WebSocketStatus
 
     public title = "Classify"
@@ -51,11 +52,34 @@ export class AppComponent implements OnInit {
                 else if (this.classifyService.status == WebSocketStatus.OPEN) {
                     console.log("websocket ok")
                     this.stopModal()
-                    this.onHome()
                 }
             })
 
-        this.classifyService.setOnErrors(this.onError)
+        this.classifyService.subscribeCollectionChange(
+            (collection: Collection, status: CollectionStatus) => {
+                console.log("CHANGE COLLECTION", collection, status)
+                if (collection === undefined) {
+                    this.onChangeCollection()
+                    return
+                }
+
+                this.title = collection.name
+                this.collection = collection
+
+                switch (status)
+                {
+                case CollectionStatus.CREATED:
+                    this.onImport()
+                    break;
+                case CollectionStatus.MODIFIED:
+                case CollectionStatus.SELECTED:
+                    this.onHome()
+                    break;
+                case CollectionStatus.DELETED:
+                    this.status = AppStatus.NONE
+                    break
+                }
+            })
     }
 
     onHome() {
@@ -92,21 +116,24 @@ export class AppComponent implements OnInit {
         jQuery('#modal').closeModal()
     }
 
+    // Affiche la création d'une nouvelle collection
     onNewCollection() {
         if (this.collections) {
             this.collections.onNewCollection()
         }
     }
 
-    onSelectCollection() {
-        this.status = AppStatus.HOME
+    // Affiche la liste des collections à sélectionner
+    onChangeCollection() {
+        if (this.collections
+            && this.collections.onChooseCollection(undefined))
+        {
+            this.status = AppStatus.NONE
+        }
     }
 
-    onCollectionChoosed(collection: Collection) {
-        this.status = AppStatus.HOME
-        console.log("COLLECTION", collection)
-    }
-
+    // Affiche la liste des collections à sélectionner si aucune
+    // collection n'est actuellement sélectionnée
     resetCollectionState() {
         if (this.collections)
             this.collections.resetCollectionState()

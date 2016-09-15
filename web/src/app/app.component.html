@@ -1,27 +1,27 @@
 <nav>
     <div class="nav-wrapper">
-        <a class="brand-logo center" (click)="onSelectCollection()">{{title}}</a>
+        <a class="brand-logo center" (click)="onChangeCollection()">{{title}}</a>
         <a data-activates="mobile-demo" class="button-collapse">
             <i class="material-icons">menu</i>
         </a>
         <a class="right" (click)="onNewCollection()">
             <i class="material-icons medium">add</i>
         </a>
-        <ul *ngIf="collection !== undefined"
-            class="left hide-on-med-and-down">
-            <li><a (click)="onHome()">Home</a></li>
-            <li><a (click)="onImport()">Import</a></li>
-            <li><a (click)="onExport()">Export</a></li>
-            <li><a (click)="onConfig()">Config</a></li>
-        </ul>
-        <ul *ngIf="collection !== undefined"
-            class="side-nav"
-            id="mobile-demo">
-            <li><a (click)="onHome()">Home</a></li>
-            <li><a (click)="onImport()">Import</a></li>
-            <li><a (click)="onExport()">Export</a></li>
-            <li><a (click)="onConfig()">Config</a></li>
-        </ul>
+        <div *ngIf="collection">
+            <ul class="left hide-on-med-and-down">
+                <li><a (click)="onHome()">Home</a></li>
+                <li><a (click)="onImport()">Import</a></li>
+                <li><a (click)="onExport()">Export</a></li>
+                <li><a (click)="onConfig()">Config</a></li>
+            </ul>
+            <ul class="side-nav"
+                id="mobile-demo">
+                <li><a (click)="onHome()">Home</a></li>
+                <li><a (click)="onImport()">Import</a></li>
+                <li><a (click)="onExport()">Export</a></li>
+                <li><a (click)="onConfig()">Config</a></li>
+            </ul>
+        </div>
     </div>
 </nav>
 <div class="row">
@@ -37,7 +37,7 @@
         </div>
         <div *ngSwitchCase="appStatus.EXPORT">EXPORT</div>
         <div *ngSwitchCase="appStatus.CONFIG">CONFIG</div>
-
+        <div *ngSwitchCase="appStatus.NONE"></div>
     </div>
 </div>
 <div id="modal" class="modal">

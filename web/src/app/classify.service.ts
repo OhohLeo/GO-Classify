@@ -1,7 +1,7 @@
 import {Injectable} from '@angular/core';
 import {Http, Response, RequestOptions, Headers} from '@angular/http';
 import {Observable} from 'rxjs/Rx';
-import {Collection} from './collections/collection';
+import {Collection, Imports} from './collections/collection';
 
 export enum WebSocketStatus {
     NONE = 0,
@@ -11,6 +11,15 @@ export enum WebSocketStatus {
     CLOSE,
     ERROR,
 }
+
+export enum CollectionStatus {
+    NONE = 0,
+    CREATED,
+    SELECTED,
+    MODIFIED,
+    DELETED
+}
+
 
 @Injectable()
 export class ClassifyService {
@@ -26,8 +35,8 @@ export class ClassifyService {
     }
     private websocketTimer
 
-    private onChanges: (collection: Collection) => void
-    private onErrors: (title: string, msg: string) => void
+    private onCollectionChange: (collection: Collection,
+                                 status: CollectionStatus) => void
 
     public status = WebSocketStatus.NONE
 
@@ -35,17 +44,23 @@ export class ClassifyService {
 
     constructor (private http: Http) {}
 
-    setOnChanges(changesCb: (collection: Collection) => void) {
-        this.onChanges = changesCb
+    subscribeCollectionChange(cb: (collection: Collection,
+                                   status: CollectionStatus) => void) {
+        this.onCollectionChange = cb
     }
 
-    setOnErrors(errorsCb: (title: string, msg: string) => void) {
-        this.onErrors = errorsCb
-    }
+    setCollection(collection: Collection, status: CollectionStatus) {
 
+        if (status == CollectionStatus.SELECTED
+            && this.collectionSelected == collection) {
+            return
+        }
 
-    selectCollection(collection: Collection) {
         this.collectionSelected = collection
+
+        if (this.onCollectionChange) {
+            this.onCollectionChange(collection, status)
+        }
     }
 
     initWebSocket(): Observable<WebSocketStatus>{
@@ -135,6 +150,16 @@ export class ClassifyService {
         })
     }
 
+    getCollectionUrl() {
+
+        if (this.collectionSelected == undefined) {
+            this.handleError("Select a collection first!")
+            return undefined
+        }
+
+        return this.url + "collections/" + this.collectionSelected.name
+    }
+
     // Create a new collection
     newCollection(collection: Collection) {
 
@@ -149,7 +174,8 @@ export class ClassifyService {
                 // Ajoute la collection nouvellement créée
                 this.collections.push(collection)
 
-                this.onChanges(collection)
+                // Choisit automatiquement la nouvelle collection
+                this.setCollection(collection, CollectionStatus.CREATED)
             })
             .catch(this.handleError);
     }
@@ -174,10 +200,8 @@ export class ClassifyService {
                     }
                 }
 
-                // Remove the selected collection
-                this.collectionSelected = collection
-
-                this.onChanges(collection)
+                // Choisit automatiquement la nouvelle collection
+                this.setCollection(collection, CollectionStatus.MODIFIED)
             })
             .catch(this.handleError);
     }
@@ -189,7 +213,7 @@ export class ClassifyService {
                                 this.getOptions())
             .map((res: Response) => {
                 if (res.status != 204) {
-                    throw new Error('Impossible to modify collection '
+                    throw new Error('Impossible to delete collection '
                                     + name + ': ' + res.status);
                 }
 
@@ -201,10 +225,8 @@ export class ClassifyService {
                     }
                 }
 
-                // Reset the selected collection
-                this.collectionSelected = undefined
-
-                this.onChanges(undefined)
+                // Warn about deleted collection
+                this.setCollection(undefined, CollectionStatus.DELETED)
             })
             .catch(this.handleError);
     }
@@ -255,6 +277,70 @@ export class ClassifyService {
         })
     }
 
+    newCollectionImport(newImport: any) {
+
+        let collectionUrl = this.getCollectionUrl()
+        if (collectionUrl == undefined) {
+            return
+        }
+
+        return this.http.post(collectionUrl + "/imports",
+                              JSON.stringify(newImport),
+                              this.getOptions())
+            .map((res: Response) => {
+                if (res.status != 204) {
+                    throw new Error('Impossible to create new import: ' + res.status);
+                }
+
+            })
+            .catch(this.handleError);
+    }
+
+    getCollectionImport() {
+
+        let collectionUrl = this.getCollectionUrl()
+        if (collectionUrl == undefined) {
+            return
+        }
+
+        return new Observable<Imports>(observer => {
+
+            if (this.collectionSelected.imports) {
+                observer.next(this.collectionSelected.imports)
+                return
+            }
+
+            let request = this.http.get(collectionUrl + "/imports")
+                .map(this.extractData)
+                .catch(this.handleError);
+
+            request.subscribe(imports => {
+                console.log(imports)
+                this.collectionSelected.imports = imports
+                observer.next(imports)
+            })
+        });
+    }
+
+    // Delete an existing collection import
+    deleteCollectionImport(name: string) {
+
+        let collectionUrl = this.getCollectionUrl()
+        if (collectionUrl == undefined) {
+            return
+        }
+
+        return this.http.delete(collectionUrl + "/imports/" + name,
+                                this.getOptions())
+            .map((res: Response) => {
+                if (res.status != 204) {
+                    throw new Error('Impossible to delete import collection '
+                                    + name + ': ' + res.status);
+                }
+            })
+            .catch(this.handleError);
+    }
+
 
     private extractData(res: Response) {
 
@@ -272,10 +358,7 @@ export class ClassifyService {
 
     private handleError (error: any) {
         let errMsg = error.message || 'Server error';
-        if (this.onErrors) {
-            this.onErrors("request error", errMsg)
-        }
-
+        console.error(errMsg)
         return Observable.throw(errMsg);
     }
 }

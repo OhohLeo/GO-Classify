@@ -1,17 +1,9 @@
 import {Component, Input} from '@angular/core';
-import {ClassifyService} from '../classify.service';
+import {ClassifyService, CollectionStatus} from '../classify.service';
 import {Collection} from '../collections/collection';
 import {CreateCollectionComponent} from './create.component';
 import {ModifyCollectionComponent} from './modify.component';
 import {DeleteCollectionComponent} from './delete.component';
-
-enum CollectionStatus {
-    NONE = 0,
-    CREATE,
-    CHOOSE,
-    MODIFY,
-    DELETE
-}
 
 @Component({
     selector: 'collections',
@@ -30,62 +22,67 @@ export class CollectionsComponent {
 
     constructor (private classifyService: ClassifyService) {
 
-        classifyService.setOnChanges((collection: Collection) => {
-            this.onChooseCollection(collection)
-        })
-
         classifyService.getAll().subscribe(
             list => {
-                console.log(list)
                 this.collections = list
                 this.onChooseCollection(undefined)
-            });
+            })
     }
 
     onNewCollection() {
-        this.collectionState = CollectionStatus.CREATE
+        this.collectionState = CollectionStatus.CREATED
     }
 
-    onChooseCollection(collection: Collection) {
+    onChooseCollection(collection: Collection) : boolean {
 
         // If no collection exists : ask to create new one
         if (this.collections.length === 0) {
-            this.collectionState = CollectionStatus.CREATE
-            return
+            this.collectionState = CollectionStatus.CREATED
+            return true
         }
 
         if (collection !== undefined) {
-            this.onSelectCollection(collection)
+            this.onSelectCollection(collection, CollectionStatus.SELECTED)
+            this.collectionState = CollectionStatus.NONE
+            return true
         }
 
-        this.collectionState = CollectionStatus.CHOOSE
+        // If 1 collection exists : we display this collection
+        if (this.collections.length === 1) {
+            this.onSelectCollection(this.collections[0], CollectionStatus.SELECTED)
+            this.collectionState = CollectionStatus.NONE
+            return false
+        }
+
+        this.collectionState = CollectionStatus.SELECTED
+        return true
     }
 
-    onSelectCollection(collection: Collection) {
-        this.classifyService.selectCollection(collection)
+    onSelectCollection(collection: Collection, status: CollectionStatus) {
+        this.classifyService.setCollection(collection, status)
         this.collectionState = CollectionStatus.NONE
     }
 
     onModifyCollection(collection: Collection) {
-        this.onSelectCollection(collection)
-        this.collectionState = CollectionStatus.MODIFY
+        this.onSelectCollection(collection, CollectionStatus.MODIFIED)
+        this.collectionState = CollectionStatus.MODIFIED
     }
 
     onDeleteCollection(collection: Collection) {
-        this.onSelectCollection(collection)
-        this.collectionState = CollectionStatus.DELETE
+        this.onSelectCollection(collection, CollectionStatus.DELETED)
+        this.collectionState = CollectionStatus.DELETED
     }
 
     resetCollectionState() {
 
         // If no collection exists : ask to create new one
         if (this.collections.length === 0) {
-            this.collectionState = CollectionStatus.CREATE
+            this.collectionState = CollectionStatus.CREATED
             return
         }
 
         if (this.classifyService.collectionSelected == undefined) {
-            this.collectionState = CollectionStatus.CHOOSE
+            this.collectionState = CollectionStatus.SELECTED
             return
         }
 
