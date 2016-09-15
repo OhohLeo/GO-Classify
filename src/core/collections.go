@@ -20,20 +20,21 @@ var newCollections = map[string]func() Collection{
 }
 
 // Check collection names, returns the list of selected collections
-func (c *Classify) GetCollectionsByNames(collectionNames []string) (collections map[string]Collection, err error) {
+func (c *Classify) GetCollectionsByNames(names []string) (map[string]Collection, error) {
 
-	var collection Collection
+	collections := make(map[string]Collection)
 
-	for _, name := range collectionNames {
-		collection, err = c.GetCollection(name)
+	for _, name := range names {
+
+		collection, err := c.GetCollection(name)
 		if err != nil {
-			return
+			return nil, err
 		}
 
 		collections[name] = collection
 	}
 
-	return
+	return collections, nil
 }
 
 // Add a new collection

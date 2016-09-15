@@ -48,6 +48,7 @@ func (c *Classify) ApiAddImport(w rest.ResponseWriter, r *rest.Request) {
 	// Check and get the collection list
 	collections, err := c.GetCollectionsByNames(body.Collections)
 	if err != nil {
+		rest.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 

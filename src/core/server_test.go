@@ -23,10 +23,11 @@ func TestApi(t *testing.T) {
 		checkPostCollection(assert)
 		checkGetCollections(assert)
 		checkGetCollectionByName(assert)
-		//checkAddImport(assert)
-		//checkGetImports(assert)
+		checkAddImport(assert)
+		checkGetImports(assert)
 		// checkStartImport(assert)
 		// checkStopImport(assert)
+		//checkDeleteImport(assert)
 		checkDeleteCollection(assert)
 		classify.Stop()
 	}()
@@ -171,7 +172,8 @@ func checkAddImport(assert *assert.Assertions) {
 			"Content-Type": "application/json",
 		},
 		map[string]interface{}{
-			"type": "directory",
+			"type":        "directory",
+			"collections": []string{"test"},
 			"params": map[string]interface{}{
 				"path":         "/tmp",
 				"is_recursive": false,
@@ -189,7 +191,16 @@ func checkAddImport(assert *assert.Assertions) {
 	c, err = requests.Send("POST", URL+"/imports",
 		map[string]string{
 			"Content-Type": "application/json",
-		}, nil, &rsp)
+		},
+		map[string]interface{}{
+			"type":        "directory",
+			"collections": []string{"error"},
+			"params": map[string]interface{}{
+				"path":         "/tmp",
+				"is_recursive": false,
+			},
+		},
+		&rsp)
 	assert.Nil(err)
 
 	result, ok = <-c
@@ -206,31 +217,9 @@ func checkAddImport(assert *assert.Assertions) {
 			"Content-Type": "application/json",
 		},
 		map[string]interface{}{
-			"name": "error",
-			"type": "",
-			"params": map[string]interface{}{
-				"path":         "/tmp",
-				"is_recursive": false,
-			},
-		}, &rsp)
-	assert.Nil(err)
-
-	result, ok = <-c
-	assert.True(ok)
-	assert.Equal(400, result.Status)
-
-	assert.Equal(map[string]string{
-		"Error": "type field is mandatory",
-	}, rsp)
-
-	// Failure : the import type is not defined
-	c, err = requests.Send("POST", URL+"/imports",
-		map[string]string{
-			"Content-Type": "application/json",
-		},
-		map[string]interface{}{
-			"name": "ok",
-			"type": "error",
+			"name":        "ok",
+			"type":        "error",
+			"collections": []string{"test"},
 			"params": map[string]interface{}{
 				"path":         "/tmp",
 				"is_recursive": false,
@@ -267,7 +256,7 @@ func checkGetImports(assert *assert.Assertions) {
 	// Failure : the collection doesn't exist
 	var rsp map[string]string
 
-	c, err = requests.Send("GET", URL+"/imports",
+	c, err = requests.Send("GET", URL+"/imports?collection=error",
 		nil, nil, &rsp)
 	assert.Nil(err)
 
