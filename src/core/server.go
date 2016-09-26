@@ -1,19 +1,18 @@
 package core
 
 import (
-	"encoding/json"
 	log "github.com/Sirupsen/logrus"
 	"github.com/ant0ine/go-json-rest/rest"
 	"github.com/hydrogen18/stoppableListener"
-	"golang.org/x/net/websocket"
+	"github.com/manucorporat/sse"
 	"net"
 	"net/http"
 )
 
 type Server struct {
-	api        *rest.Api
-	stoppable  *stoppableListener.StoppableListener
-	websockets []*websocket.Conn
+	api       *rest.Api
+	stoppable *stoppableListener.StoppableListener
+	events    chan sse.Event
 }
 
 type ProtocolReq struct {
@@ -23,18 +22,18 @@ type ProtocolReq struct {
 }
 
 // ServerStart launches web server
-func (c *Classify) CreateServer() (*Server, error) {
+func (c *Classify) CreateServer() (server *Server, err error) {
 
-	server := new(Server)
+	server = new(Server)
 
 	listener, err := net.Listen("tcp", ":3333")
 	if err != nil {
-		return nil, err
+		return
 	}
 
 	server.stoppable, err = stoppableListener.New(listener)
 	if err != nil {
-		return nil, err
+		return
 	}
 
 	api := rest.NewApi()
@@ -53,14 +52,19 @@ func (c *Classify) CreateServer() (*Server, error) {
 		AccessControlMaxAge:           3600,
 	})
 
-	// Init websocket
-	wsHandler := websocket.Handler(server.handleWebSocket)
+	// Init events channel
+	server.events = make(chan sse.Event, 1)
 
 	router, err := rest.MakeRouter(
 
 		// Establish connection to the web-services
-		rest.Get("/ws", func(w rest.ResponseWriter, r *rest.Request) {
-			wsHandler.ServeHTTP(w.(http.ResponseWriter), r.Request)
+		rest.Get("/stream", func(w rest.ResponseWriter, r *rest.Request) {
+			for {
+				event, ok := <-server.events
+				if ok {
+					sse.Encode(w.(http.ResponseWriter), event)
+				}
+			}
 		}),
 
 		// Handle references
@@ -81,7 +85,7 @@ func (c *Classify) CreateServer() (*Server, error) {
 		rest.Put("/imports/stop", c.ApiStopImport),
 	)
 	if err != nil {
-		return nil, err
+		return
 	}
 
 	api.SetApp(router)
@@ -89,7 +93,7 @@ func (c *Classify) CreateServer() (*Server, error) {
 	// Store api
 	server.api = api
 
-	return server, nil
+	return
 }
 
 func (s *Server) Start() {
@@ -106,66 +110,11 @@ func (s *Server) Stop() {
 	s.stoppable.Stop()
 }
 
-// handleWebSocket store all connections established
-func (s *Server) handleWebSocket(ws *websocket.Conn) {
-
-	if s.websockets == nil {
-		s.websockets = make([]*websocket.Conn, 0)
+// OnEvent add new event on the event channel
+func (s *Server) OnEvent(event string, id string, data interface{}) {
+	s.events <- sse.Event{
+		Event: event,
+		Id:    id,
+		Data:  data,
 	}
-
-	log.Info("WebSocket Connection OK")
-	s.websockets = append(s.websockets, ws)
-
-	s.Read(ws)
-}
-
-func (s *Server) Read(ws *websocket.Conn) {
-
-	msg := make([]byte, 512)
-	_, err := ws.Read(msg)
-	if err != nil {
-		return
-	}
-}
-
-// Send a request through websocket
-func (s *Server) Send(collectionName string, itemType string, data interface{}) error {
-
-	// No websockets : nothing to do
-	if len(s.websockets) == 0 {
-		return nil
-	}
-
-	log.Printf(" <-- [%s] %s '%+v'", collectionName, itemType, data)
-
-	send, err := json.Marshal(ProtocolReq{
-		Collection: collectionName,
-		Type:       itemType,
-		Data:       data,
-	})
-
-	if err != nil {
-		log.Error("Can't convert msg: " + err.Error())
-		return err
-	}
-
-	for _, ws := range s.websockets {
-
-		if ws.IsClientConn() == false {
-			log.Error("Client not connected!")
-			continue
-		}
-
-		if err := websocket.Message.Send(ws, string(send)); err != nil {
-			log.Error("Can't send msg: " + err.Error())
-		}
-	}
-
-	return nil
-}
-
-// Send an error request through websocket
-func (s *Server) SendError(collectionName string, err error) error {
-
-	return s.Send(collectionName, "error", err.Error())
 }

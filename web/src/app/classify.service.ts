@@ -27,13 +27,6 @@ export class ClassifyService {
     private url = "http://localhost:3333/"
     private references: any
     private collections: Collection[]
-    private websocket: any
-    private websocketStatus = {
-        'open': WebSocketStatus.OPEN,
-        'error': WebSocketStatus.ERROR,
-        'close': WebSocketStatus.CLOSE,
-    }
-    private websocketTimer
 
     private onCollectionChange: (collection: Collection,
                                  status: CollectionStatus) => void
@@ -43,6 +36,26 @@ export class ClassifyService {
     public collectionSelected: Collection
 
     constructor (private http: Http) {}
+
+    headers() {
+        return new RequestOptions({
+            headers: new Headers({ 'Content-Type': 'application/json' })
+        })
+    }
+
+    get(path; string) {
+        return this.http.get(this.url + path,
+                             this.headers())
+            .map(this.extractData)
+            .catch(this.handleError);
+    }
+
+    post(path: string, data: any) {
+        return this.http.post(this.url + path,
+                              JSON.stringify(data),
+                              this.headers())
+            .catch(this.handleError);
+    }
 
     subscribeCollectionChange(cb: (collection: Collection,
                                    status: CollectionStatus) => void) {
@@ -63,93 +76,6 @@ export class ClassifyService {
         }
     }
 
-    initWebSocket(): Observable<WebSocketStatus>{
-        return Observable.create(
-            observer => this.connectWebSocket(observer))
-    }
-
-    connectWebSocket(observer) {
-
-        console.log("websocket connecting...")
-
-        // Etablissement de la connexion avec la websocket
-        this.websocket = new WebSocket('ws://localhost:3333/ws')
-
-        observer.next(WebSocketStatus.CONNECTING)
-
-        let handleWebSocketStatus = (expected) => {
-            return (evt) => {
-                let status = this.getWebSocketStatus(evt, expected)
-
-                // Vérification de l'état du status
-                if (status == undefined) {
-                    return
-                }
-
-                // Vérification que le status a bien changé
-                if (this.status == expected) {
-                    return
-                }
-
-                // Attribution du nouveau status
-                this.status = expected
-
-                // En cas de status d'erreur ou de fermeture
-                // inattendue, lorsque le timer n'est pas défini : on
-                // relance périodiquement la tentative de connexion
-                if (this.websocketTimer === undefined
-                    && (this.status === WebSocketStatus.ERROR
-                        || this.status === WebSocketStatus.CLOSE))  {
-                    console.log(
-                        "websocket ",
-                        this.status === WebSocketStatus.CLOSE ? "close" : "error")
-                    this.websocketTimer = setTimeout(
-                        () => {
-                            console.log("websocket retry ...")
-                            this.websocketTimer = undefined
-                            this.connectWebSocket(observer)
-                        }, 5000)
-                }
-
-                observer.next(expected)
-            }
-        }
-
-        this.websocket.onopen = handleWebSocketStatus(WebSocketStatus.OPEN)
-        this.websocket.onerror = handleWebSocketStatus(WebSocketStatus.ERROR)
-        this.websocket.onclose = handleWebSocketStatus(WebSocketStatus.CLOSE)
-        this.websocket.onmessage = (evt) => {
-            console.log("RECEIVED: " + evt.data)
-        }
-    }
-
-    getWebSocketStatus(evt, expected: WebSocketStatus): WebSocketStatus{
-
-        let status = this.websocketStatus[evt.type]
-        if (status == undefined) {
-            console.error("Unknown received websocket status type: " + evt.type)
-            return undefined
-        }
-
-        if (status != expected) {
-            console.error("Websocket status error: expected " + expected
-                          + ", received " + status)
-            return undefined
-        }
-
-        return status
-    }
-
-    getWebSocket(): Observable<any>{
-        return Observable.fromEvent(this.websocket,'message')
-    }
-
-    getOptions() {
-        return new RequestOptions({
-            headers: new Headers({ 'Content-Type': 'application/json' })
-        })
-    }
-
     getCollectionUrl() {
 
         if (this.collectionSelected == undefined) {
@@ -165,7 +91,7 @@ export class ClassifyService {
 
         return this.http.post(this.url + "collections",
                               JSON.stringify(collection),
-                              this.getOptions())
+                              this.headers())
             .map((res: Response) => {
                 if (res.status != 204) {
                     throw new Error('Impossible to create new collection: ' + res.status);
@@ -185,7 +111,7 @@ export class ClassifyService {
 
         return this.http.patch(this.url + "collections/" + name,
                                JSON.stringify(collection),
-                               this.getOptions())
+                               this.headers())
             .map((res: Response) => {
                 if (res.status != 204) {
                     throw new Error('Impossible to modify collection '
@@ -210,7 +136,7 @@ export class ClassifyService {
     deleteCollection(name: string) {
 
         return this.http.delete(this.url + "collections/" + name,
-                                this.getOptions())
+                                this.headers())
             .map((res: Response) => {
                 if (res.status != 204) {
                     throw new Error('Impossible to delete collection '
@@ -231,6 +157,22 @@ export class ClassifyService {
             .catch(this.handleError);
     }
 
+    // GET /stream
+    getStream() {
+
+        return new Observable(observer => {
+
+            let request =  this.http.get(this.url + "stream",
+                                         this.headers())
+                .map(this.extractData)
+                .catch(this.handleError);
+
+            request.subscribe(events => {
+                observer.next(events)
+            })
+        });
+    }
+
     // Get the collections list
 	getAll() {
 
@@ -241,7 +183,7 @@ export class ClassifyService {
             }
 
             let request =  this.http.get(this.url + "collections",
-                                         this.getOptions())
+                                         this.headers())
                 .map(this.extractData)
                 .catch(this.handleError);
 
@@ -275,25 +217,6 @@ export class ClassifyService {
                 observer.next(references)
             })
         })
-    }
-
-    newImport(newImport: any) {
-
-        let collectionUrl = this.getCollectionUrl()
-        if (collectionUrl == undefined) {
-            return
-        }
-
-        return this.http.post("imports",
-                              JSON.stringify(newImport),
-                              this.getOptions())
-            .map((res: Response) => {
-                if (res.status != 204) {
-                    throw new Error('Impossible to create new import: ' + res.status);
-                }
-
-            })
-            .catch(this.handleError);
     }
 
     getCollectionImport() {
@@ -331,7 +254,7 @@ export class ClassifyService {
         }
 
         return this.http.delete(collectionUrl + "/imports/" + name,
-                                this.getOptions())
+                                this.headers())
             .map((res: Response) => {
                 if (res.status != 204) {
                     throw new Error('Impossible to delete import collection '

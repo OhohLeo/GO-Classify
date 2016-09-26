@@ -1,8 +1,10 @@
 import {Component, OnInit, ViewChild} from '@angular/core';
-import {ClassifyService, WebSocketStatus, CollectionStatus} from './classify.service';
+import {ClassifyService, CollectionStatus} from './classify.service';
 import {Collection} from './collections/collection';
 import {CollectionsComponent} from './collections/collections.component';
-import {ImportDirectoryComponent} from './imports/directory.component';
+import {ImportsService} from './imports/imports.service';
+import {ImportsComponent} from './imports/imports.component';
+
 
 declare var jQuery:any;
 
@@ -17,9 +19,8 @@ enum AppStatus {
 @Component({
     selector: 'classify',
     templateUrl: 'app/app.component.html',
-    providers: [ClassifyService],
-    directives: [CollectionsComponent,
-                 ImportDirectoryComponent]
+    providers: [ClassifyService, ImportsService],
+    directives: [CollectionsComponent, ImportsComponent]
 })
 
 export class AppComponent implements OnInit {
@@ -27,7 +28,6 @@ export class AppComponent implements OnInit {
 
     public appStatus = AppStatus
     public status = AppStatus.NONE
-    public websocketStatus: WebSocketStatus
 
     public title = "Classify"
 
@@ -43,16 +43,10 @@ export class AppComponent implements OnInit {
         // Initialisation de la side bar
         jQuery(".button-collapse").sideNav();
 
-        // Initialisation de la websocket
-        this.classifyService.initWebSocket()
-            .subscribe((status: WebSocketStatus) => {
-                if (this.classifyService.status == WebSocketStatus.ERROR) {
-                    this.onError("Websocket", "Impossible to connect the websocket!")
-                }
-                else if (this.classifyService.status == WebSocketStatus.OPEN) {
-                    console.log("websocket ok")
-                    this.stopModal()
-                }
+        // Inscription au flux
+        this.classifyService.getStream()
+            .subscribe((event) => {
+                console.log(event)
             })
 
         this.classifyService.subscribeCollectionChange(
