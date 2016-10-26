@@ -11,8 +11,13 @@ import (
 
 type Server struct {
 	api       *rest.Api
+	config    *ServerConfig
 	stoppable *stoppableListener.StoppableListener
 	events    chan sse.Event
+}
+
+type ServerConfig struct {
+	Url string `json:"url"`
 }
 
 type ProtocolReq struct {
@@ -22,11 +27,14 @@ type ProtocolReq struct {
 }
 
 // ServerStart launches web server
-func (c *Classify) CreateServer() (server *Server, err error) {
+func (c *Classify) CreateServer(config ServerConfig) (server *Server, err error) {
 
 	server = new(Server)
 
-	listener, err := net.Listen("tcp", ":3333")
+	// Stockage de la configuration
+	server.config = &config
+
+	listener, err := net.Listen("tcp", config.Url)
 	if err != nil {
 		return
 	}
@@ -100,7 +108,7 @@ func (s *Server) Start() {
 
 	http.Handle("/", http.FileServer(http.Dir("www")))
 
-	log.Println("Serving at localhost:3333...")
+	log.Println("Serving at " + s.config.Url)
 	http.Serve(s.stoppable, s.api.MakeHandler())
 }
 

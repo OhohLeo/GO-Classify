@@ -1,7 +1,8 @@
 package main
 
 import (
-	"github.com/codegangsta/cli"
+	"encoding/json"
+	"flag"
 	"github.com/ohohleo/classify/core"
 	"log"
 	"os"
@@ -9,19 +10,38 @@ import (
 
 func main() {
 
-	app := cli.NewApp()
-	app.Name = "Classify"
-	app.Version = "0.0.1"
-	app.Usage = "Collections' classification tool"
-	app.Action = func(c *cli.Context) {
-		classify, err := core.Start()
-		if err != nil {
-			log.Fatal(err.Error())
-		}
+	// Get application flags
+	var configPath, serverUrl string
+	flag.StringVar(&configPath, "config", "config.json", "Config file path")
+	flag.StringVar(&serverUrl, "server", "", "Server url")
+	flag.Parse()
 
-		// Start server
-		classify.Server.Start()
+	var config core.Config
+
+	// Check if config path does exists
+	file, err := os.Open(configPath)
+	if err == nil {
+
+		// Decode config file
+		decoder := json.NewDecoder(file)
+		err := decoder.Decode(&config)
+		if err != nil {
+			log.Fatal("Error in config file '" +
+				configPath + "': " + err.Error())
+		}
 	}
 
-	app.Run(os.Args)
+	// Priority for flags parameters
+	if serverUrl != "" {
+		config.Server.Url = serverUrl
+	}
+
+	// Start application
+	classify, err := core.Start(config)
+	if err != nil {
+		log.Fatal(err.Error())
+	}
+
+	// Start server
+	classify.Server.Start()
 }

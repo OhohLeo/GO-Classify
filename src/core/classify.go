@@ -6,15 +6,30 @@ import (
 )
 
 type Classify struct {
+	config      *Config
 	Server      *Server
 	imports     map[string]Import
 	collections map[string]Collection
 }
 
+type Config struct {
+
+	// Configuration du serveur
+	Server ServerConfig `json:"server"`
+
+	// Liste des dossiers accessibles à l'importation
+	Imports map[string][]string `json:"imports"`
+
+	// Liste des dossiers accessibles à l'exportation
+	Exports map[string][]string `json:"exports"`
+}
+
 // Application startup
-func Start() (*Classify, error) {
+func Start(config Config) (*Classify, error) {
 
 	c := new(Classify)
+
+	c.config = &config
 
 	// TODO: Reload all collections saved
 
@@ -22,7 +37,7 @@ func Start() (*Classify, error) {
 
 	log.Info("Start Classify")
 
-	server, err := c.CreateServer()
+	server, err := c.CreateServer(config.Server)
 	if err != nil {
 		return nil, err
 	}
