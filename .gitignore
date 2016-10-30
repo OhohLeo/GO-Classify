@@ -4,3 +4,4 @@ web/typings
 web/node_modules
 web/src/**/*.js*
 *.log
+web/dist
