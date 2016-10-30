@@ -1,21 +1,21 @@
-import {Injectable} from '@angular/core';
-import {ClassifyService} from './../classify.service';
-import {Response} from '@angular/http';
-import {Directory} from './directory.component';
+import { Injectable } from '@angular/core';
+import { ClassifyService } from './../classify.service';
+import { Response } from '@angular/http';
+import { Directory } from './directory.component';
 
 export interface ImportInterface {
-    getType() : string
-    getParams() : any
-    compare(i : ImportInterface) : boolean
+    getType(): string
+    getParams(): any
+    compare(i: ImportInterface): boolean
 }
 
 @Injectable()
 export class ImportsService {
 
-    imports : Array<ImportInterface> = [];
-    freshness : number = 300
+    imports: Array<ImportInterface> = [];
+    freshness: number = 300
 
-    constructor (private classifyService: ClassifyService) {}
+    constructor(private classifyService: ClassifyService) { }
 
     newImport(i: ImportInterface) {
 
@@ -49,11 +49,18 @@ export class ImportsService {
             })
     }
 
-    addImport(i : ImportInterface) {
+    getImportsConfig() {
+        return this.classifyService.get("imports/config")
+            .subscribe(rsp => {
+                console.log(rsp)
+            })
+    }
+
+    addImport(i: ImportInterface) {
         this.imports.push(i)
     }
 
-    hasImport(search : ImportInterface) : boolean {
+    hasImport(search: ImportInterface): boolean {
         for (let i of this.imports) {
 
             if (i.getType() === search.getType()

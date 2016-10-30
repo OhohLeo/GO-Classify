@@ -1,6 +1,6 @@
-import {Component} from '@angular/core';
-import {ClassifyService} from '../classify.service';
-import {Collection} from './collection';
+import { Component } from '@angular/core';
+import { ClassifyService } from '../classify.service';
+import { Collection } from './collection';
 
 @Component({
     selector: 'collection-create',
@@ -13,14 +13,14 @@ export class CreateCollectionComponent {
     private types: string[]
     private websites: string[]
 
-    constructor (private classifySercice: ClassifyService) {
+    constructor(private classifySercice: ClassifyService) {
 
         classifySercice.getReferences()
             .subscribe(
-                references => {
-                    this.websites = references["websites"]
-                    this.types = references["types"]
-                });
+            references => {
+                this.websites = references["websites"]
+                this.types = references["types"]
+            });
     }
 
     onSubmit() {

@@ -8,9 +8,9 @@ var helpers = require('./helpers');
 
 module.exports = {
     entry: {
-        'polyfills': './src/polyfills.ts',
-        'vendor': './src/vendor.ts',
-        'app': './src/main.ts'
+        'polyfills': './app/polyfills.ts',
+        'vendor': './app/vendor.ts',
+        'app': './app/main.ts'
     },
 
     resolve: {
@@ -18,12 +18,30 @@ module.exports = {
     },
 
     module: {
-        loaders: [
-            {
-                test: /\.ts$/,
-                loader: 'ts'
-            }
-        ]
+	loaders: [
+	    {
+		test: /\.ts$/,
+		loaders: ['awesome-typescript-loader', 'angular2-template-loader']
+	    },
+	    {
+		test: /\.html$/,
+		loader: 'html'
+	    },
+	    {
+		test: /\.(png|jpe?g|gif|svg|woff|woff2|ttf|eot|ico)$/,
+		loader: 'file?name=assets/[name].[hash].[ext]'
+	    },
+	    {
+		test: /\.css$/,
+		exclude: helpers.root('app'),
+		loader: ExtractTextPlugin.extract('style', 'css?sourceMap')
+	    },
+	    {
+		test: /\.css$/,
+		include: helpers.root('app'),
+		loader: 'raw'
+	    }
+	]
     },
 
     plugins: [
@@ -32,7 +50,7 @@ module.exports = {
         }),
 
         new HtmlWebpackPlugin({
-            template: 'src/index.html'
+            template: 'app/index.html'
         }),
 
         new ProvidePlugin({
@@ -43,63 +61,6 @@ module.exports = {
             'window.jQuery': 'jquery',
             'root.jQuery': 'jquery',
             Hammer : 'hammerjs/hammer'
-        }),
-
-        // Copy all files
-        new CopyWebpackPlugin([
-
-            // Copy all css
-            {
-                context: 'src/css',
-                from: '**/*.css',
-                to: 'css'
-            },
-
-            // Copy all fonts
-            {
-                context: 'src/fonts',
-                from: '**/*.otf',
-                to: 'fonts'
-            },
-
-            // Copy manifest.json
-            { from: 'manifest.json' },
-
-            // Copy all templates && css and img
-            {
-                context: 'src/app',
-                from: '**/*.html',
-                to: 'app',
-            },
-            {
-                context: 'src/app',
-                from: '**/*.css',
-                to: 'app',
-            },
-            {
-                context: 'src/app',
-                from: '**/*.png',
-                to: 'app',
-            },
-
-            // Copy all images
-            {
-                context: 'src/img',
-                from: '**/*.png',
-                to: 'img',
-            },
-            {
-                context: 'src/img',
-                from: '**/*.svg',
-                to: 'img',
-            },
-
-            // Copy all translations
-            {
-                context: 'src/i18n',
-                from: '**/*.json',
-                to: 'i18n',
-            }
-        ]),
+        })
     ]
 };

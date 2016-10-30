@@ -1,16 +1,10 @@
-import {Component, Input} from '@angular/core';
-import {ClassifyService, CollectionStatus} from '../classify.service';
-import {Collection} from '../collections/collection';
-import {CreateCollectionComponent} from './create.component';
-import {ModifyCollectionComponent} from './modify.component';
-import {DeleteCollectionComponent} from './delete.component';
+import { Component, Input } from '@angular/core';
+import { ClassifyService, CollectionStatus } from '../classify.service';
+import { Collection } from '../collections/collection';
 
 @Component({
     selector: 'collections',
     templateUrl: 'app/collections/collections.component.html',
-    directives: [CreateCollectionComponent,
-                 ModifyCollectionComponent,
-                 DeleteCollectionComponent]
 })
 
 export class CollectionsComponent {
@@ -20,7 +14,7 @@ export class CollectionsComponent {
     public collectionState = CollectionStatus.NONE
     public collections: Collection[] = []
 
-    constructor (private classifyService: ClassifyService) {
+    constructor(private classifyService: ClassifyService) {
 
         classifyService.getAll().subscribe(
             list => {
@@ -33,7 +27,7 @@ export class CollectionsComponent {
         this.collectionState = CollectionStatus.CREATED
     }
 
-    onChooseCollection(collection: Collection) : boolean {
+    onChooseCollection(collection: Collection): boolean {
 
         // If no collection exists : ask to create new one
         if (this.collections.length === 0) {

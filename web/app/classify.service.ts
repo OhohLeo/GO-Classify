@@ -1,7 +1,7 @@
-import {Injectable} from '@angular/core';
-import {Http, Response, RequestOptions, Headers} from '@angular/http';
-import {Observable} from 'rxjs/Rx';
-import {Collection, Imports} from './collections/collection';
+import { Injectable } from '@angular/core';
+import { Http, Response, RequestOptions, Headers } from '@angular/http';
+import { Observable } from 'rxjs/Rx';
+import { Collection, Imports } from './collections/collection';
 
 export enum WebSocketStatus {
     NONE = 0,
@@ -24,18 +24,18 @@ export enum CollectionStatus {
 @Injectable()
 export class ClassifyService {
 
-    private url = "http://localhost:3333/"
+    private url = "http://localhost:1234/"
     private references: any
     private collections: Collection[]
 
     private onCollectionChange: (collection: Collection,
-                                 status: CollectionStatus) => void
+        status: CollectionStatus) => void
 
     public status = WebSocketStatus.NONE
 
     public collectionSelected: Collection
 
-    constructor (private http: Http) {}
+    constructor(private http: Http) { }
 
     headers() {
         return new RequestOptions({
@@ -43,22 +43,22 @@ export class ClassifyService {
         })
     }
 
-    get(path; string) {
+    get(path: string) {
         return this.http.get(this.url + path,
-                             this.headers())
+            this.headers())
             .map(this.extractData)
             .catch(this.handleError);
     }
 
     post(path: string, data: any) {
         return this.http.post(this.url + path,
-                              JSON.stringify(data),
-                              this.headers())
+            JSON.stringify(data),
+            this.headers())
             .catch(this.handleError);
     }
 
     subscribeCollectionChange(cb: (collection: Collection,
-                                   status: CollectionStatus) => void) {
+        status: CollectionStatus) => void) {
         this.onCollectionChange = cb
     }
 
@@ -90,8 +90,8 @@ export class ClassifyService {
     newCollection(collection: Collection) {
 
         return this.http.post(this.url + "collections",
-                              JSON.stringify(collection),
-                              this.headers())
+            JSON.stringify(collection),
+            this.headers())
             .map((res: Response) => {
                 if (res.status != 204) {
                     throw new Error('Impossible to create new collection: ' + res.status);
@@ -110,12 +110,12 @@ export class ClassifyService {
     modifyCollection(name: string, collection: Collection) {
 
         return this.http.patch(this.url + "collections/" + name,
-                               JSON.stringify(collection),
-                               this.headers())
+            JSON.stringify(collection),
+            this.headers())
             .map((res: Response) => {
                 if (res.status != 204) {
                     throw new Error('Impossible to modify collection '
-                                    + name + ': ' + res.status);
+                        + name + ': ' + res.status);
                 }
 
                 // Replace the collection from the list
@@ -136,11 +136,11 @@ export class ClassifyService {
     deleteCollection(name: string) {
 
         return this.http.delete(this.url + "collections/" + name,
-                                this.headers())
+            this.headers())
             .map((res: Response) => {
                 if (res.status != 204) {
                     throw new Error('Impossible to delete collection '
-                                    + name + ': ' + res.status);
+                        + name + ': ' + res.status);
                 }
 
                 // Remove the collection from the list
@@ -162,8 +162,8 @@ export class ClassifyService {
 
         return new Observable(observer => {
 
-            let request =  this.http.get(this.url + "stream",
-                                         this.headers())
+            let request = this.http.get(this.url + "stream",
+                this.headers())
                 .map(this.extractData)
                 .catch(this.handleError);
 
@@ -174,7 +174,7 @@ export class ClassifyService {
     }
 
     // Get the collections list
-	getAll() {
+    getAll() {
 
         return new Observable<Collection[]>(observer => {
             if (this.collections) {
@@ -182,8 +182,8 @@ export class ClassifyService {
                 return
             }
 
-            let request =  this.http.get(this.url + "collections",
-                                         this.headers())
+            let request = this.http.get(this.url + "collections",
+                this.headers())
                 .map(this.extractData)
                 .catch(this.handleError);
 
@@ -199,7 +199,7 @@ export class ClassifyService {
 
 
     // Get the collections references
-	getReferences() {
+    getReferences() {
 
         // Setup cache on the references
         return new Observable(observer => {
@@ -254,11 +254,11 @@ export class ClassifyService {
         }
 
         return this.http.delete(collectionUrl + "/imports/" + name,
-                                this.headers())
+            this.headers())
             .map((res: Response) => {
                 if (res.status != 204) {
                     throw new Error('Impossible to delete import collection '
-                                    + name + ': ' + res.status);
+                        + name + ': ' + res.status);
                 }
             })
             .catch(this.handleError);
@@ -279,7 +279,7 @@ export class ClassifyService {
         return res.json();
     }
 
-    private handleError (error: any) {
+    private handleError(error: any) {
         let errMsg = error.message || 'Server error';
         console.error(errMsg)
         return Observable.throw(errMsg);

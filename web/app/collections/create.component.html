@@ -1,28 +1,28 @@
 <h2>Create Collection</h2>
 <form (ngSubmit)="onSubmit()" #createForm="ngForm">
-	<div>
-		<label>Name</label>
-		<input name="name" type="text" [(ngModel)]="collection.name" required>
-	</div>
-	<div>
-		<label>Type</label>
-		<select name="type"
+    <div>
+	<label>Name</label>
+	<input name="name" type="text" [(ngModel)]="collection.name" required>
+    </div>
+    <div>
+	<label>Type</label>
+	<select name="type"
                 [(ngModel)]="collection.type"
                 class="browser-default"
                 required>
             <option *ngFor="let type of types" [value]="type">{{type}}</option>
         </select>
-	</div>
-	<div>
-		<label>Websites</label>
-		<select name="website"
+    </div>
+    <div>
+	<label>Websites</label>
+	<select name="website"
                 [(ngModel)]="collection.websites"
                 class="browser-default"
                 required>
             <option *ngFor="let website of websites" [value]="website">{{website}}</option>
         </select>
-	</div>
-	<button type="submit"
+    </div>
+    <button type="submit"
             [disabled]="!createForm.form.valid"
             class="btn waves-effect waves-light">
         Create

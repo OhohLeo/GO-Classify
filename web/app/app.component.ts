@@ -1,12 +1,12 @@
-import {Component, OnInit, ViewChild} from '@angular/core';
-import {ClassifyService, CollectionStatus} from './classify.service';
-import {Collection} from './collections/collection';
-import {CollectionsComponent} from './collections/collections.component';
-import {ImportsService} from './imports/imports.service';
-import {ImportsComponent} from './imports/imports.component';
+import { Component, OnInit, ViewChild } from '@angular/core';
 
+import { ClassifyService, CollectionStatus } from './classify.service';
 
-declare var jQuery:any;
+import { Collection } from './collections/collection';;
+
+import { CollectionsComponent } from './collections/collections.component'
+
+declare var jQuery: any;
 
 enum AppStatus {
     NONE = 0,
@@ -19,8 +19,6 @@ enum AppStatus {
 @Component({
     selector: 'classify',
     templateUrl: 'app/app.component.html',
-    providers: [ClassifyService, ImportsService],
-    directives: [CollectionsComponent, ImportsComponent]
 })
 
 export class AppComponent implements OnInit {
@@ -36,7 +34,7 @@ export class AppComponent implements OnInit {
     public modalTitle: string
     public modalMsg: string
 
-    constructor (private classifyService: ClassifyService) {}
+    constructor(private classifyService: ClassifyService) { }
 
     ngOnInit() {
 
@@ -60,16 +58,15 @@ export class AppComponent implements OnInit {
                 this.title = collection.name
                 this.collection = collection
 
-                switch (status)
-                {
-                case CollectionStatus.CREATED:
-                case CollectionStatus.MODIFIED:
-                case CollectionStatus.SELECTED:
-                    this.onHome()
-                    break;
-                case CollectionStatus.DELETED:
-                    this.status = AppStatus.NONE
-                    break
+                switch (status) {
+                    case CollectionStatus.CREATED:
+                    case CollectionStatus.MODIFIED:
+                    case CollectionStatus.SELECTED:
+                        this.onHome()
+                        break;
+                    case CollectionStatus.DELETED:
+                        this.status = AppStatus.NONE
+                        break
                 }
             })
     }
@@ -118,8 +115,7 @@ export class AppComponent implements OnInit {
     // Affiche la liste des collections à sélectionner
     onChangeCollection() {
         if (this.collections
-            && this.collections.onChooseCollection(undefined))
-        {
+            && this.collections.onChooseCollection(undefined)) {
             this.status = AppStatus.NONE
         }
     }
