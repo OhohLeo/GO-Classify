@@ -5,6 +5,7 @@ import (
 )
 
 type Import interface {
+	Check(map[string][]string, []string) error
 	Start() (chan Data, error)
 	Stop()
 	GetType() string

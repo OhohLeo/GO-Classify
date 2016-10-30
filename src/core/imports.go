@@ -6,17 +6,49 @@ import (
 	"fmt"
 	"github.com/ohohleo/classify/imports"
 	"github.com/ohohleo/classify/imports/directory"
+	"os"
 )
 
+type BuildImport struct {
+	CheckConfig func(config map[string][]string) error
+	Create      func(json.RawMessage, map[string][]string, []string) (imports.Import, error)
+}
+
 // Type of imports
-var newImports = map[string]func(json.RawMessage) (imports.Import, error){
-	"directory": func(input json.RawMessage) (i imports.Import, err error) {
-		var directory directory.Directory
-		err = json.Unmarshal(input, &directory)
-		if err == nil {
+var newImports = map[string]BuildImport{
+	"directory": BuildImport{
+		CheckConfig: func(config map[string][]string) (err error) {
+
+			// For all specified directories
+			for _, directories := range config {
+
+				// All authorised path
+				for _, path := range directories {
+
+					// Check we have an existing directory
+					if _, err = os.Stat(path); os.IsNotExist(err) {
+						return
+					}
+				}
+			}
+
+			return
+		},
+		Create: func(input json.RawMessage, config map[string][]string, collections []string) (i imports.Import, err error) {
+			var directory directory.Directory
+			err = json.Unmarshal(input, &directory)
+			if err != nil {
+				return
+			}
+
+			err = directory.Check(config, collections)
+			if err != nil {
+				return
+			}
+
 			i = &directory
-		}
-		return
+			return
+		},
 	},
 }
 
@@ -47,6 +79,29 @@ func (i *Import) HasCollections(collections map[string]Collection) bool {
 	}
 
 	return true
+}
+
+// Check imports configuration
+func (c *Classify) CheckImportsConfig(configuration map[string]map[string][]string) (err error) {
+
+	// For all import configuration
+	for importType, config := range configuration {
+
+		// Check that the import type does exists
+		buildImport, ok := newImports[importType]
+		if ok == false {
+			err = errors.New("import type '" + importType + "' not handled")
+			return
+		}
+
+		// Check specified configuration
+		err = buildImport.CheckConfig(config)
+		if err != nil {
+			return
+		}
+	}
+
+	return nil
 }
 
 // Check imports ids and return the list of imports
@@ -82,14 +137,25 @@ func (c *Classify) AddImport(importType string, params json.RawMessage, collecti
 	}
 
 	// Check that the type exists
-	createImport, ok := newImports[importType]
+	buildImport, ok := newImports[importType]
 	if ok == false {
 		err = errors.New("import type '" + importType + "' not handled")
 		return
 	}
 
+	// Get import configuration
+	config, _ := c.config.Imports[importType]
+
+	// Get collections list
+	idx := 0
+	collectionNames := make([]string, len(collections))
+	for name, _ := range collections {
+		collectionNames[idx] = name
+		idx++
+	}
+
 	// Create new import
-	importEngine, err := createImport(params)
+	importEngine, err := buildImport.Create(params, config, collectionNames)
 	if err != nil {
 		return
 	}
@@ -108,6 +174,7 @@ func (c *Classify) AddImport(importType string, params json.RawMessage, collecti
 
 	// Otherwise create your import structure
 	if alreadyExists == false {
+
 		id := getRandomName()
 		i = Import{
 			Id:          id,

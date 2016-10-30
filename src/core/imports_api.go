@@ -6,6 +6,12 @@ import (
 	"net/http"
 )
 
+// List all config imports
+// GET /imports/config
+func (c *Classify) ApiGetImportsConfig(w rest.ResponseWriter, r *rest.Request) {
+	w.WriteJson(c.config.Imports)
+}
+
 // getIdsAndCollections get from Url parameters imports and the collections
 func (c *Classify) getIdsAndCollections(r *rest.Request) (imports map[string]Import, collections map[string]Collection, err error) {
 

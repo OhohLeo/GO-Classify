@@ -17,35 +17,46 @@ type Config struct {
 	// Configuration du serveur
 	Server ServerConfig `json:"server"`
 
-	// Liste des dossiers accessibles à l'importation
-	Imports map[string][]string `json:"imports"`
+	// Liste les configurations par type d'importation
+	Imports map[string]map[string][]string `json:"imports"`
 
-	// Liste des dossiers accessibles à l'exportation
-	Exports map[string][]string `json:"exports"`
+	// Liste les configurations par type d'exportation
+	Exports map[string]map[string][]string `json:"exports"`
 }
 
 // Application startup
-func Start(config Config) (*Classify, error) {
+func Start(config Config) (c *Classify, err error) {
 
-	c := new(Classify)
+	c = new(Classify)
 
-	c.config = &config
+	log.Info("Config check...")
 
-	// TODO: Reload all collections saved
+	err = c.CheckImportsConfig(config.Imports)
+	if err != nil {
+		return
+	}
+
+	log.Info("Config OK")
 
 	log.SetLevel(log.DebugLevel)
 
+	// TODO: Reload all collections saved
+
 	log.Info("Start Classify")
 
+	// Create server
 	server, err := c.CreateServer(config.Server)
 	if err != nil {
-		return nil, err
+		return
 	}
 
 	// Store server
 	c.Server = server
 
-	return c, nil
+	// Store config file
+	c.config = &config
+
+	return
 }
 
 // Application stop

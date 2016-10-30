@@ -4,6 +4,7 @@ import (
 	"github.com/ohohleo/classify/imports"
 	"io/ioutil"
 	//"log"
+	"errors"
 	"os"
 )
 
@@ -13,13 +14,43 @@ type Directory struct {
 	needToStop  bool
 }
 
-// Return a channel of files in the directory
-func (r *Directory) Start() (chan imports.Data, error) {
+func (r *Directory) Check(config map[string][]string, collections []string) error {
 
 	// Check we have an existing directory
 	if _, err := os.Stat(r.Path); os.IsNotExist(err) {
-		return nil, err
+		return err
 	}
+
+	// Check that the directory is in the global directories
+	globalPaths, ok := config["*"]
+	if ok {
+		for _, path := range globalPaths {
+			if r.Path == path {
+				return nil
+			}
+		}
+	}
+
+	// Check that the directory is authorised for all specified collections
+	for _, name := range collections {
+
+		paths, ok := config[name]
+		if ok == false {
+			continue
+		}
+
+		for _, path := range paths {
+			if r.Path == path {
+				return nil
+			}
+		}
+	}
+
+	return errors.New("invalid or unauthorised import path '" + r.Path + "'")
+}
+
+// Return a channel of files in the directory
+func (r *Directory) Start() (chan imports.Data, error) {
 
 	c := make(chan imports.Data)
 

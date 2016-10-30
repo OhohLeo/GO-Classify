@@ -1,9 +1,11 @@
 {
     "imports": {
-	"all": [
-	    "/home/lmartin/Vidéos/**/*",
-	    "/home/lmartin/Téléchargements"
-	]
+	"directory": {
+	    "*": [
+		"/home/lmartin/Vidéos",
+		"/home/lmartin/Téléchargements"
+	    ]
+	}
     },
     "server": {
 	"url": "localhost:1234"

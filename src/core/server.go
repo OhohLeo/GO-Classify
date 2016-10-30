@@ -91,6 +91,7 @@ func (c *Classify) CreateServer(config ServerConfig) (server *Server, err error)
 		rest.Delete("/imports/:import", c.ApiDeleteImport),
 		rest.Put("/imports/start", c.ApiStartImport),
 		rest.Put("/imports/stop", c.ApiStopImport),
+		rest.Get("/imports/config", c.ApiGetImportsConfig),
 	)
 	if err != nil {
 		return
