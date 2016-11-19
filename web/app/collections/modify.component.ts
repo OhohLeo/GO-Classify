@@ -1,10 +1,10 @@
-import {Component} from '@angular/core';
-import {ClassifyService} from '../classify.service';
-import {Collection} from './collection';
+import { Component } from '@angular/core';
+import { ClassifyService } from '../classify.service';
+import { Collection } from './collection';
 
 @Component({
     selector: 'collection-modify',
-    templateUrl: 'app/collections/modify.component.html',
+    templateUrl: './modify.component.html',
 })
 
 export class ModifyCollectionComponent {
@@ -13,16 +13,16 @@ export class ModifyCollectionComponent {
     public collection: Collection
     private websites: string[]
 
-    constructor (private classifySercice: ClassifyService) {
+    constructor(private classifySercice: ClassifyService) {
 
         this.collection = classifySercice.collectionSelected
         this.title = this.collection.name
 
         classifySercice.getReferences()
             .subscribe(
-                references => {
-                    this.websites = references["websites"]
-                });
+            references => {
+                this.websites = references["websites"]
+            });
     }
 
     onSubmit() {

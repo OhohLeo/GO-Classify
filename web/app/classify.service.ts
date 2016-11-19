@@ -76,14 +76,18 @@ export class ClassifyService {
         }
     }
 
-    getCollectionUrl() {
+    getCollectionName(): string {
 
         if (this.collectionSelected == undefined) {
             this.handleError("Select a collection first!")
             return undefined
         }
 
-        return this.url + "collections/" + this.collectionSelected.name
+        return this.collectionSelected.name
+    }
+
+    getCollectionUrl(): string {
+        return this.url + "collections/" + this.getCollectionName()
     }
 
     // Create a new collection

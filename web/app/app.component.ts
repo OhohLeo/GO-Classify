@@ -18,7 +18,7 @@ enum AppStatus {
 
 @Component({
     selector: 'classify',
-    templateUrl: 'app/app.component.html',
+    templateUrl: './app.component.html',
 })
 
 export class AppComponent implements OnInit {

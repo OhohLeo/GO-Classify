@@ -4,7 +4,7 @@ import { Collection } from '../collections/collection';
 
 @Component({
     selector: 'collections',
-    templateUrl: 'app/collections/collections.component.html',
+    templateUrl: './collections.component.html',
 })
 
 export class CollectionsComponent {

@@ -4,7 +4,7 @@ import { Collection } from './collection';
 
 @Component({
     selector: 'collection-create',
-    templateUrl: 'app/collections/create.component.html',
+    templateUrl: './create.component.html',
 })
 
 export class CreateCollectionComponent {

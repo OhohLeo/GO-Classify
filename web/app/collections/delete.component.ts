@@ -1,17 +1,17 @@
-import {Component} from '@angular/core';
-import {ClassifyService} from '../classify.service';
-import {Collection} from './collection';
+import { Component } from '@angular/core';
+import { ClassifyService } from '../classify.service';
+import { Collection } from './collection';
 
 @Component({
     selector: 'collection-delete',
-    templateUrl: 'app/collections/delete.component.html',
+    templateUrl: './delete.component.html',
 })
 
 export class DeleteCollectionComponent {
 
     public title: string
 
-    constructor (private classifySercice: ClassifyService) {
+    constructor(private classifySercice: ClassifyService) {
 
         // Set the name of the collection to delete
         this.title = classifySercice.collectionSelected.name

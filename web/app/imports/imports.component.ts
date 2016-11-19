@@ -8,10 +8,11 @@ import { ImportsService } from './imports.service';
 
 export class ImportsComponent implements OnInit {
 
+
+
     constructor(private importsService: ImportsService) { }
 
     ngOnInit() {
-        this.importsService.getImportsConfig()
         this.importsService.getImports()
     }
 }

@@ -1,4 +1,5 @@
 import { Injectable } from '@angular/core';
+import { Observable } from 'rxjs/Rx';
 import { ClassifyService } from './../classify.service';
 import { Response } from '@angular/http';
 import { Directory } from './directory.component';
@@ -13,7 +14,7 @@ export interface ImportInterface {
 export class ImportsService {
 
     imports: Array<ImportInterface> = [];
-    freshness: number = 300
+    configs;
 
     constructor(private classifyService: ClassifyService) { }
 
@@ -42,18 +43,25 @@ export class ImportsService {
     getImports() {
         return this.classifyService.get("imports")
             .subscribe(rsp => {
-                console.log(rsp)
                 for (let i of rsp) {
                     this.addImport(rsp[i])
                 }
             })
     }
 
-    getImportsConfig() {
-        return this.classifyService.get("imports/config")
-            .subscribe(rsp => {
-                console.log(rsp)
-            })
+    getImportsConfig(importType: string) {
+        return new Observable(observer => {
+            if (this.configs) {
+                observer.next(this.configs[importType])
+                return
+            }
+
+            return this.classifyService.get("imports/config")
+                .subscribe(rsp => {
+                    this.configs = rsp
+                    observer.next(rsp[importType])
+                })
+        })
     }
 
     addImport(i: ImportInterface) {

@@ -1,10 +1,12 @@
 <p>Directory</p>
 <form (ngSubmit)="onSubmit()" #createForm="ngForm">
     <div>
-	<input name="path"
-               type="text"
-               placeholder="Path"
-               [(ngModel)]="path" required />
+	<select name="path"
+                [(ngModel)]="path"
+                class="browser-default"
+                required>
+            <option *ngFor="let path of paths" [value]="path">{{path}}</option>
+        </select>
     </div>
     <p>
 	<input name="isRecursive"
