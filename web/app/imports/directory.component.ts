@@ -1,5 +1,5 @@
-import { Component, NgZone } from '@angular/core';
-import { ImportsService, ImportInterface } from './imports.service';
+import { Component } from '@angular/core';
+import { ImportsService, ImportInterface, Directory } from './imports.service';
 import { ClassifyService } from '../classify.service';
 
 @Component({
@@ -13,8 +13,7 @@ export class DirectoryComponent {
     public path: string
     public isRecursive: boolean
 
-    constructor(private zone: NgZone,
-        private importsService: ImportsService,
+    constructor(private importsService: ImportsService,
         private classifyService: ClassifyService) {
 
         // Get configuration import
@@ -46,32 +45,6 @@ export class DirectoryComponent {
     // Create new import collection
     onSubmit() {
         this.importsService.newImport(
-            new Directory(this.path, this.isRecursive))
-    }
-}
-
-export class Directory implements ImportInterface {
-    constructor(public path: string,
-        public isRecursive: boolean) {
-
-        if (isRecursive === undefined) {
-            this.isRecursive = false
-        }
-    }
-
-    getType(): string {
-        return "directory"
-    }
-
-    getParams(): any {
-        return {
-            "path": this.path,
-            "isRecursive": this.isRecursive ? true : false
-        }
-    }
-
-    compare(i: Directory): boolean {
-        return this.path === i.path
-            && this.isRecursive == i.isRecursive
+            new Directory("", this.path, this.isRecursive))
     }
 }

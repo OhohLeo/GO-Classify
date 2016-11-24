@@ -1,18 +1,13 @@
-import { Component, OnInit } from '@angular/core';
-import { ImportsService } from './imports.service';
+import { Component } from '@angular/core';
+import { ImportsService, ImportInterface } from './imports.service';
 
 @Component({
     selector: 'imports',
-    template: '<directory></directory>'
+    template: `<list></list>
+<directory></directory>`
 })
 
-export class ImportsComponent implements OnInit {
+export class ImportsComponent {
 
-
-
-    constructor(private importsService: ImportsService) { }
-
-    ngOnInit() {
-        this.importsService.getImports()
-    }
+    constructor(private importsService: ImportsService) {}
 }

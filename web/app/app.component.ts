@@ -49,7 +49,7 @@ export class AppComponent implements OnInit {
 
         this.classifyService.subscribeCollectionChange(
             (collection: Collection, status: CollectionStatus) => {
-                console.log("CHANGE COLLECTION", collection, status)
+
                 if (collection === undefined) {
                     this.onChangeCollection()
                     return
