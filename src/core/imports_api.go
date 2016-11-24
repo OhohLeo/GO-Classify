@@ -64,9 +64,7 @@ func (c *Classify) ApiAddImport(w rest.ResponseWriter, r *rest.Request) {
 		return
 	}
 
-	w.Header().Add("References", i.Id)
-
-	w.WriteHeader(http.StatusNoContent)
+	w.WriteJson(i)
 }
 
 // List all the imports selected by id or by collections

@@ -53,7 +53,7 @@ var newImports = map[string]BuildImport{
 }
 
 type Import struct {
-	Id          string
+	Id          string `json:"id"`
 	engine      imports.Import
 	collections map[string]Collection
 }
