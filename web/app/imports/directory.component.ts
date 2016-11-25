@@ -1,5 +1,5 @@
 import { Component } from '@angular/core';
-import { ImportsService, ImportInterface, Directory } from './imports.service';
+import { ImportsService, Directory } from './imports.service';
 import { ClassifyService } from '../classify.service';
 
 @Component({
@@ -44,7 +44,7 @@ export class DirectoryComponent {
 
     // Create new import collection
     onSubmit() {
-        this.importsService.newImport(
+        this.importsService.addImport(
             new Directory("", this.path, this.isRecursive))
     }
 }

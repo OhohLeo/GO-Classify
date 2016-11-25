@@ -45,20 +45,20 @@ export class ClassifyService {
 
     get(path: string) {
         return this.http.get(
-			this.url + path, this.headers())
+            this.url + path, this.headers())
             .map(this.extractData)
             .catch(this.handleError);
     }
 
     post(path: string, data: any) {
         return this.http.post(
-			this.url + path, JSON.stringify(data), this.headers())
+            this.url + path, JSON.stringify(data), this.headers())
             .catch(this.handleError);
     }
 
-	delete(path: string) {
+    delete(path: string) {
         return this.http.delete(
-			this.url + path, this.headers())
+            this.url + path, this.headers())
             .catch(this.handleError);
     }
 
