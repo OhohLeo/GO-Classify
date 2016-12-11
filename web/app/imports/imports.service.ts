@@ -1,9 +1,11 @@
 import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs/Rx';
-import { ClassifyService } from './../classify.service';
+import { ClassifyService, Event } from './../classify.service';
 import { Response } from '@angular/http';
 
 export class ImportBase {
+
+    public status;
 
     constructor(private type: string, public id: string) { }
 
@@ -78,10 +80,14 @@ export class ImportsService {
 
     enableCache: boolean
     imports: Map<string, ImportBase[]> = new Map<string, ImportBase[]>()
+    importsById: Map<string, ImportBase> = new Map<string, ImportBase>()
     configs: any
     updateList: any
+    importStatus: any
 
-    private convertToImportBase = {
+    private eventObservers = {}
+
+    private convertToImport = {
         "directory": function (id: string, params): ImportBase {
 
             if (typeof params != 'object') {
@@ -108,19 +114,54 @@ export class ImportsService {
 
     constructor(private classifyService: ClassifyService) { }
 
-    // Set new update import list function
+    // Set update import list function
     setUpdateList(updateList: any) {
         this.updateList = updateList;
     }
 
-    // Call update list function to refresh the import list
-    update() {
+    // Refresh the import list
+    private update() {
         if (this.updateList != undefined)
             this.updateList()
     }
 
-    hasImport(search: ImportBase): boolean {
+    // Set callback for the import status
+    setImportStatus(importStatus: any) {
+        this.importStatus = importStatus;
+    }
 
+    // Refresh import status
+    private setStatus(item: ImportBase, isStart: boolean) {
+
+        if (this.importStatus == undefined)
+            return
+
+        // Check if the import item does exist
+        if (this.hasImport(item) == false) {
+            console.error("Not existing " + item.getType())
+            return
+        }
+
+        // Check if the import status has changed
+        if (item.status === isStart) {
+            console.error("No need to change import " + item.id + " status!")
+            return
+        }
+
+        // Change import status
+        item.status = isStart
+
+        // Update the view
+        this.importStatus(item, isStart)
+    }
+
+    // Check if import does exist
+    hasImport(search: ImportBase): boolean {
+        return this.importsById.get(search.id) != undefined
+    }
+
+    // Check if import does exist
+    hasSameImport(search: ImportBase): boolean {
         let imports = this.imports.get(search.getType())
         if (imports === undefined) {
             return false
@@ -135,12 +176,25 @@ export class ImportsService {
         return false
     }
 
+    private add(i: ImportBase) {
+
+        // Store imports by id
+        this.importsById.set(i.id, i)
+
+        // Store imports by type
+        if (this.imports.get(i.getType()) === undefined) {
+            this.imports.set(i.getType(), [])
+        }
+
+        this.imports.get(i.getType()).push(i)
+    }
+
     addImport(i: ImportBase) {
 
         // Disable cache
         this.enableCache = false
 
-        if (this.hasImport(i)) {
+        if (this.hasSameImport(i)) {
             console.error("Already existing " + i.getType())
             return
         }
@@ -148,7 +202,8 @@ export class ImportsService {
         return this.classifyService.post(
             "imports", {
                 "type": i.getType(),
-                "params": i.getParams()
+                "params": i.getParams(),
+                "collections": [this.classifyService.getCollectionName()],
             })
             .subscribe(rsp => {
 
@@ -164,15 +219,31 @@ export class ImportsService {
 
                 i.setId(body.id)
 
-                // Add new import
-                if (this.imports.get(i.getType()) === undefined) {
-                    this.imports.set(i.getType(), [])
-                }
-
-                this.imports.get(i.getType()).push(i)
+                this.add(i)
 
                 this.update()
             })
+    }
+
+    private delete(i: ImportBase) {
+
+        // Delete import by id
+        this.importsById.delete(i.id)
+
+        // Delete import by type
+        let importList = this.imports.get(i.getType())
+        for (let idx in importList) {
+            let importItem = importList[idx]
+            if (importItem.id === i.getId()) {
+                importList.splice(+idx, 1)
+                break;
+            }
+        }
+
+        // Remove import types with no imports
+        if (importList.length == 0) {
+            this.imports.delete(i.getType())
+        }
     }
 
     deleteImport(i: ImportBase) {
@@ -196,21 +267,36 @@ export class ImportsService {
                 }
 
                 // Delete import
-                let importList = this.imports.get(i.getType())
-                for (let idx in importList) {
-                    let importItem = importList[idx]
-                    if (importItem.id === i.getId()) {
-                        importList.splice(+idx, 1)
-                        break;
-                    }
-                }
-
-                // Remove import types with no imports
-                if (importList.length == 0) {
-                    this.imports.delete(i.getType())
-                }
+                this.delete(i)
 
                 this.update()
+            })
+    }
+
+    startImport(i: ImportBase) {
+        return this.actionImport(true, i)
+    }
+
+    stopImport(i: ImportBase) {
+        return this.actionImport(false, i)
+    }
+
+    actionImport(isStart: boolean, i: ImportBase) {
+
+        if (this.hasImport(i) === false) {
+            console.error("No existing " + i.getType())
+            return
+        }
+
+        let action = isStart ? "start" : "stop"
+        let urlParams = "?id=" + i.getId()
+            + "&collection=" + this.classifyService.getCollectionName();
+
+        return this.classifyService.put("imports/" + action + urlParams)
+            .subscribe(rsp => {
+                if (rsp.status != 204) {
+                    throw new Error('Error when ' + action + ' import: ' + rsp.status)
+                }
             })
     }
 
@@ -227,12 +313,13 @@ export class ImportsService {
             // Ask for the current list
             this.classifyService.get("imports").subscribe(rsp => {
 
-                // Init the import list
+                // Init the import lists
                 this.imports = new Map<string, ImportBase[]>()
+                this.importsById = new Map<string, ImportBase>()
 
                 for (let importType in rsp) {
 
-                    let convert = this.convertToImportBase[importType]
+                    let convert = this.convertToImport[importType]
                     if (convert === undefined) {
                         console.error(
                             "Unknown import type '" + importType + "'")
@@ -244,11 +331,7 @@ export class ImportsService {
                         if (i === undefined)
                             continue
 
-                        if (this.imports.get(i.getType()) === undefined) {
-                            this.imports.set(i.getType(), [])
-                        }
-
-                        this.imports.get(i.getType()).push(i)
+                        this.add(i)
                     }
                 }
 
@@ -280,5 +363,27 @@ export class ImportsService {
                     observer.next(rsp[importType])
                 })
         })
+    }
+
+    subscribeEvents(name: string): Observable<Event> {
+
+        if (this.eventObservers[name] != undefined) {
+            console.error("Already existing observer", name)
+            return;
+        }
+
+        return Observable.create(observer => {
+
+            // Initialisation de l'observer
+            this.eventObservers[name] = observer
+
+            return () => delete this.eventObservers[name]
+        })
+    }
+
+    addEvent(event: Event) {
+        for (let name in this.eventObservers) {
+            this.eventObservers[name].next(event)
+        }
     }
 }

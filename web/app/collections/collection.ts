@@ -1,14 +1,15 @@
-export type Imports = { [type: string] : { [name: string]: any }; };
+export type Imports = { [type: string]: { [name: string]: any }; };
 
 export class Collection {
 
-    public imports : Imports
+    public imports: Imports
+    public websites: string[]
 
     constructor(public name: string,
-                public type: string) {}
+        public type: string) { }
 
-    // Retourne vrai lorsque l'élément est rajouté à la liste
-    addImport(type: string, name: string, params: any) : boolean {
+    // Retourne vrai lorsqueJSON.parse( l'élément est rajouté à la liste
+    addImport(type: string, name: string, params: any): boolean {
 
         if (this.imports == undefined) {
             return false
@@ -27,7 +28,7 @@ export class Collection {
     }
 
     // Retourne vrai lorsque l'élément est supprimé de la liste
-    deleteImport(type: string, name: string) : boolean {
+    deleteImport(type: string, name: string): boolean {
 
         if (this.imports == undefined
             || this.imports[type] == undefined
@@ -35,7 +36,7 @@ export class Collection {
             return false
         }
 
-        delete(this.imports[type], name)
+        delete (this.imports[type], name)
         return true
     }
 }

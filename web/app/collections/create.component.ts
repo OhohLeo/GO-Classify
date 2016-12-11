@@ -28,6 +28,8 @@ export class CreateCollectionComponent {
         // Check that a collection with same name doesn't already
         // exist
 
+        this.collection.websites = this.websites;
+
         // Create new collection
         this.classifySercice.newCollection(this.collection)
             .subscribe(status => {

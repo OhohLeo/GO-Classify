@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core';
+import { Injectable, NgZone } from '@angular/core';
 import { Http, Response, RequestOptions, Headers } from '@angular/http';
 import { Observable } from 'rxjs/Rx';
 import { Collection, Imports } from './collections/collection';
@@ -21,6 +21,14 @@ export enum CollectionStatus {
 }
 
 
+export interface Event {
+    event: string
+    id: string
+    data: any
+}
+
+declare var EventSource: any
+
 @Injectable()
 export class ClassifyService {
 
@@ -31,11 +39,14 @@ export class ClassifyService {
     private onCollectionChange: (collection: Collection,
         status: CollectionStatus) => void
 
+    private zone = new NgZone({ enableLongStackTrace: false })
+
     public status = WebSocketStatus.NONE
 
     public collectionSelected: Collection
 
-    constructor(private http: Http) { }
+    constructor(private http: Http) {
+    }
 
     headers() {
         return new RequestOptions({
@@ -53,6 +64,12 @@ export class ClassifyService {
     post(path: string, data: any) {
         return this.http.post(
             this.url + path, JSON.stringify(data), this.headers())
+            .catch(this.handleError);
+    }
+
+    put(path: string) {
+        return this.http.put(
+            this.url + path, this.headers())
             .catch(this.handleError);
     }
 
@@ -168,18 +185,23 @@ export class ClassifyService {
 
     // GET /stream
     getStream() {
+        return Observable.create(observer => {
 
-        return new Observable(observer => {
+            let eventSource = new EventSource(this.url + "stream")
 
-            let request = this.http.get(this.url + "stream",
-                this.headers())
-                .map(this.extractData)
-                .catch(this.handleError);
+            eventSource.onmessage =
+                event => observer.next(JSON.parse(
+                    event.data))
 
-            request.subscribe(events => {
-                observer.next(events)
-            })
-        });
+            eventSource.onerror =
+                error => {
+                    console.error("EVENT SOURCE", error)
+                }
+
+            return () => {
+                eventSource.close()
+            }
+        })
     }
 
     // Get the collections list

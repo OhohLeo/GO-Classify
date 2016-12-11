@@ -1,27 +1,48 @@
-import { Component, NgZone } from '@angular/core';
+import { Component, NgZone, OnInit, OnDestroy } from '@angular/core';
 import { ImportsService, ImportBase, Directory } from './imports.service';
+import { Event } from '../classify.service';
 
 @Component({
     selector: 'imports',
     templateUrl: './imports.component.html'
 })
 
-export class ImportsComponent {
+export class ImportsComponent implements OnInit, OnDestroy {
 
     public importTypes: Array<string> = [];
     public imports: Map<string, ImportBase[]>;
 
+    private events
+
     constructor(private zone: NgZone,
         private importsService: ImportsService) {
 
-        // Method call to refresh the list
+        // Method called to refresh the import list
         importsService.setUpdateList(() => {
             this.update()
         })
+
+        // Method called to refresh import status
+        importsService.setImportStatus((item: ImportBase, isStart: boolean) => {
+            this.onImportStatus(item, isStart)
+        })
+
+        this.events = importsService.subscribeEvents("status")
+            .subscribe((e: Event) => {
+                console.log("IMPORT EVENT!", e)
+            })
+
     }
 
     ngOnInit() {
         this.update();
+    }
+
+    ngOnDestroy() {
+        if (this.events != undefined) {
+            this.events.unsubscribe()
+            this.events = undefined
+        }
     }
 
     update() {
@@ -42,7 +63,11 @@ export class ImportsComponent {
     }
 
     onRefresh(item: ImportBase) {
-        console.log("REFRESH", item)
+        this.importsService.startImport(item)
+    }
+
+    onImportStatus(item: ImportBase, status: boolean) {
+        console.log(item, status)
     }
 
     onDelete(item: ImportBase) {

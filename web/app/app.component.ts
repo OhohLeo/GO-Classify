@@ -1,6 +1,7 @@
 import { Component, OnInit, ViewChild } from '@angular/core';
 
-import { ClassifyService, CollectionStatus } from './classify.service';
+import { ClassifyService, CollectionStatus, Event } from './classify.service';
+import { ImportsService } from './imports/imports.service';
 
 import { Collection } from './collections/collection';;
 
@@ -34,7 +35,8 @@ export class AppComponent implements OnInit {
     public modalTitle: string
     public modalMsg: string
 
-    constructor(private classifyService: ClassifyService) { }
+    constructor(private classifyService: ClassifyService,
+        private importsService: ImportsService) { }
 
     ngOnInit() {
 
@@ -43,8 +45,20 @@ export class AppComponent implements OnInit {
 
         // Inscription au flux
         this.classifyService.getStream()
-            .subscribe((event) => {
-                console.log(event)
+            .subscribe((e: Event) => {
+                console.log("EVENT!", e)
+
+                if (e.event === "start") {
+                    // restart application
+                    window.location.replace("/");
+                    return;
+                }
+
+                // Send data to the import service
+                if (e.event.startsWith("import")) {
+                    this.importsService.addEvent(e);
+                    return;
+                }
             })
 
         this.classifyService.subscribeCollectionChange(
