@@ -15,6 +15,7 @@ type Directory struct {
 	Path        string `json:"path"`
 	IsRecursive bool   `json:"is_recursive"`
 	exiftoolCmd string
+	isRunning   bool
 	needToStop  bool
 }
 
@@ -67,9 +68,24 @@ func (r *Directory) Start() (chan imports.Data, error) {
 
 	c := make(chan imports.Data)
 
+	// Check if the analysis is not already going on
+	if r.isRunning {
+		return c, fmt.Errorf("Imports already started!")
+	}
+
+	// Analysis is starting
+	r.isRunning = true
+
+	// Reset stop process
+	r.needToStop = false
+
 	go func() {
+
 		r.readDirectory(c, r.Path, r.IsRecursive)
 		close(c)
+
+		// Analysis is over
+		r.isRunning = false
 	}()
 
 	return c, nil

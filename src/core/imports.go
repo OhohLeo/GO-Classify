@@ -206,6 +206,9 @@ func (c *Classify) DeleteImports(ids map[string]Import, collections map[string]C
 		return
 	}
 
+	// Stop all imports
+	c.StopImports(ids, collections)
+
 	// If no ids are specified : remove all import relative to the
 	// same collection
 	if len(ids) == 0 {
@@ -257,8 +260,8 @@ func (c *Classify) GetImports(ids map[string]Import, collections map[string]Coll
 	return
 }
 
-func (c *Classify) SendImportEvent(id string, idx int) {
-	c.SendEvent(fmt.Sprintf("import/status%d", idx), fmt.Sprintf("id%d", idx), idx)
+func (c *Classify) SendImportEvent(id string, status bool) {
+	c.SendEvent("import/status", id, status)
 }
 
 // Launch the process of importation of specified imports
@@ -276,33 +279,35 @@ func (c *Classify) StartImports(ids map[string]Import, collections map[string]Co
 			continue
 		}
 
-		// channel, err := i.engine.Start()
-		// if err != nil {
-		// 	return err
-		// }
+		channel, err := i.engine.Start()
+		if err != nil {
+			return err
+		}
 
 		// Send all data imported to the collections
-		// go func() {
-		// for {
-		// 	if input, ok := <-channel; ok {
-
-		// 		// For each collections linked with the importation
-		// 		for _, collection := range i.collections {
-
-		// 			// Distribute the new value
-		// 			collection.OnInput(input)
-		// 		}
-		// 		continue
-		// 	}
-
-		// 	break
-		// }
-
 		go func() {
-			c.SendImportEvent(id, 1)
-			c.SendImportEvent(id, 2)
+
+			// Send notification to start analysis
+			c.SendImportEvent(id, true)
+
+			for {
+				if input, ok := <-channel; ok {
+
+					// For each collections linked with the importation
+					for _, collection := range i.collections {
+
+						// Distribute the new value
+						collection.OnInput(input)
+					}
+					continue
+				}
+
+				break
+			}
+
+			// Send notification to stop analysis
+			c.SendImportEvent(id, false)
 		}()
-		//}()
 	}
 
 	return nil
@@ -323,6 +328,9 @@ func (c *Classify) StopImports(ids map[string]Import, collections map[string]Col
 		}
 
 		c.imports[id].engine.Stop()
+
+		// Send notification
+		go c.SendImportEvent(id, false)
 	}
 
 	return nil

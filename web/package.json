@@ -28,12 +28,13 @@
     "@angular/platform-browser-dynamic": "~2.1.1",
     "@angular/router": "~3.1.1",
     "core-js": "^2.4.1",
-    "systemjs": "0.19.39",
-    "rxjs": "5.0.0-beta.12",
-    "zone.js": "^0.6.25",
     "jquery": "^2.2.3",
+    "material-design-icons": "^3.0.1",
     "materialize-css": "^0.97.6",
-    "ws": "^1.1.1"
+    "rxjs": "5.0.0-beta.12",
+    "systemjs": "0.19.39",
+    "ws": "^1.1.1",
+    "zone.js": "^0.6.25"
   },
   "devDependencies": {
     "@types/core-js": "^0.9.34",

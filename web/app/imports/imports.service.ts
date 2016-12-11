@@ -5,7 +5,7 @@ import { Response } from '@angular/http';
 
 export class ImportBase {
 
-    public status;
+    public isRunning: boolean
 
     constructor(private type: string, public id: string) { }
 
@@ -83,7 +83,6 @@ export class ImportsService {
     importsById: Map<string, ImportBase> = new Map<string, ImportBase>()
     configs: any
     updateList: any
-    importStatus: any
 
     private eventObservers = {}
 
@@ -123,36 +122,6 @@ export class ImportsService {
     private update() {
         if (this.updateList != undefined)
             this.updateList()
-    }
-
-    // Set callback for the import status
-    setImportStatus(importStatus: any) {
-        this.importStatus = importStatus;
-    }
-
-    // Refresh import status
-    private setStatus(item: ImportBase, isStart: boolean) {
-
-        if (this.importStatus == undefined)
-            return
-
-        // Check if the import item does exist
-        if (this.hasImport(item) == false) {
-            console.error("Not existing " + item.getType())
-            return
-        }
-
-        // Check if the import status has changed
-        if (item.status === isStart) {
-            console.error("No need to change import " + item.id + " status!")
-            return
-        }
-
-        // Change import status
-        item.status = isStart
-
-        // Update the view
-        this.importStatus(item, isStart)
     }
 
     // Check if import does exist

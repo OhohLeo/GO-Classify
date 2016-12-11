@@ -2,6 +2,8 @@ import { Component, NgZone, OnInit, OnDestroy } from '@angular/core';
 import { ImportsService, ImportBase, Directory } from './imports.service';
 import { Event } from '../classify.service';
 
+declare var jQuery: any;
+
 @Component({
     selector: 'imports',
     templateUrl: './imports.component.html'
@@ -22,14 +24,36 @@ export class ImportsComponent implements OnInit, OnDestroy {
             this.update()
         })
 
-        // Method called to refresh import status
-        importsService.setImportStatus((item: ImportBase, isStart: boolean) => {
-            this.onImportStatus(item, isStart)
-        })
-
         this.events = importsService.subscribeEvents("status")
             .subscribe((e: Event) => {
-                console.log("IMPORT EVENT!", e)
+
+				let importBase = this.importsService.importsById.get(e.id)
+				if (importBase == undefined)
+				{
+					console.error("Not referenced import with id "+ e.id)
+					return
+				}
+
+				if (e.event.endsWith("status"))
+				{
+					let item = jQuery("i#" + e.id)
+					if (item == undefined) {
+						console.error("Import with id " + e.id + " not displayed")
+						return
+					}
+
+					// Set import state
+					importBase.isRunning = e.data
+
+					// Status 'TRUE': Rotate refresh logo
+					if (e.data) {
+						item.addClass("rotation")
+					}
+					// Status 'FALSE' : Stop logo rotation
+					else {
+						item.removeClass("rotation")
+					}
+				}
             })
 
     }
@@ -51,8 +75,8 @@ export class ImportsComponent implements OnInit, OnDestroy {
 
                 let importTypes: Array<string> = [];
 
-                imports.forEach(function (undefined, importType) {
-                    importTypes.push(importType)
+                imports.forEach((undefined, importType) => {
+					importTypes.push(importType)
                 })
 
                 this.zone.run(() => {
@@ -63,11 +87,11 @@ export class ImportsComponent implements OnInit, OnDestroy {
     }
 
     onRefresh(item: ImportBase) {
-        this.importsService.startImport(item)
-    }
-
-    onImportStatus(item: ImportBase, status: boolean) {
-        console.log(item, status)
+		if (item.isRunning) {
+			this.importsService.stopImport(item)
+		} else {
+			this.importsService.startImport(item)
+		}
     }
 
     onDelete(item: ImportBase) {

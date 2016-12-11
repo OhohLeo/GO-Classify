@@ -3,7 +3,7 @@
    <table>
    <tr *ngFor="let import of imports.get(type)">
        <th>{{import.display()}}</th>
-	   <th><i class="material-icons" (click)="onRefresh(import)">refresh</i></th>
+	   <th><i id="{{import.id}}" class="material-icons refresh" (click)="onRefresh(import)">refresh</i></th>
 	   <th><i class="material-icons" (click)="onDelete(import)">delete</i></th>
    </tr>
    </table>
