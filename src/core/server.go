@@ -1,10 +1,12 @@
 package core
 
 import (
+	"encoding/json"
+	"fmt"
 	log "github.com/Sirupsen/logrus"
 	"github.com/ant0ine/go-json-rest/rest"
+	"github.com/foize/go.fifo"
 	"github.com/hydrogen18/stoppableListener"
-	"github.com/manucorporat/sse"
 	"net"
 	"net/http"
 )
@@ -13,7 +15,7 @@ type Server struct {
 	api       *rest.Api
 	config    *ServerConfig
 	stoppable *stoppableListener.StoppableListener
-	events    chan sse.Event
+	events    *fifo.Queue
 }
 
 type ServerConfig struct {
@@ -26,6 +28,12 @@ type ProtocolReq struct {
 	Data       interface{}
 }
 
+type Event struct {
+	Event string      `json:"event"`
+	Id    string      `json:"id"`
+	Data  interface{} `json:"data"`
+}
+
 // ServerStart launches web server
 func (c *Classify) CreateServer(config ServerConfig) (server *Server, err error) {
 
@@ -33,6 +41,9 @@ func (c *Classify) CreateServer(config ServerConfig) (server *Server, err error)
 
 	// Stockage de la configuration
 	server.config = &config
+
+	// Init events channel
+	server.events = fifo.NewQueue()
 
 	listener, err := net.Listen("tcp", config.Url)
 	if err != nil {
@@ -52,28 +63,19 @@ func (c *Classify) CreateServer(config ServerConfig) (server *Server, err error)
 	api.Use(&rest.CorsMiddleware{
 		RejectNonCorsRequests: false,
 		OriginValidator: func(origin string, request *rest.Request) bool {
+			fmt.Printf("REQUEST %s %+v\n", origin, request.URL)
 			return true
 		},
-		AllowedMethods:                []string{"GET", "POST", "PATCH", "DELETE"},
+		AllowedMethods:                []string{"GET", "POST", "PUT", "PATCH", "DELETE"},
 		AllowedHeaders:                []string{"Accept", "Content-Type", "Origin"},
 		AccessControlAllowCredentials: true,
 		AccessControlMaxAge:           3600,
 	})
 
-	// Init events channel
-	server.events = make(chan sse.Event, 1)
-
 	router, err := rest.MakeRouter(
 
 		// Establish connection to the web-services
-		rest.Get("/stream", func(w rest.ResponseWriter, r *rest.Request) {
-			for {
-				event, ok := <-server.events
-				if ok {
-					sse.Encode(w.(http.ResponseWriter), event)
-				}
-			}
-		}),
+		rest.Get("/stream", server.HandleStream),
 
 		// Handle references
 		rest.Get("/references", c.ApiGetReferences),
@@ -105,6 +107,10 @@ func (c *Classify) CreateServer(config ServerConfig) (server *Server, err error)
 	return
 }
 
+func (c *Classify) SendEvent(event string, id string, data interface{}) {
+	c.Server.SendEvent(event, id, data)
+}
+
 func (s *Server) Start() {
 
 	http.Handle("/", http.FileServer(http.Dir("www")))
@@ -119,11 +125,57 @@ func (s *Server) Stop() {
 	s.stoppable.Stop()
 }
 
-// OnEvent add new event on the event channel
-func (s *Server) OnEvent(event string, id string, data interface{}) {
-	s.events <- sse.Event{
-		Event: event,
+// SendEvent add new event on the event channel
+func (s *Server) SendEvent(eventType string, id string, data interface{}) {
+
+	fmt.Printf("SEND EVENT %s id:%s %+v\n", eventType, id, data)
+
+	s.events.Add(Event{
+		Event: eventType,
 		Id:    id,
 		Data:  data,
+	})
+}
+
+var idx int = 0
+
+func (s *Server) HandleStream(w rest.ResponseWriter, r *rest.Request) {
+
+	// Get flusher
+	flusher, ok := w.(http.Flusher)
+	if !ok {
+		rest.Error(w, "Streaming unsupported!", http.StatusInternalServerError)
+		return
+	}
+
+	// Prepare write response headers
+	w.Header().Set("Content-Type", "text/event-stream")
+	w.Header().Set("Cache-Control", "no-cache")
+	w.Header().Set("Connection", "keep-alive")
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+
+	// Close notification
+	notify := w.(http.CloseNotifier).CloseNotify()
+
+	for {
+		select {
+		case <-notify:
+			return
+		default:
+			event, ok := s.events.Next().(Event)
+			if ok {
+
+				eventJson, err := json.Marshal(event)
+				if err != nil {
+					rest.Error(w, "Encoding event error", http.StatusInternalServerError)
+					return
+				}
+
+				fmt.Fprintf(w.(http.ResponseWriter), "data: %s\n\n", eventJson)
+
+				// Send data immediately
+				flusher.Flush()
+			}
+		}
 	}
 }

@@ -5,6 +5,7 @@ import (
 )
 
 type Website interface {
+	GetName() string
 	Search(string) chan Data
 }
 

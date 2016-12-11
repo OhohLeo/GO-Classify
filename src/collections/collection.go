@@ -4,25 +4,14 @@ import (
 	"errors"
 	"github.com/ohohleo/classify/imports"
 	"github.com/ohohleo/classify/websites"
-	//	"log"
+	"log"
 )
 
 type Collection struct {
 	name     string
 	websites map[string]websites.Website
-	// exports map[exports.Export][]string
-
-	importsToItem map[string]*Item
-	items         chan *Item
-}
-
-func (c *Collection) initItems() chan *Item {
-
-	if c.items == nil {
-		c.items = make(chan *Item)
-	}
-
-	return c.items
+	items    map[string]*Item
+	//exports map[exports.Export][]string
 }
 
 // SetName fix the name of the collection
@@ -40,22 +29,18 @@ func (c *Collection) GetType() string {
 	panic("collection type should be specified!")
 }
 
-// AddExport add new export process
-func (c *Collection) AddExport(name string) {
-}
-
-// DeleteExport delete specified export
-func (c *Collection) DeleteExport(name string) {
+func (c *Collection) GetKeywords(item *Item) string {
+	return item.GetKeywords()
 }
 
 // AddWebsite add new website
-func (c *Collection) AddWebsite(name string, website websites.Website) {
+func (c *Collection) AddWebsite(website websites.Website) {
 
 	if c.websites == nil {
 		c.websites = make(map[string]websites.Website)
 	}
 
-	c.websites[name] = website
+	c.websites[website.GetName()] = website
 }
 
 // DeleteWebsite delete specified website
@@ -71,28 +56,51 @@ func (c *Collection) DeleteWebsite(name string) error {
 }
 
 // OnInput handle new data to classify
-func (c *Collection) OnInput(input imports.Data) (item *Item) {
-
-	// Check if a similar input doesn't exist yet
-	inputKey := input.GetUniqKey()
-
-	if _, ok := c.importsToItem[inputKey]; ok {
-		// No need to add similar input
-		return
-	}
+func (c *Collection) OnInput(input imports.Data) {
 
 	// Create a new item
-	item = new(Item)
+	item := NewItem()
 
-	// Add the input to the item
+	log.Printf("OnInput %s\n", item)
+
+	// Add the import to the item
 	item.AddImportData(input)
 
-	// Store the inputs to the collection
-	if c.importsToItem == nil {
-		c.importsToItem = make(map[string]*Item)
+	// Store the import to the collection
+	if c.items == nil {
+		c.items = make(map[string]*Item)
 	}
 
-	c.importsToItem[inputKey] = item
+	c.items[item.GetId()] = item
+
+	// Launch research through web
+	if len(c.websites) > 0 {
+		c.WebResearch(item)
+	}
 
 	return
+}
+
+// WebResearch launch resarch through specified websites
+func (c *Collection) WebResearch(item *Item) {
+
+	keywords := c.GetKeywords(item)
+
+	// For all specified websites
+	for _, website := range c.websites {
+
+		// Launch the research
+		channel := website.Search(keywords)
+
+		for {
+			data, ok := <-channel
+			if ok {
+				log.Printf("WEB DATA %+v\n", data)
+				item.AddWebsiteData(data)
+			}
+
+			break
+		}
+	}
+
 }

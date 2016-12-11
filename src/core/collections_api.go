@@ -2,20 +2,22 @@ package core
 
 import (
 	"github.com/ant0ine/go-json-rest/rest"
+	"github.com/ohohleo/classify/websites"
 	"golang.org/x/net/websocket"
 	"net/http"
 )
 
-type ApiCollectionBody struct {
-	Name string `json:"name"`
-	Type string `json:"type"`
+type ApiCollection struct {
+	Name     string   `json:"name"`
+	Type     string   `json:"type"`
+	Websites []string `json:"websites"`
 }
 
 // AddCollection adds new collection by API
 // POST /collections
 func (c *Classify) ApiPostCollection(w rest.ResponseWriter, r *rest.Request) {
 
-	var body ApiCollectionBody
+	var body ApiCollection
 	if err := r.DecodeJsonPayload(&body); err != nil {
 		rest.Error(w, err.Error(), http.StatusBadRequest)
 		return
@@ -33,18 +35,33 @@ func (c *Classify) ApiPostCollection(w rest.ResponseWriter, r *rest.Request) {
 		return
 	}
 
-	_, err := c.AddCollection(body.Name, body.Type)
+	// Check if the websites does existxsxs
+	websites := make([]websites.Website, 0)
+	for _, name := range body.Websites {
+
+		website, err := c.AddWebsite(name)
+		if err != nil {
+			rest.Error(w, err.Error(), http.StatusBadRequest)
+			return
+		}
+
+		// Add new website
+		websites = append(websites, website)
+	}
+
+	// Create new collection
+	collection, err := c.AddCollection(body.Name, body.Type)
 	if err != nil {
 		rest.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 
-	w.WriteHeader(http.StatusNoContent)
-}
+	// Add websites to the collection created
+	for _, website := range websites {
+		collection.AddWebsite(website)
+	}
 
-type ApiCollection struct {
-	Name string `json:"name"`
-	Type string `json:"type"`
+	w.WriteHeader(http.StatusNoContent)
 }
 
 // GetCollections returns the name & the specificity of each collection
@@ -93,7 +110,7 @@ func (c *Classify) ApiGetCollectionByName(w rest.ResponseWriter, r *rest.Request
 // PATCH /collection/:name
 func (c *Classify) ApiPatchCollection(w rest.ResponseWriter, r *rest.Request) {
 
-	var body ApiCollectionBody
+	var body ApiCollection
 	if err := r.DecodeJsonPayload(&body); err != nil {
 		rest.Error(w, err.Error(), http.StatusBadRequest)
 		return

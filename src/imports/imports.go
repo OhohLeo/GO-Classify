@@ -22,6 +22,7 @@ type File struct {
 	Path     string
 	FullPath string
 	FileInfo os.FileInfo
+	Infos    map[string]string
 }
 
 func (f File) GetType() string {

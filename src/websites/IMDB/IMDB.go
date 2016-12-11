@@ -1,6 +1,7 @@
 package IMDB
 
 import (
+	"fmt"
 	"github.com/ohohleo/classify/requests"
 	"github.com/ohohleo/classify/websites"
 	"strings"
@@ -60,6 +61,10 @@ type Title struct {
 	Year  int    `json:"year,omitempty"`
 }
 
+func (i *IMDB) GetName() string {
+	return "IMDB"
+}
+
 // Launch a search request through the IMDB Api
 func (i *IMDB) search(input string) chan *Results {
 
@@ -74,6 +79,7 @@ func (i *IMDB) search(input string) chan *Results {
 		// Send the request
 		channel, err := requests.Send("GET", i.Url+"search?q="+input, nil, nil, &rsp)
 		if err != nil {
+			fmt.Printf("Request error: %s\n", err.Error())
 			close(c)
 		}
 
@@ -145,6 +151,7 @@ func (i *IMDB) Search(input string) chan websites.Data {
 		results, ok := <-i.search(input)
 		if ok == false {
 			close(c)
+			return
 		}
 
 		// Search all the movies

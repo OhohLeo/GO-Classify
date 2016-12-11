@@ -1,16 +1,20 @@
 package directory
 
 import (
+	"bufio"
+	"errors"
+	"fmt"
 	"github.com/ohohleo/classify/imports"
 	"io/ioutil"
-	//"log"
-	"errors"
 	"os"
+	"os/exec"
+	"strings"
 )
 
 type Directory struct {
 	Path        string `json:"path"`
 	IsRecursive bool   `json:"is_recursive"`
+	exiftoolCmd string
 	needToStop  bool
 }
 
@@ -20,6 +24,15 @@ func (r *Directory) Check(config map[string][]string, collections []string) erro
 	if _, err := os.Stat(r.Path); os.IsNotExist(err) {
 		return err
 	}
+
+	// Check if exiftool exists
+	cmd, err := exec.LookPath("exiftool")
+	if err != nil {
+		return err
+	}
+
+	// Store exiftool command
+	r.exiftoolCmd = cmd
 
 	// Check that the directory is in the global directories
 	globalPaths, ok := config["*"]
@@ -89,12 +102,19 @@ func (r *Directory) readDirectory(c chan imports.Data, path string, isRecursive 
 			continue
 		}
 
-		// Send file info through channel
-		c <- imports.File{
+		file := imports.File{
 			Path:     path,
 			FullPath: fullpath,
 			FileInfo: f,
 		}
+
+		// Search for file header infos
+		if r.exiftoolCmd != "" {
+			r.Analyse(r.exiftoolCmd, file)
+		}
+
+		// Send file info through channel
+		c <- file
 	}
 }
 
@@ -106,4 +126,53 @@ func (r *Directory) Eq(new imports.Import) bool {
 	newDirectory, _ := new.(*Directory)
 	return r.Path == newDirectory.Path &&
 		r.IsRecursive == newDirectory.IsRecursive
+}
+
+func (r *Directory) Analyse(cmdStr string, file imports.File) {
+
+	fullpath := file.FullPath
+
+	// Prepare command
+	cmd := exec.Command(cmdStr, fullpath)
+	cmdReader, err := cmd.StdoutPipe()
+	if err != nil {
+		fmt.Printf("Error creating StdoutPipe for '%s' [%s]: %s\n",
+			cmdStr, fullpath, err.Error())
+		return
+	}
+
+	// Analyse response
+	scanner := bufio.NewScanner(cmdReader)
+	go func() {
+
+		if file.Infos == nil {
+			file.Infos = make(map[string]string)
+		}
+
+		for scanner.Scan() {
+			// Get result line by line
+			res := strings.SplitN(scanner.Text(), ":", 2)
+			key := strings.TrimSpace(res[0])
+			value := strings.TrimSpace(res[1])
+
+			// Store infos
+			file.Infos[key] = value
+		}
+	}()
+
+	// Execute the command
+	err = cmd.Start()
+	if err != nil {
+		fmt.Printf("Error starting '%s' [%s]: %s\n", cmdStr, fullpath, err.Error())
+		return
+	}
+
+	// Wait for the answer
+	err = cmd.Wait()
+	if err != nil {
+		fmt.Printf("Error waiting '%s' [%s]: %s\n", cmdStr, fullpath, err.Error())
+		return
+	}
+
+	// TODO : Check when file not recognized
 }

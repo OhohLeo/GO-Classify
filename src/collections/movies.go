@@ -5,20 +5,25 @@ import (
 )
 
 type Movie struct {
-	Status int
-	Match  websites.Movie
-	Founds []websites.Movie
+	Item
+	Match websites.Movie
 }
 
 type Movies struct {
 	Collection
-	movies            []Movie
-	searchSubtitles   bool
-	subtitleLanguages []string
-	subtitles         map[string]websites.Website
+	movies map[string]*Movie
 }
 
 // GetType returns the type of collection
 func (m *Movies) GetType() string {
 	return "movies"
+}
+
+// CreateItem create new movie item
+func (m *Movies) CreateItem() *Movie {
+	return new(Movie)
+}
+
+func (m *Movies) Validate(movie *Movie) {
+
 }

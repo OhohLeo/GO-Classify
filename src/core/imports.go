@@ -128,6 +128,7 @@ func (c *Classify) AddImport(importType string, params json.RawMessage, collecti
 	// Nécessite l'existence d'au moins une collection
 	if len(collections) < 1 {
 		err = errors.New("required at least one existing collection")
+		return
 	}
 
 	// Field required
@@ -188,6 +189,7 @@ func (c *Classify) AddImport(importType string, params json.RawMessage, collecti
 
 		// Store the new import
 		c.imports[id] = i
+
 		return
 	}
 
@@ -255,7 +257,11 @@ func (c *Classify) GetImports(ids map[string]Import, collections map[string]Coll
 	return
 }
 
-// Launch the process of importation of specified import
+func (c *Classify) SendImportEvent(id string, idx int) {
+	c.SendEvent(fmt.Sprintf("import/status%d", idx), fmt.Sprintf("id%d", idx), idx)
+}
+
+// Launch the process of importation of specified imports
 func (c *Classify) StartImports(ids map[string]Import, collections map[string]Collection) error {
 
 	// If no ids are specified : get all
@@ -264,33 +270,39 @@ func (c *Classify) StartImports(ids map[string]Import, collections map[string]Co
 	}
 
 	// Get the import channel
-	for _, i := range ids {
+	for id, i := range ids {
 
 		if i.HasCollections(collections) == false {
 			continue
 		}
 
-		channel, err := i.engine.Start()
-		if err != nil {
-			return err
-		}
+		// channel, err := i.engine.Start()
+		// if err != nil {
+		// 	return err
+		// }
 
 		// Send all data imported to the collections
+		// go func() {
+		// for {
+		// 	if input, ok := <-channel; ok {
+
+		// 		// For each collections linked with the importation
+		// 		for _, collection := range i.collections {
+
+		// 			// Distribute the new value
+		// 			collection.OnInput(input)
+		// 		}
+		// 		continue
+		// 	}
+
+		// 	break
+		// }
+
 		go func() {
-			for {
-				if input, ok := <-channel; ok {
-
-					// For each collections linked with the importation
-					for _, collection := range i.collections {
-
-						// Distribute the new value
-						collection.OnInput(input)
-					}
-					continue
-				}
-				break
-			}
+			c.SendImportEvent(id, 1)
+			c.SendImportEvent(id, 2)
 		}()
+		//}()
 	}
 
 	return nil

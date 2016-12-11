@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/ohohleo/classify/collections"
 	"github.com/ohohleo/classify/imports"
+	"github.com/ohohleo/classify/websites"
 )
 
 // Collection common methods
@@ -11,7 +12,9 @@ type Collection interface {
 	SetName(string)
 	GetName() string
 	GetType() string
-	OnInput(input imports.Data) (item *collections.Item)
+	AddWebsite(website websites.Website)
+	DeleteWebsite(name string) error
+	OnInput(input imports.Data)
 }
 
 // Type of collections
@@ -38,8 +41,7 @@ func (c *Classify) GetCollectionsByNames(names []string) (map[string]Collection,
 }
 
 // Add a new collection
-func (c *Classify) AddCollection(
-	name string, collectionType string) (collection Collection, err error) {
+func (c *Classify) AddCollection(name string, collectionType string) (collection Collection, err error) {
 
 	// Check that the name of the collection is unique
 	if _, ok := c.collections[name]; ok {

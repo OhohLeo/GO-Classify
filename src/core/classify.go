@@ -2,14 +2,18 @@ package core
 
 import (
 	log "github.com/Sirupsen/logrus"
+	"github.com/ohohleo/classify/requests"
+	"github.com/ohohleo/classify/websites"
 	"math/rand"
 )
 
 type Classify struct {
 	config      *Config
+	requests    *requests.RequestsPool
 	Server      *Server
 	imports     map[string]Import
 	collections map[string]Collection
+	websites    map[string]websites.Website
 }
 
 type Config struct {
@@ -42,7 +46,12 @@ func Start(config Config) (c *Classify, err error) {
 
 	// TODO: Reload all collections saved
 
+	// TODO: Relaoad all imports
+
 	log.Info("Start Classify")
+
+	// HTTP requests
+	c.requests = requests.New(2, true)
 
 	// Create server
 	server, err := c.CreateServer(config.Server)
@@ -55,6 +64,13 @@ func Start(config Config) (c *Classify, err error) {
 
 	// Store config file
 	c.config = &config
+
+	// Specify that the application start
+	go func() {
+		c.SendEvent("start", "", "")
+		c.SendEvent("start2x", "", "")
+		c.SendEvent("start3x", "", "")
+	}()
 
 	return
 }
