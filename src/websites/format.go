@@ -6,6 +6,7 @@ import (
 
 type Website interface {
 	GetName() string
+	SetConfig(map[string]string) bool
 	Search(string) chan Data
 }
 

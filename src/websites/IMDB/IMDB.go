@@ -8,13 +8,26 @@ import (
 )
 
 type IMDB struct {
-	Url string
+	Url    string
+	apiKey string
 }
 
 func New() *IMDB {
 	return &IMDB{
 		Url: "http://imdb.wemakesites.net/api/",
 	}
+}
+
+func (i *IMDB) SetConfig(config map[string]string) bool {
+
+	apiKey, ok := config["api_key"]
+	if ok == false {
+		return false
+	}
+
+	i.apiKey = apiKey
+
+	return true
 }
 
 type Response struct {

@@ -30,6 +30,17 @@ func (c *Classify) AddWebsite(name string) (website websites.Website, err error)
 		return
 	}
 
+	// Search for config associated to websites
+	config, ok := c.config.Websites[name]
+	if ok {
+
+		// If the configuration does exist : we set it
+		if website.SetConfig(config) == false {
+			err = errors.New("wrong configuration '" + name + "'")
+			return
+		}
+	}
+
 	c.websites[name] = website
 	return
 }

@@ -24,6 +24,8 @@ type Config struct {
 	// Liste les configurations par type d'importation
 	Imports map[string]map[string][]string `json:"imports"`
 
+	Websites map[string]map[string]string `json:"websites"`
+
 	// Liste les configurations par type d'exportation
 	Exports map[string]map[string][]string `json:"exports"`
 }
