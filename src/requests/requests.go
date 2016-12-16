@@ -7,6 +7,7 @@ import (
 	"io"
 	"log"
 	"net/http"
+	"net/url"
 	"strings"
 )
 
@@ -18,6 +19,7 @@ type Request struct {
 	Method  string
 	Url     string
 	Headers map[string]string
+	Queries map[string]string
 	Body    interface{}
 
 	Callback Callback
@@ -50,7 +52,7 @@ func New(sizeMax int, debug bool) *RequestsPool {
 	return pool
 }
 
-func Send(method string, url string, headers map[string]string, body interface{}, rsp interface{}) (chan *Response, error) {
+func Send(method string, url string, headers map[string]string, queries map[string]string, body interface{}, rsp interface{}) (chan *Response, error) {
 
 	if pool == nil {
 		return nil, fmt.Errorf(
@@ -62,11 +64,29 @@ func Send(method string, url string, headers map[string]string, body interface{}
 		Url:     url,
 		Body:    body,
 		Headers: headers,
+		Queries: queries,
 	}, rsp)
 }
 
 // Send the requests and wait for the answer
 func (p *RequestsPool) send(r *Request, rsp interface{}) (res chan *Response, err error) {
+
+	// Valid Url
+	baseUrl, err := url.Parse(r.Url)
+	if err != nil {
+		err = fmt.Errorf("invalid URL %s : %s", r.Url, err.Error())
+		return
+	}
+
+	// Add queries
+	queries := url.Values{}
+	for key, value := range r.Queries {
+		queries.Add(key, value)
+	}
+
+	// Store new Url format
+	baseUrl.RawQuery = queries.Encode()
+	r.Url = baseUrl.String()
 
 	var body io.Reader
 	if r.Body != nil {
@@ -80,8 +100,10 @@ func (p *RequestsPool) send(r *Request, rsp interface{}) (res chan *Response, er
 		body = strings.NewReader(string(b))
 	}
 
+	fmt.Printf("REQUEST %+v\n", r)
+
 	var debugStr string
-	if p.debug {
+	if p.debug && body != nil {
 		debugStr = fmt.Sprintf(" body: %s", body)
 	}
 	log.Printf("--> %s %s %s", r.Method, r.Url, debugStr)

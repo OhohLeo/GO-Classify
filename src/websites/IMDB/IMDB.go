@@ -20,12 +20,19 @@ func New() *IMDB {
 
 func (i *IMDB) SetConfig(config map[string]string) bool {
 
+	fmt.Printf("SetConfig %+v\n", config)
+
+	// Get API key
 	apiKey, ok := config["api_key"]
-	if ok == false {
-		return false
+	if ok {
+		i.apiKey = apiKey
 	}
 
-	i.apiKey = apiKey
+	// Get alternative url
+	url, ok := config["url"]
+	if ok {
+		i.Url = url
+	}
 
 	return true
 }
@@ -86,11 +93,13 @@ func (i *IMDB) search(input string) chan *Results {
 	go func() {
 		var rsp Response
 
+		queries := make(map[string]string)
+
 		// Replace space by '+'
-		input = strings.Replace(input, " ", "+", -1)
+		queries["q"] = strings.Replace(input, " ", "+", -1)
 
 		// Send the request
-		channel, err := requests.Send("GET", i.Url+"search?q="+input, nil, nil, &rsp)
+		channel, err := i.send("search", queries, &rsp)
 		if err != nil {
 			fmt.Printf("Request error: %s\n", err.Error())
 			close(c)
@@ -120,7 +129,7 @@ func (i *IMDB) getResource(id string) chan *Data {
 
 	go func() {
 		var rsp Response
-		channel, err := requests.Send("GET", i.Url+id, nil, nil, &rsp)
+		channel, err := i.send(id, nil, &rsp)
 		if err != nil {
 			close(c)
 		}
@@ -190,4 +199,19 @@ func (i *IMDB) Search(input string) chan websites.Data {
 	}()
 
 	return c
+}
+
+// Envoie d'une requête
+func (i *IMDB) send(id string, queries map[string]string, rsp interface{}) (chan *requests.Response, error) {
+
+	if i.apiKey != "" {
+
+		if queries == nil {
+			queries = make(map[string]string)
+		}
+
+		queries["api_key"] = i.apiKey
+	}
+
+	return requests.Send("GET", i.Url+id, nil, queries, nil, &rsp)
 }
