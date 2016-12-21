@@ -42,8 +42,6 @@ func Start(config Config) (c *Classify, err error) {
 		return
 	}
 
-	log.Info("Config OK")
-
 	log.SetLevel(log.DebugLevel)
 
 	// TODO: Reload all collections saved

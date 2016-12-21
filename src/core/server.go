@@ -37,6 +37,11 @@ type Event struct {
 // ServerStart launches web server
 func (c *Classify) CreateServer(config ServerConfig) (server *Server, err error) {
 
+	if config.Url == "" {
+		err = fmt.Errorf("No server configuration found!")
+		return
+	}
+
 	server = new(Server)
 
 	// Stockage de la configuration
