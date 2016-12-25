@@ -1,6 +1,6 @@
 import { Component, OnInit, ViewChild } from '@angular/core';
 
-import { ClassifyService, CollectionStatus, Event } from './classify.service';
+import { ApiService, CollectionStatus, Event } from './api.service';
 import { ImportsService } from './imports/imports.service';
 
 import { Collection } from './collections/collection';;
@@ -35,7 +35,7 @@ export class AppComponent implements OnInit {
     public modalTitle: string
     public modalMsg: string
 
-    constructor(private classifyService: ClassifyService,
+    constructor(private apiService: ApiService,
         private importsService: ImportsService) { }
 
     ngOnInit() {
@@ -44,7 +44,7 @@ export class AppComponent implements OnInit {
         jQuery(".button-collapse").sideNav();
 
         // Inscription au flux
-        this.classifyService.getStream()
+        this.apiService.getStream()
             .subscribe((e: Event) => {
                 console.log("EVENT!", e)
 
@@ -61,7 +61,7 @@ export class AppComponent implements OnInit {
                 }
             })
 
-        this.classifyService.subscribeCollectionChange(
+        this.apiService.subscribeCollectionChange(
             (collection: Collection, status: CollectionStatus) => {
 
                 if (collection === undefined) {

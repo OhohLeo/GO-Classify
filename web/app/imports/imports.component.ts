@@ -1,6 +1,6 @@
 import { Component, NgZone, OnInit, OnDestroy } from '@angular/core';
 import { ImportsService, ImportBase, Directory } from './imports.service';
-import { Event } from '../classify.service';
+import { Event } from '../api.service';
 
 declare var jQuery: any;
 
@@ -27,33 +27,31 @@ export class ImportsComponent implements OnInit, OnDestroy {
         this.events = importsService.subscribeEvents("status")
             .subscribe((e: Event) => {
 
-				let importBase = this.importsService.importsById.get(e.id)
-				if (importBase == undefined)
-				{
-					console.error("Not referenced import with id "+ e.id)
-					return
-				}
+                let importBase = this.importsService.importsById.get(e.id)
+                if (importBase == undefined) {
+                    console.error("Not referenced import with id " + e.id)
+                    return
+                }
 
-				if (e.event.endsWith("status"))
-				{
-					let item = jQuery("i#" + e.id)
-					if (item == undefined) {
-						console.error("Import with id " + e.id + " not displayed")
-						return
-					}
+                if (e.event.endsWith("status")) {
+                    let item = jQuery("i#" + e.id)
+                    if (item == undefined) {
+                        console.error("Import with id " + e.id + " not displayed")
+                        return
+                    }
 
-					// Set import state
-					importBase.isRunning = e.data
+                    // Set import state
+                    importBase.isRunning = e.data
 
-					// Status 'TRUE': Rotate refresh logo
-					if (e.data) {
-						item.addClass("rotation")
-					}
-					// Status 'FALSE' : Stop logo rotation
-					else {
-						item.removeClass("rotation")
-					}
-				}
+                    // Status 'TRUE': Rotate refresh logo
+                    if (e.data) {
+                        item.addClass("rotation")
+                    }
+                    // Status 'FALSE' : Stop logo rotation
+                    else {
+                        item.removeClass("rotation")
+                    }
+                }
             })
 
     }
@@ -76,7 +74,7 @@ export class ImportsComponent implements OnInit, OnDestroy {
                 let importTypes: Array<string> = [];
 
                 imports.forEach((undefined, importType) => {
-					importTypes.push(importType)
+                    importTypes.push(importType)
                 })
 
                 this.zone.run(() => {
@@ -87,11 +85,11 @@ export class ImportsComponent implements OnInit, OnDestroy {
     }
 
     onRefresh(item: ImportBase) {
-		if (item.isRunning) {
-			this.importsService.stopImport(item)
-		} else {
-			this.importsService.startImport(item)
-		}
+        if (item.isRunning) {
+            this.importsService.stopImport(item)
+        } else {
+            this.importsService.startImport(item)
+        }
     }
 
     onDelete(item: ImportBase) {

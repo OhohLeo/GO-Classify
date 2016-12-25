@@ -1,5 +1,5 @@
 import { Component, Input } from '@angular/core';
-import { ClassifyService, CollectionStatus } from '../classify.service';
+import { ApiService, CollectionStatus } from '../api.service';
 import { Collection } from '../collections/collection';
 
 @Component({
@@ -14,9 +14,9 @@ export class CollectionsComponent {
     public collectionState = CollectionStatus.NONE
     public collections: Collection[] = []
 
-    constructor(private classifyService: ClassifyService) {
+    constructor(private apiService: ApiService) {
 
-        classifyService.getAll().subscribe(
+        apiService.getAll().subscribe(
             list => {
                 this.collections = list
                 this.onChooseCollection(undefined)
@@ -53,7 +53,7 @@ export class CollectionsComponent {
     }
 
     onSelectCollection(collection: Collection, status: CollectionStatus) {
-        this.classifyService.setCollection(collection, status)
+        this.apiService.setCollection(collection, status)
         this.collectionState = CollectionStatus.NONE
     }
 
@@ -75,7 +75,7 @@ export class CollectionsComponent {
             return
         }
 
-        if (this.classifyService.collectionSelected == undefined) {
+        if (this.apiService.collectionSelected == undefined) {
             this.collectionState = CollectionStatus.SELECTED
             return
         }

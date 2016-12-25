@@ -1,5 +1,5 @@
 import { Component } from '@angular/core';
-import { ClassifyService } from '../classify.service';
+import { ApiService } from '../api.service';
 import { Collection } from './collection';
 
 @Component({
@@ -13,9 +13,9 @@ export class CreateCollectionComponent {
     private types: string[]
     private websites: string[]
 
-    constructor(private classifySercice: ClassifyService) {
+    constructor(private apiSercice: ApiService) {
 
-        classifySercice.getReferences()
+        apiSercice.getReferences()
             .subscribe(
             references => {
                 this.websites = references["websites"]
@@ -31,7 +31,7 @@ export class CreateCollectionComponent {
         this.collection.websites = this.websites;
 
         // Create new collection
-        this.classifySercice.newCollection(this.collection)
+        this.apiSercice.newCollection(this.collection)
             .subscribe(status => {
 
                 // Reset the collection

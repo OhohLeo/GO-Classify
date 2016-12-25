@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import { BrowserModule } from '@angular/platform-browser';
 import { FormsModule } from '@angular/forms';
 
-import { ClassifyService } from '../classify.service';
+import { ApiService } from '../api.service';
 
 import { CollectionsComponent } from './collections.component';
 import { CreateCollectionComponent } from './create.component';
@@ -12,7 +12,7 @@ import { DeleteCollectionComponent } from './delete.component';
 
 @NgModule({
     imports: [CommonModule, BrowserModule, FormsModule],
-    providers: [ClassifyService],
+    providers: [ApiService],
     declarations: [CollectionsComponent,
         CreateCollectionComponent,
         ModifyCollectionComponent,

@@ -1,6 +1,6 @@
 import { Component } from '@angular/core';
 import { ImportsService, Directory } from './imports.service';
-import { ClassifyService } from '../classify.service';
+import { ApiService } from '../api.service';
 
 @Component({
     selector: 'directory',
@@ -14,7 +14,7 @@ export class DirectoryComponent {
     public isRecursive: boolean
 
     constructor(private importsService: ImportsService,
-        private classifyService: ClassifyService) {
+        private apiService: ApiService) {
 
         // Get configuration import
         importsService.getImportsConfig("directory")
@@ -28,7 +28,7 @@ export class DirectoryComponent {
                     paths = []
 
                 // Add specific collection paths
-                let collectionName: string = classifyService.getCollectionName()
+                let collectionName: string = apiService.getCollectionName()
                 if (collectionName != undefined) {
                     let collectionPaths: string[] = config[collectionName]
                     if (collectionPaths != undefined) {

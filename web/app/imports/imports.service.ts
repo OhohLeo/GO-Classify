@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs/Rx';
-import { ClassifyService, Event } from './../classify.service';
+import { ApiService, Event } from './../api.service';
 import { Response } from '@angular/http';
 
 export class ImportBase {
@@ -111,7 +111,7 @@ export class ImportsService {
     };
 
 
-    constructor(private classifyService: ClassifyService) { }
+    constructor(private apiService: ApiService) { }
 
     // Set update import list function
     setUpdateList(updateList: any) {
@@ -168,11 +168,11 @@ export class ImportsService {
             return
         }
 
-        return this.classifyService.post(
+        return this.apiService.post(
             "imports", {
                 "type": i.getType(),
                 "params": i.getParams(),
-                "collections": [this.classifyService.getCollectionName()],
+                "collections": [this.apiService.getCollectionName()],
             })
             .subscribe(rsp => {
 
@@ -226,9 +226,9 @@ export class ImportsService {
         }
 
         let urlParams = "?id=" + i.getId()
-            + "&collection=" + this.classifyService.getCollectionName();
+            + "&collection=" + this.apiService.getCollectionName();
 
-        return this.classifyService.delete("imports" + urlParams)
+        return this.apiService.delete("imports" + urlParams)
             .subscribe(rsp => {
 
                 if (rsp.status != 204) {
@@ -259,9 +259,9 @@ export class ImportsService {
 
         let action = isStart ? "start" : "stop"
         let urlParams = "?id=" + i.getId()
-            + "&collection=" + this.classifyService.getCollectionName();
+            + "&collection=" + this.apiService.getCollectionName();
 
-        return this.classifyService.put("imports/" + action + urlParams)
+        return this.apiService.put("imports/" + action + urlParams)
             .subscribe(rsp => {
                 if (rsp.status != 204) {
                     throw new Error('Error when ' + action + ' import: ' + rsp.status)
@@ -280,7 +280,7 @@ export class ImportsService {
             }
 
             // Ask for the current list
-            this.classifyService.get("imports").subscribe(rsp => {
+            this.apiService.get("imports").subscribe(rsp => {
 
                 // Init the import lists
                 this.imports = new Map<string, ImportBase[]>()
@@ -322,7 +322,7 @@ export class ImportsService {
             }
 
             // Ask for the current import config list
-            return this.classifyService.get("imports/config")
+            return this.apiService.get("imports/config")
                 .subscribe(rsp => {
 
                     // Store as cache the current import config list
