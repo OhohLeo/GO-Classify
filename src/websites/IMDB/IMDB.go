@@ -103,11 +103,13 @@ func (i *IMDB) search(input string) chan *Results {
 		if err != nil {
 			fmt.Printf("Request error: %s\n", err.Error())
 			close(c)
+			return
 		}
 
 		_, ok := <-channel
 		if ok == false {
 			close(c)
+			return
 		}
 
 		// Return the results
@@ -132,12 +134,14 @@ func (i *IMDB) getResource(id string) chan *Data {
 		channel, err := i.send(id, nil, &rsp)
 		if err != nil {
 			close(c)
+			return
 		}
 
 		// Wait for the result
 		_, ok := <-channel
 		if ok == false {
 			close(c)
+			return
 		}
 
 		// Return the results

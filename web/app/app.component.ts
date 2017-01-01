@@ -3,9 +3,10 @@ import { Component, OnInit, ViewChild } from '@angular/core';
 import { ApiService, CollectionStatus, Event } from './api.service';
 import { ImportsService } from './imports/imports.service';
 
-import { Collection } from './collections/collection';;
+import { Collection } from './collections/collection';
 
 import { CollectionsComponent } from './collections/collections.component'
+import { ClassifyComponent } from './classify/classify.component'
 
 declare var jQuery: any;
 
@@ -18,12 +19,13 @@ enum AppStatus {
 }
 
 @Component({
-    selector: 'classify',
+    selector: 'app',
     templateUrl: './app.component.html',
 })
 
 export class AppComponent implements OnInit {
     @ViewChild(CollectionsComponent) collections: CollectionsComponent
+    @ViewChild(ClassifyComponent) classify: ClassifyComponent
 
     public appStatus = AppStatus
     public status = AppStatus.NONE
@@ -43,6 +45,10 @@ export class AppComponent implements OnInit {
         // Initialisation de la side bar
         jQuery(".button-collapse").sideNav();
 
+        // Logo d'importation
+        let importsLoop = jQuery("i#imports-loop")
+        let importsRunningNb = 0;
+
         // Inscription au flux
         this.apiService.getStream()
             .subscribe((e: Event) => {
@@ -56,8 +62,34 @@ export class AppComponent implements OnInit {
 
                 // Send data to the import service
                 if (e.event.startsWith("import")) {
+
+                    // Send notifications to the imports list
                     this.importsService.addEvent(e);
+
+                    // Display imports status
+                    if (e.event.endsWith("status")) {
+
+                        // Status 'TRUE': rotate refresh logo
+                        if (e.data) {
+                            importsLoop.addClass("rotation")
+                            importsRunningNb++
+                        }
+                        // Status 'FALSE'
+                        else if (importsRunningNb > 0) {
+                            importsRunningNb--
+                        }
+
+                        // No more imports : stop logo rotation
+                        if (importsRunningNb < 1) {
+                            importsLoop.removeClass("rotation")
+                        }
+                    }
+
                     return;
+                }
+
+                // Items reception
+                if (e.event.startsWith("item")) {
                 }
             })
 
@@ -99,6 +131,10 @@ export class AppComponent implements OnInit {
 
     onConfig() {
         this.onNewState(AppStatus.CONFIG)
+    }
+
+    onClassify() {
+        this.classify.startModal()
     }
 
     onNewState(nextStatus: AppStatus) {

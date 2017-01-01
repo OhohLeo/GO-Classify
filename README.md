@@ -23,3 +23,11 @@ DELETE /imports/:import
 ### Websites
 
 ### Exports
+
+
+                                    websites
+                                       |
+	               imports  filter by collection
+                          |            |
+collections = item [ import data - website data ]
+              -> Validate ?

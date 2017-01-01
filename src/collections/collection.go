@@ -56,7 +56,7 @@ func (c *Collection) DeleteWebsite(name string) error {
 }
 
 // OnInput handle new data to classify
-func (c *Collection) OnInput(input imports.Data) {
+func (c *Collection) OnInput(input imports.Data) *Item {
 
 	// Create a new item
 	item := NewItem()
@@ -78,7 +78,7 @@ func (c *Collection) OnInput(input imports.Data) {
 		c.WebResearch(item)
 	}
 
-	return
+	return item
 }
 
 // WebResearch launch resarch through specified websites
@@ -95,8 +95,8 @@ func (c *Collection) WebResearch(item *Item) {
 		for {
 			data, ok := <-channel
 			if ok {
-				log.Printf("WEB DATA %+v\n", data)
-				item.AddWebsiteData(data)
+				//log.Printf("WEB DATA %+v\n", data)
+				item.AddWebsiteData(website.GetName(), data)
 			}
 
 			break

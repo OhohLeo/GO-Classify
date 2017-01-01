@@ -6,6 +6,7 @@ import { HttpModule } from '@angular/http';
 
 import { CollectionsModule } from './collections/collections.module';
 import { ImportsModule } from './imports/imports.module';
+import { ClassifyModule } from './classify/classify.module';
 
 import { ApiService } from './api.service';
 
@@ -18,7 +19,8 @@ import { AppComponent } from './app.component';
         BrowserModule,
         FormsModule,
         CollectionsModule,
-        ImportsModule
+        ImportsModule,
+        ClassifyModule
     ],
     providers: [ApiService],
     declarations: [AppComponent],

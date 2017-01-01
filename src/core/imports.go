@@ -297,7 +297,10 @@ func (c *Classify) StartImports(ids map[string]Import, collections map[string]Co
 					for _, collection := range i.collections {
 
 						// Distribute the new value
-						collection.OnInput(input)
+						item := collection.OnInput(input)
+
+						// Send new items
+						c.SendEvent("item", collection.GetName(), item)
 					}
 					continue
 				}

@@ -9,16 +9,16 @@ import (
 )
 
 type Item struct {
-	id        string
-	createdAt time.Time
-	imports   map[string]imports.Data
-	websites  map[string]websites.Data
+	Id        string                     `json:"id"`
+	CreatedAt time.Time                  `json:"createAt"`
+	Imports   map[string]imports.Data    `json:"imports"`
+	Websites  map[string][]websites.Data `json:"websites"`
 }
 
 func NewItem() *Item {
 	return &Item{
-		id:        GetRandomId(),
-		createdAt: time.Now(),
+		Id:        GetRandomId(),
+		CreatedAt: time.Now(),
 	}
 }
 
@@ -27,31 +27,34 @@ func (i *Item) GetKeywords() string {
 }
 
 func (i *Item) AddImportData(data imports.Data) {
-	if i.imports == nil {
-		i.imports = make(map[string]imports.Data)
+	if i.Imports == nil {
+		i.Imports = make(map[string]imports.Data)
 	}
 
-	i.imports[data.GetUniqKey()] = data
+	i.Imports[data.GetUniqKey()] = data
 }
 
-func (i *Item) RemoveImportData(data imports.Data) error {
-	return nil
+func (i *Item) RemoveImportData(data imports.Data) {
 }
 
-func (i *Item) AddWebsiteData(data websites.Data) error {
-	return nil
+func (i *Item) AddWebsiteData(name string, data websites.Data) {
+
+	if i.Websites == nil {
+		i.Websites = make(map[string][]websites.Data)
+	}
+
+	i.Websites[name] = append(i.Websites[name], data)
 }
 
-func (i *Item) RemoveWebsiteData(data websites.Data) error {
-	return nil
+func (i *Item) RemoveWebsiteData(data websites.Data) {
 }
 
 func (i *Item) GetId() string {
-	return i.id
+	return i.Id
 }
 
 func (i *Item) String() string {
-	return fmt.Sprintf("id: %s", i.id)
+	return fmt.Sprintf("id: %s", i.Id)
 }
 
 const letterBytes = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890_"

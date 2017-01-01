@@ -2,9 +2,14 @@
     "imports": {
 	"directory": {
 	    "*": [
-		"/home/ohohleo/Vidéos",
-		"/home/ohohleo/Téléchargements"
+		"/home/lmartin/Vidéos",
+		"/home/lmartin/Téléchargements"
 	    ]
+	}
+    },
+    "websites": {
+	"IMDB": {
+	    "api_key":"9b19457b-dab3-480a-b198-0a5124801c17"
 	}
     },
     "server": {

@@ -14,7 +14,7 @@ type Collection interface {
 	GetType() string
 	AddWebsite(website websites.Website)
 	DeleteWebsite(name string) error
-	OnInput(input imports.Data)
+	OnInput(input imports.Data) *collections.Item
 }
 
 // Type of collections
