@@ -1,6 +1,7 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
 
-import { ApiService, CollectionStatus, Event } from '../api.service';
+import { ClassifyService } from './classify.service';
+import { Event, Item } from '../api.service';
 
 declare var jQuery: any;
 
@@ -11,16 +12,26 @@ declare var jQuery: any;
 
 export class ClassifyComponent implements OnInit, OnDestroy {
 
-    constructor(private apiService: ApiService) { }
+	private action: any
+    private events: any
+
+    constructor(private classifyService: ClassifyService) {
+
+        this.events = classifyService.subscribeEvents("status")
+            .subscribe((e: Event) => {
+				console.log("TEST", e)
+			})
+	}
 
     ngOnInit() {
+		this.action = jQuery('div#classify').modal()
     }
 
     startModal() {
-        jQuery('div#classify').openModal()
+        this.action.modal("open")
     }
 
     ngOnDestroy() {
-        jQuery('div#classify').closeModal()
+        this.action.modal("close")
     }
 }

@@ -2,6 +2,7 @@ import { Component, OnInit, ViewChild } from '@angular/core';
 
 import { ApiService, CollectionStatus, Event } from './api.service';
 import { ImportsService } from './imports/imports.service';
+import { ClassifyService } from './classify/classify.service';
 
 import { Collection } from './collections/collection';
 
@@ -37,8 +38,12 @@ export class AppComponent implements OnInit {
     public modalTitle: string
     public modalMsg: string
 
+	private importsLoop: any
+	private importsRunningNb: number
+
     constructor(private apiService: ApiService,
-        private importsService: ImportsService) { }
+				private importsService: ImportsService,
+				private classifyService: ClassifyService) { }
 
     ngOnInit() {
 
@@ -46,8 +51,8 @@ export class AppComponent implements OnInit {
         jQuery(".button-collapse").sideNav();
 
         // Logo d'importation
-        let importsLoop = jQuery("i#imports-loop")
-        let importsRunningNb = 0;
+        this.importsLoop = jQuery("i#imports-loop")
+        this.importsRunningNb = 0;
 
         // Inscription au flux
         this.apiService.getStream()
@@ -62,34 +67,14 @@ export class AppComponent implements OnInit {
 
                 // Send data to the import service
                 if (e.event.startsWith("import")) {
-
-                    // Send notifications to the imports list
-                    this.importsService.addEvent(e);
-
-                    // Display imports status
-                    if (e.event.endsWith("status")) {
-
-                        // Status 'TRUE': rotate refresh logo
-                        if (e.data) {
-                            importsLoop.addClass("rotation")
-                            importsRunningNb++
-                        }
-                        // Status 'FALSE'
-                        else if (importsRunningNb > 0) {
-                            importsRunningNb--
-                        }
-
-                        // No more imports : stop logo rotation
-                        if (importsRunningNb < 1) {
-                            importsLoop.removeClass("rotation")
-                        }
-                    }
-
+					this.handleImport(e);
                     return;
                 }
 
                 // Items reception
                 if (e.event.startsWith("item")) {
+					this.handleItem(e);
+                    return;
                 }
             })
 
@@ -141,6 +126,39 @@ export class AppComponent implements OnInit {
         this.resetCollectionState()
         this.status = nextStatus
     }
+
+	// Gestion des nouveaux imports
+	handleImport(e: Event)
+	{
+		// Send notifications to the imports list
+        this.importsService.addEvent(e);
+
+        // Display imports status
+        if (e.event.endsWith("status")) {
+
+            // Status 'TRUE': rotate refresh logo
+            if (e.data) {
+                this.importsLoop.addClass("rotation")
+                this.importsRunningNb++
+            }
+            // Status 'FALSE'
+            else if (this.importsRunningNb > 0) {
+                this.importsRunningNb--
+            }
+
+            // No more imports : stop logo rotation
+            if (this.importsRunningNb < 1) {
+                this.importsLoop.removeClass("rotation")
+            }
+        }
+	}
+
+	// Gestion des éléments à classer
+	handleItem(e: Event)
+	{
+		// Send notifications to the imports list
+        this.classifyService.addEvent(e);
+	}
 
     onError(title: string, msg: string) {
 

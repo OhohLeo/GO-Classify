@@ -20,6 +20,21 @@ export enum CollectionStatus {
     DELETED
 }
 
+interface ImportsData  {
+	[importType: string] : any
+}
+
+interface WebsitesData {
+	[websiteName: string] : any[]
+}
+
+export interface Item {
+	id: string
+	createdAt: string
+	collections: string[]
+	imports: ImportsData
+	websites: WebsitesData
+}
 
 export interface Event {
     event: string
