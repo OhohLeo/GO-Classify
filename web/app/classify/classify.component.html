@@ -1,5 +1,19 @@
+<detail *ngIf="detailItem" [item]="detailItem" (close)="onCloseDetail($event)"></detail>
 <div id="classify" class="modal bottom-sheet">
     <div class="modal-content">
+		<ul class="collection">
+			<li id="{{item.id}}" class="collection row" *ngFor="let item of items">
+				<div class="col s3" (click)="getDetails(item)">{{item.probability}}</div>
+				<div class="col s3" (click)="getDetails(item)">{{item.name}}</div>
+				<div class="col s3" *ngIf="item.best_match">
+					<classify-movie *ngIf="item.type === 'movies'" [movie]="item.best_match"></classify-movie>
+				</div>
+				<div class="col s3" *ngIf="item.best_match == undefined" (click)="getDetails(item)">
+					<p>Choose it!</p>
+				</div>
+				<button class="col s3" (click)="validate(item)">Valider</button>
+			</li>
+		</ul>
     </div>
     <div class="modal-footer">
     </div>

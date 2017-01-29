@@ -118,7 +118,9 @@ func (r *Directory) readDirectory(c chan imports.Data, path string, isRecursive 
 			continue
 		}
 
-		file := imports.File{
+		file := &imports.File{
+			Type:     "file",
+			Name:     f.Name(),
 			Path:     path,
 			FullPath: fullpath,
 			FileInfo: f,
@@ -144,7 +146,7 @@ func (r *Directory) Eq(new imports.Import) bool {
 		r.IsRecursive == newDirectory.IsRecursive
 }
 
-func (r *Directory) Analyse(cmdStr string, file imports.File) {
+func (r *Directory) Analyse(cmdStr string, file *imports.File) {
 
 	fullpath := file.FullPath
 

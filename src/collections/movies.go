@@ -1,17 +1,40 @@
 package collections
 
 import (
-	"github.com/ohohleo/classify/websites"
+	"time"
 )
 
+// Generic movie format
 type Movie struct {
+	Generic
+	Name        string    `json:"name"`
+	Url         string    `json:"url"`
+	Released    time.Time `json:"released"`
+	Duration    int       `json:"duration"`
+	Image       string    `json:"image"`
+	Description string    `json:"description"`
+	Directors   []string  `json:"directors"`
+	Cast        []string  `json:"cast"`
+	Genres      []string  `json:"genres"`
+}
+
+// GetType returns the type of collection
+func (m *Movie) Init() {
+	m.Type = m.GetType()
+}
+
+func (m Movie) GetType() string {
+	return "movie"
+}
+
+type MovieItem struct {
 	Item
-	Match websites.Movie
+	Match Movie
 }
 
 type Movies struct {
 	Collection
-	movies map[string]*Movie
+	movies map[string]*MovieItem
 }
 
 // GetType returns the type of collection

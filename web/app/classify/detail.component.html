@@ -1,0 +1,13 @@
+<div id="detail" class="modal">
+	<div class="modal-content">
+		<div *ngFor="let import of item.imports">
+			<detail-file  *ngIf="import.type === 'file'" [file]="import"></detail-file>
+		</div>
+		<div *ngIf="item.best_match">
+			<detail-movie *ngIf="item.type === 'movie'" [movie]="item.best_match"></detail-movie>
+		</div>
+		<div *ngFor="let website of item.websites">
+			<website-movie *ngIf="website.type === 'movie'" [movie]="website"></website-movie>
+		</div>
+	</div>
+</div>

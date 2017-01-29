@@ -78,6 +78,11 @@ func (c *Collection) OnInput(input imports.Data) *Item {
 		c.WebResearch(item)
 	}
 
+	// TODO Research for best matching
+	item.Type = item.Websites["IMDB"][0].GetType()
+	item.IsMatching = 10.2
+	item.BestMatch = item.Websites["IMDB"][0]
+
 	return item
 }
 

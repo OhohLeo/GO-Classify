@@ -300,7 +300,7 @@ func (c *Classify) StartImports(ids map[string]Import, collections map[string]Co
 						item := collection.OnInput(input)
 
 						// Send new items
-						c.SendEvent("item", collection.GetName(), item)
+						c.SendEvent("item/"+collection.GetType(), collection.GetName(), item)
 					}
 					continue
 				}

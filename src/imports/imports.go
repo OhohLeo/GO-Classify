@@ -19,20 +19,22 @@ type Data interface {
 }
 
 type File struct {
-	Path     string
-	FullPath string
-	FileInfo os.FileInfo
-	Infos    map[string]string
+	Type     string            `json:"type"`
+	Name     string            `json:"name"`
+	Path     string            `json:"path"`
+	FullPath string            `json:"fullpath"`
+	Infos    map[string]string `json:"infos"`
+	FileInfo os.FileInfo       `json:"-"`
 }
 
-func (f File) GetType() string {
+func (f *File) GetType() string {
 	return "file"
 }
 
-func (f File) String() string {
-	return f.Path
+func (f *File) String() string {
+	return f.Name
 }
 
-func (f File) GetUniqKey() string {
+func (f *File) GetUniqKey() string {
 	return f.GetType() + ":" + f.FullPath
 }

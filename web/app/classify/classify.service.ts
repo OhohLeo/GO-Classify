@@ -3,6 +3,41 @@ import { Observable } from 'rxjs/Rx';
 import { ApiService, Event, Item } from './../api.service';
 import { Response } from '@angular/http';
 
+export class ClassifyItem {
+
+	public id: string
+	public probability: number
+	public name: string
+	public image: string
+
+	private bestMatch: any
+	private imports: any[] = []
+	private websites: any[] = []
+
+    constructor(public type: string, public data: any) {
+		this.id = data.id
+		this.name = (data.name != undefined) ? data.name : "<unknown>"
+		this.bestMatch = data.bestMatch
+		this.probability = data.probability
+
+		if (data.imports != undefined) {
+			for (let key in data.imports) {
+				data.imports[key].forEach((data: any) => {
+					this.imports.push(data)
+				})
+			}
+		}
+
+		if (data.websites != undefined) {
+			for (let key in data.websites) {
+				data.websites[key].forEach((data: any) => {
+					this.websites.push(data)
+				})
+			}
+		}
+	}
+}
+
 @Injectable()
 export class ClassifyService {
 

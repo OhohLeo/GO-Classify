@@ -2,6 +2,7 @@ package IMDB
 
 import (
 	"fmt"
+	"github.com/ohohleo/classify/collections"
 	"github.com/ohohleo/classify/requests"
 	"github.com/ohohleo/classify/websites"
 	"strings"
@@ -187,7 +188,7 @@ func (i *IMDB) Search(input string) chan websites.Data {
 
 				// TODO: duration & released
 
-				c <- &websites.Movie{
+				movie := &collections.Movie{
 					Name:        title.Title,
 					Url:         title.Url,
 					Image:       data.Image,
@@ -196,6 +197,10 @@ func (i *IMDB) Search(input string) chan websites.Data {
 					Cast:        data.Cast,
 					Genres:      data.Genres,
 				}
+
+				movie.Init()
+
+				c <- movie
 			}
 		}
 

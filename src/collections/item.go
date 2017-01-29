@@ -3,16 +3,27 @@ package collections
 import (
 	"fmt"
 	"github.com/ohohleo/classify/imports"
-	"github.com/ohohleo/classify/websites"
 	"math/rand"
 	"time"
 )
 
+type Data interface {
+	GetType() string
+}
+
+type Generic struct {
+	Type       string  `json:"type"`
+	IsMatching float32 `json:"probability"`
+}
+
 type Item struct {
-	Id        string                     `json:"id"`
-	CreatedAt time.Time                  `json:"createAt"`
-	Imports   map[string]imports.Data    `json:"imports"`
-	Websites  map[string][]websites.Data `json:"websites"`
+	Generic
+	Id        string                    `json:"id"`
+	Name      string                    `json:"name"`
+	CreatedAt time.Time                 `json:"createAt"`
+	Imports   map[string][]imports.Data `json:"imports"`
+	Websites  map[string][]Data         `json:"websites"`
+	BestMatch Data                      `json:"best_match"`
 }
 
 func NewItem() *Item {
@@ -28,25 +39,29 @@ func (i *Item) GetKeywords() string {
 
 func (i *Item) AddImportData(data imports.Data) {
 	if i.Imports == nil {
-		i.Imports = make(map[string]imports.Data)
+		i.Imports = make(map[string][]imports.Data)
 	}
 
-	i.Imports[data.GetUniqKey()] = data
+	if i.Name == "" {
+		i.Name = data.String()
+	}
+
+	i.Imports[data.GetUniqKey()] = append(i.Imports[data.GetUniqKey()], data)
 }
 
 func (i *Item) RemoveImportData(data imports.Data) {
 }
 
-func (i *Item) AddWebsiteData(name string, data websites.Data) {
+func (i *Item) AddWebsiteData(name string, data Data) {
 
 	if i.Websites == nil {
-		i.Websites = make(map[string][]websites.Data)
+		i.Websites = make(map[string][]Data)
 	}
 
 	i.Websites[name] = append(i.Websites[name], data)
 }
 
-func (i *Item) RemoveWebsiteData(data websites.Data) {
+func (i *Item) RemoveWebsiteData(data Data) {
 }
 
 func (i *Item) GetId() string {

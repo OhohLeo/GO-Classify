@@ -11,8 +11,8 @@ declare var jQuery: any;
 
 export class ImportsComponent implements OnInit, OnDestroy {
 
-    public importTypes: Array<string> = [];
-    public imports: Map<string, ImportBase[]>;
+    public importTypes: Array<string> = []
+    public imports: Map<string, ImportBase[]>
 
     private events
 

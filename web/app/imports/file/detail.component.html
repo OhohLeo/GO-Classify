@@ -1,0 +1,7 @@
+<p (click)="getDetails()">{{file.name}}</p>
+<div *ngIf="needDetails">
+	<p>{{file.fullpath}}</p>
+	<div *ngFor="let key of infos">
+		<p><label>{{key}} :</label>{{file.infos.get(key)}}</p>
+	</div>
+</div>

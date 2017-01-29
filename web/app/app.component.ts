@@ -57,7 +57,8 @@ export class AppComponent implements OnInit {
         // Inscription au flux
         this.apiService.getStream()
             .subscribe((e: Event) => {
-                console.log("EVENT!", e)
+
+                //console.log("EVENT!", e)
 
                 if (e.event === "start") {
                     // restart application
@@ -119,7 +120,7 @@ export class AppComponent implements OnInit {
     }
 
     onClassify() {
-        this.classify.startModal()
+        this.classify.start()
     }
 
     onNewState(nextStatus: AppStatus) {
@@ -156,8 +157,11 @@ export class AppComponent implements OnInit {
 	// Gestion des éléments à classer
 	handleItem(e: Event)
 	{
+		// Replace type
+		e.event = e.event.substring(e.event.indexOf('/') + 1)
+
 		// Send notifications to the imports list
-        this.classifyService.addEvent(e);
+        this.classifyService.addEvent(e)
 	}
 
     onError(title: string, msg: string) {
