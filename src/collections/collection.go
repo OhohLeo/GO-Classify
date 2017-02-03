@@ -11,6 +11,8 @@ type Collection struct {
 	name     string
 	websites map[string]websites.Website
 	items    map[string]*Item
+	config   *Config
+
 	//exports map[exports.Export][]string
 }
 
@@ -30,7 +32,7 @@ func (c *Collection) GetType() string {
 }
 
 func (c *Collection) GetKeywords(item *Item) string {
-	return item.GetKeywords()
+	return "Star+Wars"
 }
 
 // AddWebsite add new website
@@ -89,6 +91,7 @@ func (c *Collection) OnInput(input imports.Data) *Item {
 // WebResearch launch resarch through specified websites
 func (c *Collection) WebResearch(item *Item) {
 
+	// Get name
 	keywords := c.GetKeywords(item)
 
 	// For all specified websites

@@ -33,10 +33,6 @@ func NewItem() *Item {
 	}
 }
 
-func (i *Item) GetKeywords() string {
-	return "Star+Wars"
-}
-
 func (i *Item) AddImportData(data imports.Data) {
 	if i.Imports == nil {
 		i.Imports = make(map[string][]imports.Data)

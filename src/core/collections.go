@@ -12,6 +12,8 @@ type Collection interface {
 	SetName(string)
 	GetName() string
 	GetType() string
+	SetConfig(string, []string) error
+	GetConfig() *collections.Config
 	AddWebsite(website websites.Website)
 	DeleteWebsite(name string) error
 	OnInput(input imports.Data) *collections.Item
