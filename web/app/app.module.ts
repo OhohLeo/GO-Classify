@@ -5,6 +5,7 @@ import { FormsModule } from '@angular/forms';
 import { HttpModule } from '@angular/http';
 
 import { CollectionsModule } from './collections/collections.module';
+import { ConfigModule } from './config/config.module';
 import { ImportsModule } from './imports/imports.module';
 import { ClassifyModule } from './classify/classify.module';
 
@@ -19,6 +20,7 @@ import { AppComponent } from './app.component';
         BrowserModule,
         FormsModule,
         CollectionsModule,
+        ConfigModule,
         ImportsModule,
         ClassifyModule
     ],

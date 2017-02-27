@@ -36,7 +36,9 @@
             <imports></imports>
         </div>
         <div *ngSwitchCase="appStatus.EXPORT">EXPORT</div>
-        <div *ngSwitchCase="appStatus.CONFIG">CONFIG</div>
+        <div *ngSwitchCase="appStatus.CONFIG">
+			<config></config>
+		</div>
         <div *ngSwitchCase="appStatus.NONE"></div>
     </div>
 </div>
