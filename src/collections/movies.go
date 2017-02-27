@@ -18,11 +18,11 @@ type Movie struct {
 	Genres      []string  `json:"genres"`
 }
 
-// GetType returns the type of collection
 func (m *Movie) Init() {
 	m.Type = m.GetType()
 }
 
+// GetType returns the type of collection
 func (m Movie) GetType() string {
 	return "movie"
 }

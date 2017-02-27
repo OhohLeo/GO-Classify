@@ -143,6 +143,54 @@ func (c *Classify) ApiDeleteCollectionByName(w rest.ResponseWriter, r *rest.Requ
 	w.WriteHeader(http.StatusNoContent)
 }
 
+// ApiGetCollectionConfig display actual configuration parameter
+// GET /collection/:name/config
+func (c *Classify) ApiGetCollectionConfig(w rest.ResponseWriter, r *rest.Request) {
+
+	// Check the collection exist
+	collection := c.getCollectionByName(w, r)
+	if collection == nil {
+		return
+	}
+
+	w.WriteJson(collection.GetConfig())
+}
+
+type ApiCollectionConfig struct {
+	Name   string   `json:"name"`
+	Action string   `json:"action"`
+	List   []string `json:"list"`
+	Value  int      `json:"value"`
+}
+
+// ApiPatchCollectionConfig mofify configuration parameters
+// PATCH /collection/:name/config
+func (c *Classify) ApiPatchCollectionConfig(w rest.ResponseWriter, r *rest.Request) {
+
+	// Check the collection exist
+	collection := c.getCollectionByName(w, r)
+	if collection == nil {
+		return
+	}
+
+	var body ApiCollectionConfig
+	if err := r.DecodeJsonPayload(&body); err != nil {
+		rest.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	if body.Action != "" {
+		if err := collection.ModifyConfig(body.Name, body.Action, body.List); err != nil {
+			rest.Error(w, err.Error(), http.StatusBadRequest)
+		}
+	} else if err := collection.ModifyConfigValue(body.Name, body.Value); err != nil {
+		rest.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	w.WriteHeader(http.StatusNoContent)
+}
+
 // StartCollection launch the analysis of the collection
 // PUT /collection/:name/start
 func (c *Classify) ApiStartCollection(w rest.ResponseWriter, r *rest.Request) {

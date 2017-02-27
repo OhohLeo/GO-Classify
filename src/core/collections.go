@@ -12,7 +12,9 @@ type Collection interface {
 	SetName(string)
 	GetName() string
 	GetType() string
-	SetConfig(string, []string) error
+	SetConfig()
+	ModifyConfig(string, string, []string) error
+	ModifyConfigValue(string, int) error
 	GetConfig() *collections.Config
 	AddWebsite(website websites.Website)
 	DeleteWebsite(name string) error
@@ -70,6 +72,9 @@ func (c *Classify) AddCollection(name string, collectionType string) (collection
 
 	// Set the collection name
 	new.SetName(name)
+
+	// Associate configuration
+	new.SetConfig()
 
 	return new, nil
 }

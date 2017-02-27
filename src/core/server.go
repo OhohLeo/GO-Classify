@@ -92,6 +92,9 @@ func (c *Classify) CreateServer(config ServerConfig) (server *Server, err error)
 		rest.Patch("/collections/:name", c.ApiPatchCollection),
 		rest.Delete("/collections/:name", c.ApiDeleteCollectionByName),
 
+		rest.Get("/collections/:name/config", c.ApiGetCollectionConfig),
+		rest.Patch("/collections/:name/config", c.ApiPatchCollectionConfig),
+
 		// Handle imports
 		rest.Post("/imports", c.ApiAddImport),
 		rest.Get("/imports", c.ApiGetImports),

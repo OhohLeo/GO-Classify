@@ -31,6 +31,11 @@ func (c *Collection) GetType() string {
 	panic("collection type should be specified!")
 }
 
+// SetName fix the name of the collection
+func (c *Collection) SetConfig() {
+	c.config = new(Config)
+}
+
 func (c *Collection) GetKeywords(item *Item) string {
 	return "Star+Wars"
 }
