@@ -14,8 +14,10 @@ type Collection interface {
 	GetType() string
 	SetConfig()
 	ModifyConfig(string, string, []string) error
-	ModifyConfigValue(string, int) error
+	ModifyConfigValue(string, string) error
 	GetConfig() *collections.Config
+	GetBuffer() []*collections.Item
+	CleanBuffer()
 	AddWebsite(website websites.Website)
 	DeleteWebsite(name string) error
 	OnInput(input imports.Data) *collections.Item

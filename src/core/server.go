@@ -85,16 +85,6 @@ func (c *Classify) CreateServer(config ServerConfig) (server *Server, err error)
 		// Handle references
 		rest.Get("/references", c.ApiGetReferences),
 
-		// Handle collections
-		rest.Post("/collections", c.ApiPostCollection),
-		rest.Get("/collections", c.ApiGetCollections),
-		rest.Get("/collections/:name", c.ApiGetCollectionByName),
-		rest.Patch("/collections/:name", c.ApiPatchCollection),
-		rest.Delete("/collections/:name", c.ApiDeleteCollectionByName),
-
-		rest.Get("/collections/:name/config", c.ApiGetCollectionConfig),
-		rest.Patch("/collections/:name/config", c.ApiPatchCollectionConfig),
-
 		// Handle imports
 		rest.Post("/imports", c.ApiAddImport),
 		rest.Get("/imports", c.ApiGetImports),
@@ -102,7 +92,35 @@ func (c *Classify) CreateServer(config ServerConfig) (server *Server, err error)
 		rest.Put("/imports/start", c.ApiStartImport),
 		rest.Put("/imports/stop", c.ApiStopImport),
 		rest.Get("/imports/config", c.ApiGetImportsConfig),
+
+		// Handle collections
+		rest.Post("/collections", c.ApiPostCollection),
+		rest.Get("/collections", c.ApiGetCollections),
+		rest.Get("/collections/:name", c.ApiGetCollectionByName),
+		rest.Patch("/collections/:name", c.ApiPatchCollection),
+		rest.Delete("/collections/:name", c.ApiDeleteCollectionByName),
+
+		// Handle collection configuration
+		rest.Get("/collections/:name/config", c.ApiGetCollectionConfig),
+		rest.Patch("/collections/:name/config", c.ApiPatchCollectionConfig),
+
+		// Handle collection buffer
+		rest.Get("/collections/:name/buffers", c.ApiGetCollectionBuffers),
+		rest.Delete("/collections/:name/buffers", c.ApiDeleteCollectionBuffers),
+
+		rest.Get("/collections/:name/buffers/:id", c.ApiGetCollectionSingleBuffer),
+		rest.Patch("/collections/:name/buffers/:id", c.ApiPatchCollectionSingleBuffer),
+		rest.Delete("/collections/:name/buffers/:id", c.ApiDeleteCollectionSingleBuffer),
+
+		// Handle collection items
+		rest.Get("/collections/:name/items", c.ApiGetCollectionItems),
+		rest.Delete("/collections/:name/items", c.ApiDeleteCollectionItems),
+
+		rest.Get("/collections/:name/items/:id", c.ApiGetCollectionSingleItem),
+		rest.Patch("/collections/:name/items/:id", c.ApiPatchCollectionSingleItem),
+		rest.Delete("/collections/:name/items/:id", c.ApiDeleteCollectionSingleItem),
 	)
+
 	if err != nil {
 		return
 	}

@@ -160,7 +160,7 @@ type ApiCollectionConfig struct {
 	Name   string   `json:"name"`
 	Action string   `json:"action"`
 	List   []string `json:"list"`
-	Value  int      `json:"value"`
+	Value  string   `json:"value"`
 }
 
 // ApiPatchCollectionConfig mofify configuration parameters
@@ -182,9 +182,126 @@ func (c *Classify) ApiPatchCollectionConfig(w rest.ResponseWriter, r *rest.Reque
 	if body.Action != "" {
 		if err := collection.ModifyConfig(body.Name, body.Action, body.List); err != nil {
 			rest.Error(w, err.Error(), http.StatusBadRequest)
+			return
 		}
 	} else if err := collection.ModifyConfigValue(body.Name, body.Value); err != nil {
 		rest.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	w.WriteHeader(http.StatusNoContent)
+}
+
+// GET /collection/:name/buffers
+func (c *Classify) ApiGetCollectionBuffers(w rest.ResponseWriter, r *rest.Request) {
+
+	// Check the collection exist
+	collection := c.getCollectionByName(w, r)
+	if collection == nil {
+		return
+	}
+
+	w.WriteJson(collection.GetBuffer())
+}
+
+// DELETE /collection/:name/buffers
+func (c *Classify) ApiDeleteCollectionBuffers(w rest.ResponseWriter, r *rest.Request) {
+
+	// Check the collection exist
+	collection := c.getCollectionByName(w, r)
+	if collection == nil {
+		return
+	}
+
+	collection.CleanBuffer()
+
+	w.WriteHeader(http.StatusNoContent)
+}
+
+// GET /collection/:name/buffers/:id
+func (c *Classify) ApiGetCollectionSingleBuffer(w rest.ResponseWriter, r *rest.Request) {
+
+	// Check the collection exist
+	collection := c.getCollectionByName(w, r)
+	if collection == nil {
+		return
+	}
+}
+
+// PATCH /collection/:name/buffers/:id
+func (c *Classify) ApiPatchCollectionSingleBuffer(w rest.ResponseWriter, r *rest.Request) {
+
+	// Check the collection exist
+	collection := c.getCollectionByName(w, r)
+	if collection == nil {
+		return
+	}
+
+	w.WriteHeader(http.StatusNoContent)
+}
+
+// DELETE /collection/:name/buffers/:id
+func (c *Classify) ApiDeleteCollectionSingleBuffer(w rest.ResponseWriter, r *rest.Request) {
+
+	// Check the collection exist
+	collection := c.getCollectionByName(w, r)
+	if collection == nil {
+		return
+	}
+
+	w.WriteHeader(http.StatusNoContent)
+}
+
+// GET /collection/:name/items
+func (c *Classify) ApiGetCollectionItems(w rest.ResponseWriter, r *rest.Request) {
+
+	// Check the collection exist
+	collection := c.getCollectionByName(w, r)
+	if collection == nil {
+		return
+	}
+}
+
+// DELETE /collection/:name/items
+func (c *Classify) ApiDeleteCollectionItems(w rest.ResponseWriter, r *rest.Request) {
+
+	// Check the collection exist
+	collection := c.getCollectionByName(w, r)
+	if collection == nil {
+		return
+	}
+
+	w.WriteHeader(http.StatusNoContent)
+}
+
+// GET /collection/:name/items/:id
+func (c *Classify) ApiGetCollectionSingleItem(w rest.ResponseWriter, r *rest.Request) {
+
+	// Check the collection exist
+	collection := c.getCollectionByName(w, r)
+	if collection == nil {
+		return
+	}
+}
+
+// PATCH /collection/:name/items/:id
+func (c *Classify) ApiPatchCollectionSingleItem(w rest.ResponseWriter, r *rest.Request) {
+
+	// Check the collection exist
+	collection := c.getCollectionByName(w, r)
+	if collection == nil {
+		return
+	}
+
+	w.WriteHeader(http.StatusNoContent)
+}
+
+// DELETE /collection/:name/items/:id
+func (c *Classify) ApiDeleteCollectionSingleItem(w rest.ResponseWriter, r *rest.Request) {
+
+	// Check the collection exist
+	collection := c.getCollectionByName(w, r)
+	if collection == nil {
 		return
 	}
 
