@@ -73,8 +73,6 @@ export class Directory extends ImportBase {
             && this.isRecursive == i.isRecursive
     }
 }
-
-
 @Injectable()
 export class ImportsService {
 

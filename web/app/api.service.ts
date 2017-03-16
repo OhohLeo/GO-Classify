@@ -20,20 +20,20 @@ export enum CollectionStatus {
     DELETED
 }
 
-interface ImportsData  {
-	[importType: string] : any
+interface ImportsData {
+    [importType: string]: any
 }
 
 interface WebsitesData {
-	[websiteName: string] : any[]
+    [websiteName: string]: any[]
 }
 
 export interface Item {
-	id: string
-	createdAt: string
-	collections: string[]
-	imports: ImportsData
-	websites: WebsitesData
+    id: string
+    createdAt: string
+    collections: string[]
+    imports: ImportsData
+    websites: WebsitesData
 }
 
 export interface Event {
@@ -85,6 +85,12 @@ export class ApiService {
     put(path: string) {
         return this.http.put(
             this.url + path, this.headers())
+            .catch(this.handleError);
+    }
+
+    patch(path: string, value: any) {
+        return this.http.patch(
+            this.url + path, JSON.stringify(value), this.headers())
             .catch(this.handleError);
     }
 

@@ -4,6 +4,7 @@ import { BrowserModule } from '@angular/platform-browser'
 import { FormsModule } from '@angular/forms'
 
 import { ConfigComponent } from './config.component'
+import { ConfigService } from './config.service'
 import { StringListComponent } from './stringlist.component'
 
 @NgModule({
@@ -13,6 +14,7 @@ import { StringListComponent } from './stringlist.component'
         FormsModule
     ],
     declarations: [ConfigComponent, StringListComponent],
+    providers: [ConfigService],
     exports: [ConfigComponent, StringListComponent]
 })
 

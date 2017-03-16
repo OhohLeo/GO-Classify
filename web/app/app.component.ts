@@ -38,12 +38,12 @@ export class AppComponent implements OnInit {
     public modalTitle: string
     public modalMsg: string
 
-	private importsLoop: any
-	private importsRunningNb: number
+    private importsLoop: any
+    private importsRunningNb: number
 
     constructor(private apiService: ApiService,
-				private importsService: ImportsService,
-				private classifyService: ClassifyService) { }
+        private importsService: ImportsService,
+        private classifyService: ClassifyService) { }
 
     ngOnInit() {
 
@@ -68,13 +68,13 @@ export class AppComponent implements OnInit {
 
                 // Send data to the import service
                 if (e.event.startsWith("import")) {
-					this.handleImport(e);
+                    this.handleImport(e);
                     return;
                 }
 
                 // Items reception
                 if (e.event.startsWith("item")) {
-					this.handleItem(e);
+                    this.handleItem(e);
                     return;
                 }
             })
@@ -128,10 +128,9 @@ export class AppComponent implements OnInit {
         this.status = nextStatus
     }
 
-	// Gestion des nouveaux imports
-	handleImport(e: Event)
-	{
-		// Send notifications to the imports list
+    // Gestion des nouveaux imports
+    handleImport(e: Event) {
+        // Send notifications to the imports list
         this.importsService.addEvent(e);
 
         // Display imports status
@@ -152,17 +151,16 @@ export class AppComponent implements OnInit {
                 this.importsLoop.removeClass("rotation")
             }
         }
-	}
+    }
 
-	// Gestion des éléments à classer
-	handleItem(e: Event)
-	{
-		// Replace type
-		e.event = e.event.substring(e.event.indexOf('/') + 1)
+    // Gestion des éléments à classer
+    handleItem(e: Event) {
+        // Replace type
+        e.event = e.event.substring(e.event.indexOf('/') + 1)
 
-		// Send notifications to the imports list
+        // Send notifications to the imports list
         this.classifyService.addEvent(e)
-	}
+    }
 
     onError(title: string, msg: string) {
 

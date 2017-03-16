@@ -5,8 +5,7 @@ export class Collection {
     public imports: Imports
     public websites: string[]
 
-    constructor(public name: string,
-        public type: string) { }
+    constructor(public name: string, public type: string) { }
 
     // Retourne vrai lorsqueJSON.parse( l'élément est rajouté à la liste
     addImport(type: string, name: string, params: any): boolean {
