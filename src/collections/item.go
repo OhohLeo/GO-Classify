@@ -7,17 +7,26 @@ import (
 	"time"
 )
 
+const (
+	CREATED = iota
+	BUFFER_WAITING
+	BUFFER_SENDING
+	BUFFER_SENT
+	BUFFER_OUT
+)
+
 type Data interface {
 	GetType() string
 }
 
-type Generic struct {
+type ItemGeneric struct {
+	Status     int
 	Type       string  `json:"type"`
 	IsMatching float32 `json:"probability"`
 }
 
 type Item struct {
-	Generic
+	ItemGeneric
 	Id        string                    `json:"id"`
 	Name      string                    `json:"name"`
 	CreatedAt time.Time                 `json:"createAt"`
@@ -27,10 +36,15 @@ type Item struct {
 }
 
 func NewItem() *Item {
-	return &Item{
+	item := &Item{
 		Id:        GetRandomId(),
 		CreatedAt: time.Now(),
 	}
+
+	// Status init
+	item.Status = CREATED
+
+	return item
 }
 
 func (i *Item) AddImportData(data imports.Data) {

@@ -10,13 +10,13 @@ import (
 type Collection struct {
 	name     string
 	websites map[string]websites.Website
-	items    map[string]*Item
+	buffer   *Buffer
+	items    *Items
 	config   *Config
-
 	//exports map[exports.Export][]string
 }
 
-// SetName fix the name of the collection
+// SetName set the name of the collection
 func (c *Collection) SetName(name string) {
 	c.name = name
 }
@@ -62,37 +62,6 @@ func (c *Collection) DeleteWebsite(name string) error {
 	return errors.New("no website name '" + name + "' found")
 }
 
-// OnInput handle new data to classify
-func (c *Collection) OnInput(input imports.Data) *Item {
-
-	// Create a new item
-	item := NewItem()
-
-	log.Printf("OnInput %s\n", item)
-
-	// Add the import to the item
-	item.AddImportData(input)
-
-	// Store the import to the collection
-	if c.items == nil {
-		c.items = make(map[string]*Item)
-	}
-
-	c.items[item.GetId()] = item
-
-	// Launch research through web
-	if len(c.websites) > 0 {
-		c.WebResearch(item)
-	}
-
-	// TODO Research for best matching
-	item.Type = item.Websites["IMDB"][0].GetType()
-	item.IsMatching = 10.2
-	item.BestMatch = item.Websites["IMDB"][0]
-
-	return item
-}
-
 // WebResearch launch resarch through specified websites
 func (c *Collection) WebResearch(item *Item) {
 
@@ -115,5 +84,43 @@ func (c *Collection) WebResearch(item *Item) {
 			break
 		}
 	}
+}
 
+// OnInput handle new data to classify
+func (c *Collection) OnInput(input imports.Data) *Item {
+
+	// Create a new item
+	item := NewItem()
+
+	log.Printf("OnInput %s\n", item)
+
+	// Add the import to the item
+	item.AddImportData(input)
+
+	// Store the import to the collection
+	if c.buffer == nil {
+		c.buffer = NewBuffer(2)
+	}
+
+	c.buffer.Add(item.GetId(), item)
+
+	// Launch research through web
+	if len(c.websites) > 0 {
+		c.WebResearch(item)
+	}
+
+	// TODO Research for best matching
+	item.Type = item.Websites["IMDB"][0].GetType()
+	item.IsMatching = 10.2
+	item.BestMatch = item.Websites["IMDB"][0]
+
+	return item
+}
+
+func (c *Collection) GetBuffer() []*Item {
+	return c.buffer.GetCurrentList()
+}
+
+func (c *Collection) CleanBuffer() {
+	c.buffer = NewBuffer(c.config.BufferSize)
 }

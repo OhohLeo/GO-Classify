@@ -6,7 +6,7 @@ import (
 
 // Generic movie format
 type Movie struct {
-	Generic
+	ItemGeneric
 	Name        string    `json:"name"`
 	Url         string    `json:"url"`
 	Released    time.Time `json:"released"`
