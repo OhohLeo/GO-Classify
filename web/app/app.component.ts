@@ -2,12 +2,12 @@ import { Component, OnInit, ViewChild } from '@angular/core';
 
 import { ApiService, CollectionStatus, Event } from './api.service';
 import { ImportsService } from './imports/imports.service';
-import { ClassifyService } from './classify/classify.service';
+import { BufferService } from './buffer/buffer.service';
 
 import { Collection } from './collections/collection';
 
 import { CollectionsComponent } from './collections/collections.component'
-import { ClassifyComponent } from './classify/classify.component'
+import { BufferComponent } from './buffer/buffer.component'
 
 declare var jQuery: any;
 
@@ -26,12 +26,12 @@ enum AppStatus {
 
 export class AppComponent implements OnInit {
     @ViewChild(CollectionsComponent) collections: CollectionsComponent
-    @ViewChild(ClassifyComponent) classify: ClassifyComponent
+    @ViewChild(BufferComponent) buffer: BufferComponent
 
     public appStatus = AppStatus
     public status = AppStatus.NONE
 
-    public title = "Classify"
+    public title = "Buffer"
 
     public collection: Collection
 
@@ -43,7 +43,7 @@ export class AppComponent implements OnInit {
 
     constructor(private apiService: ApiService,
         private importsService: ImportsService,
-        private classifyService: ClassifyService) { }
+        private bufferService: BufferService) { }
 
     ngOnInit() {
 
@@ -119,8 +119,8 @@ export class AppComponent implements OnInit {
         this.onNewState(AppStatus.CONFIG)
     }
 
-    onClassify() {
-        this.classify.start()
+    onBuffer() {
+        this.buffer.start()
     }
 
     onNewState(nextStatus: AppStatus) {
@@ -159,7 +159,7 @@ export class AppComponent implements OnInit {
         e.event = e.event.substring(e.event.indexOf('/') + 1)
 
         // Send notifications to the imports list
-        this.classifyService.addEvent(e)
+        this.bufferService.addEvent(e)
     }
 
     onError(title: string, msg: string) {

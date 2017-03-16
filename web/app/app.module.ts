@@ -7,7 +7,7 @@ import { HttpModule } from '@angular/http';
 import { CollectionsModule } from './collections/collections.module';
 import { ConfigModule } from './config/config.module';
 import { ImportsModule } from './imports/imports.module';
-import { ClassifyModule } from './classify/classify.module';
+import { BufferModule } from './buffer/buffer.module';
 
 import { ApiService } from './api.service';
 
@@ -22,7 +22,7 @@ import { AppComponent } from './app.component';
         CollectionsModule,
         ConfigModule,
         ImportsModule,
-        ClassifyModule
+        BufferModule
     ],
     providers: [ApiService],
     declarations: [AppComponent],

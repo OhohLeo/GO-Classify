@@ -5,9 +5,9 @@ import { FormsModule } from '@angular/forms'
 import { FileModule } from '../imports/file/file.module'
 import { MoviesModule } from '../collections/movies/movies.module'
 
-import { ClassifyService } from './classify.service'
+import { BufferService } from './buffer.service'
 
-import { ClassifyComponent } from './classify.component'
+import { BufferComponent } from './buffer.component'
 import { DetailComponent } from './detail.component'
 
 @NgModule({
@@ -15,12 +15,12 @@ import { DetailComponent } from './detail.component'
         CommonModule,
         BrowserModule,
         FormsModule,
-		FileModule,
-		MoviesModule
+        FileModule,
+        MoviesModule
     ],
-    providers: [ClassifyService],
-    declarations: [ClassifyComponent, DetailComponent],
-    exports: [ClassifyComponent]
+    providers: [BufferService],
+    declarations: [BufferComponent, DetailComponent],
+    exports: [BufferComponent]
 })
 
-export class ClassifyModule { }
+export class BufferModule { }

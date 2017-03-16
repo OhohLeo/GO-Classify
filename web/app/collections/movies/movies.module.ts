@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common'
 import { BrowserModule } from '@angular/platform-browser'
 import { FormsModule } from '@angular/forms'
 
-import { ClassifyMovieComponent } from './classify.component'
+import { BufferMovieComponent } from './buffer.component'
 import { DetailMovieComponent } from './detail.component'
 import { WebsiteMovieComponent } from './website.component'
 
@@ -13,8 +13,8 @@ import { WebsiteMovieComponent } from './website.component'
         BrowserModule,
         FormsModule
     ],
-    declarations: [ClassifyMovieComponent, DetailMovieComponent, WebsiteMovieComponent],
-    exports: [ClassifyMovieComponent, DetailMovieComponent, WebsiteMovieComponent]
+    declarations: [BufferMovieComponent, DetailMovieComponent, WebsiteMovieComponent],
+    exports: [BufferMovieComponent, DetailMovieComponent, WebsiteMovieComponent]
 })
 
 export class MoviesModule { }

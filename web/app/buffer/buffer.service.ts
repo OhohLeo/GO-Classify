@@ -3,43 +3,43 @@ import { Observable } from 'rxjs/Rx';
 import { ApiService, Event, Item } from './../api.service';
 import { Response } from '@angular/http';
 
-export class ClassifyItem {
+export class BufferItem {
 
-	public id: string
-	public probability: number
-	public name: string
-	public image: string
+    public id: string
+    public probability: number
+    public name: string
+    public image: string
 
-	private bestMatch: any
-	private imports: any[] = []
-	private websites: any[] = []
+    private bestMatch: any
+    private imports: any[] = []
+    private websites: any[] = []
 
     constructor(public type: string, public data: any) {
-		this.id = data.id
-		this.name = (data.name != undefined) ? data.name : "<unknown>"
-		this.bestMatch = data.bestMatch
-		this.probability = data.probability
+        this.id = data.id
+        this.name = (data.name != undefined) ? data.name : "<unknown>"
+        this.bestMatch = data.bestMatch
+        this.probability = data.probability
 
-		if (data.imports != undefined) {
-			for (let key in data.imports) {
-				data.imports[key].forEach((data: any) => {
-					this.imports.push(data)
-				})
-			}
-		}
+        if (data.imports != undefined) {
+            for (let key in data.imports) {
+                data.imports[key].forEach((data: any) => {
+                    this.imports.push(data)
+                })
+            }
+        }
 
-		if (data.websites != undefined) {
-			for (let key in data.websites) {
-				data.websites[key].forEach((data: any) => {
-					this.websites.push(data)
-				})
-			}
-		}
-	}
+        if (data.websites != undefined) {
+            for (let key in data.websites) {
+                data.websites[key].forEach((data: any) => {
+                    this.websites.push(data)
+                })
+            }
+        }
+    }
 }
 
 @Injectable()
-export class ClassifyService {
+export class BufferService {
 
     enableCache: boolean
     itemsByCollection: Map<string, Item[]> = new Map<string, Item[]>()
@@ -49,48 +49,42 @@ export class ClassifyService {
 
     constructor(private apiService: ApiService) { }
 
-	// Check if item does exist
+    // Check if item does exist
     hasItem(search: Item): boolean {
         return this.itemsById.get(search.id) != undefined
     }
 
-	// Add item in all specified collection
-	add(i: Item) {
+    // Add item in all specified collection
+    add(i: Item) {
 
         // Store items by id
         this.itemsById.set(i.id, i)
 
         // Store items by collection
-		for (let collection of i.collections)
-		{
-			if (this.itemsByCollection.get(collection) === undefined) {
-				this.itemsByCollection.set(collection, [])
-			}
+        for (let collection of i.collections) {
+            if (this.itemsByCollection.get(collection) === undefined) {
+                this.itemsByCollection.set(collection, [])
+            }
 
-			this.itemsByCollection.get(collection).push(i)
-		}
+            this.itemsByCollection.get(collection).push(i)
+        }
     }
 
     // Delete item from all collection
-	deleteItem(i: Item)
-	{
-		for (let collection of i.collections)
-		{
-			this.deleteItemFromCollection(i, collection)
-		}
-	}
+    deleteItem(i: Item) {
+        for (let collection of i.collections) {
+            this.deleteItemFromCollection(i, collection)
+        }
+    }
 
-	// Delete item from specified collection
-	deleteItemFromCollection(i: Item, collection: string)
-	{
-		// Detach item & collection
-		for (let idx in i.collections)
-		{
-			if (i.collections[idx] == collection)
-			{
-				i.collections.splice(+idx, 1);
-			}
-		}
+    // Delete item from specified collection
+    deleteItemFromCollection(i: Item, collection: string) {
+        // Detach item & collection
+        for (let idx in i.collections) {
+            if (i.collections[idx] == collection) {
+                i.collections.splice(+idx, 1);
+            }
+        }
 
         // Delete item by type
         let itemList = this.itemsByCollection.get(collection)
@@ -102,17 +96,16 @@ export class ClassifyService {
             }
         }
 
-		// No more collection are referenced by the item
-		if (i.collections.length == 0)
-		{
-			// Delete item by id
-			this.itemsById.delete(i.id)
-		}
-	}
+        // No more collection are referenced by the item
+        if (i.collections.length == 0) {
+            // Delete item by id
+            this.itemsById.delete(i.id)
+        }
+    }
 
-	getItems(collection: string) {
+    getItems(collection: string) {
 
-		return new Observable(observer => {
+        return new Observable(observer => {
 
             // Returns the cache if the list should not have changed
             if (this.itemsByCollection && this.enableCache === true) {
@@ -120,7 +113,7 @@ export class ClassifyService {
                 return
             }
 
-			// // Ask for the current list
+            // // Ask for the current list
             // this.apiService.get("items").subscribe(rsp => {
 
             //     // Init the item lists
@@ -141,9 +134,9 @@ export class ClassifyService {
             //     this.enableCache = true
 
             //     observer.next(this.items)
-			// })
-		})
-	}
+            // })
+        })
+    }
 
 
     subscribeEvents(name: string): Observable<Event> {

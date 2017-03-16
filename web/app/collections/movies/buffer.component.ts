@@ -2,13 +2,13 @@ import { Component, NgZone, Input, OnInit, OnDestroy } from '@angular/core'
 import { Movie } from './movie'
 
 @Component({
-	selector: 'classify-movie',
-	templateUrl: './classify.component.html'
+    selector: 'buffer-movie',
+    templateUrl: './buffer.component.html'
 })
 
-export class ClassifyMovieComponent implements OnInit, OnDestroy {
+export class BufferMovieComponent implements OnInit, OnDestroy {
 
-	@Input() movie: Movie
+    @Input() movie: Movie
 
     ngOnInit() {
     }
