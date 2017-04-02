@@ -31,7 +31,7 @@ export class AppComponent implements OnInit {
     public appStatus = AppStatus
     public status = AppStatus.NONE
 
-    public title = "Buffer"
+    public title = "Classify"
 
     public collection: Collection
 

@@ -79,6 +79,7 @@ export class BufferService {
 
     // Delete item from specified collection
     deleteItemFromCollection(i: Item, collection: string) {
+
         // Detach item & collection
         for (let idx in i.collections) {
             if (i.collections[idx] == collection) {
@@ -108,33 +109,35 @@ export class BufferService {
         return new Observable(observer => {
 
             // Returns the cache if the list should not have changed
-            if (this.itemsByCollection && this.enableCache === true) {
-                observer.next(this.itemsByCollection.get(collection))
-                return
-            }
+            // if (this.itemsByCollection && this.enableCache === true) {
+            //     observer.next(this.itemsByCollection.get(collection))
+            //     return
+            // }
 
-            // // Ask for the current list
-            // this.apiService.get("items").subscribe(rsp => {
+            // Ask for the current list
+            this.apiService.get("collection/" + collection + "/buffers").subscribe(rsp => {
 
-            //     // Init the item lists
-            //     this.items = new Map<string, Item[]>()
-            //     this.itemsById = new Map<string, Item>()
+                // // Init the item lists
+                // this.items = new Map<string, Item[]>()
+                // this.itemsById = new Map<string, Item>()
 
-            //     for (let itemType in rsp) {
+                // for (let itemType in rsp) {
 
-            //         for (let itemId in rsp[itemType]) {
-            //             let i = convert(itemId, rsp[itemType][itemId])
-            //             if (i === undefined)
-            //                 continue
+                //     for (let itemId in rsp[itemType]) {
+                //         let i = convert(itemId, rsp[itemType][itemId])
+                //         if (i === undefined)
+                //             continue
 
-            //             this.add(i)
-            //         }
-            //     }
+                //         this.add(i)
+                //     }
+                // }
 
-            //     this.enableCache = true
+                // this.enableCache = true
 
-            //     observer.next(this.items)
-            // })
+                console.log(rsp)
+
+                observer.next(rsp)
+            })
         })
     }
 

@@ -104,15 +104,15 @@ func (c *Collection) OnInput(input imports.Data) *Item {
 
 	c.buffer.Add(item.GetId(), item)
 
-	// Launch research through web
-	if len(c.websites) > 0 {
-		c.WebResearch(item)
-	}
+	// // Launch research through web
+	// if len(c.websites) > 0 {
+	// 	c.WebResearch(item)
+	// }
 
-	// TODO Research for best matching
-	item.Type = item.Websites["IMDB"][0].GetType()
-	item.IsMatching = 10.2
-	item.BestMatch = item.Websites["IMDB"][0]
+	// // TODO Research for best matching
+	// item.Type = item.Websites["IMDB"][0].GetType()
+	// item.IsMatching = 10.2
+	// item.BestMatch = item.Websites["IMDB"][0]
 
 	return item
 }

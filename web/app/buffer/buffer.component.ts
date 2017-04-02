@@ -1,4 +1,4 @@
-import { Component, NgZone, OnInit, OnDestroy } from '@angular/core'
+import { Component, NgZone, Input, OnInit, OnDestroy } from '@angular/core'
 
 import { BufferService, BufferItem } from './buffer.service'
 import { Event, Item } from '../api.service'
@@ -11,6 +11,8 @@ declare var jQuery: any
 })
 
 export class BufferComponent implements OnInit, OnDestroy {
+
+    @Input() collection: string
 
     private action: any
     private events: any
@@ -37,7 +39,12 @@ export class BufferComponent implements OnInit, OnDestroy {
     }
 
     start() {
-        this.action.modal("open")
+        console.log("START")
+        this.bufferService.getItems(this.collection)
+            .subscribe((buffers) => {
+                console.log("REQUEST")
+                this.action.modal("open")
+            })
     }
 
     // Check if item is displayed

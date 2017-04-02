@@ -98,7 +98,7 @@ func (c *Classify) getCollectionByName(w rest.ResponseWriter, r *rest.Request) C
 }
 
 // GetCollectionByName returns the content of each collection
-// GET /collection/:name
+// GET /collections/:name
 func (c *Classify) ApiGetCollectionByName(w rest.ResponseWriter, r *rest.Request) {
 
 	if collection := c.getCollectionByName(w, r); collection != nil {
@@ -107,7 +107,7 @@ func (c *Classify) ApiGetCollectionByName(w rest.ResponseWriter, r *rest.Request
 }
 
 // PatchCollection modify the collection specified
-// PATCH /collection/:name
+// PATCH /collections/:name
 func (c *Classify) ApiPatchCollection(w rest.ResponseWriter, r *rest.Request) {
 
 	var body ApiCollection
@@ -132,7 +132,7 @@ func (c *Classify) ApiPatchCollection(w rest.ResponseWriter, r *rest.Request) {
 }
 
 // DeleteCollectionByName delete the collection specified
-// DELETE /collection/:name
+// DELETE /collections/:name
 func (c *Classify) ApiDeleteCollectionByName(w rest.ResponseWriter, r *rest.Request) {
 
 	if err := c.DeleteCollection(r.PathParam("name")); err != nil {
@@ -144,7 +144,7 @@ func (c *Classify) ApiDeleteCollectionByName(w rest.ResponseWriter, r *rest.Requ
 }
 
 // ApiGetCollectionConfig display actual configuration parameter
-// GET /collection/:name/config
+// GET /collections/:name/config
 func (c *Classify) ApiGetCollectionConfig(w rest.ResponseWriter, r *rest.Request) {
 
 	// Check the collection exist
@@ -164,7 +164,7 @@ type ApiCollectionConfig struct {
 }
 
 // ApiPatchCollectionConfig mofify configuration parameters
-// PATCH /collection/:name/config
+// PATCH /collections/:name/config
 func (c *Classify) ApiPatchCollectionConfig(w rest.ResponseWriter, r *rest.Request) {
 
 	// Check the collection exist
@@ -192,7 +192,7 @@ func (c *Classify) ApiPatchCollectionConfig(w rest.ResponseWriter, r *rest.Reque
 	w.WriteHeader(http.StatusNoContent)
 }
 
-// GET /collection/:name/buffers
+// GET /collections/:name/buffers
 func (c *Classify) ApiGetCollectionBuffers(w rest.ResponseWriter, r *rest.Request) {
 
 	// Check the collection exist
@@ -204,7 +204,7 @@ func (c *Classify) ApiGetCollectionBuffers(w rest.ResponseWriter, r *rest.Reques
 	w.WriteJson(collection.GetBuffer())
 }
 
-// DELETE /collection/:name/buffers
+// DELETE /collections/:name/buffers
 func (c *Classify) ApiDeleteCollectionBuffers(w rest.ResponseWriter, r *rest.Request) {
 
 	// Check the collection exist
@@ -218,7 +218,7 @@ func (c *Classify) ApiDeleteCollectionBuffers(w rest.ResponseWriter, r *rest.Req
 	w.WriteHeader(http.StatusNoContent)
 }
 
-// GET /collection/:name/buffers/:id
+// GET /collections/:name/buffers/:id
 func (c *Classify) ApiGetCollectionSingleBuffer(w rest.ResponseWriter, r *rest.Request) {
 
 	// Check the collection exist
@@ -228,7 +228,7 @@ func (c *Classify) ApiGetCollectionSingleBuffer(w rest.ResponseWriter, r *rest.R
 	}
 }
 
-// PATCH /collection/:name/buffers/:id
+// PATCH /collections/:name/buffers/:id
 func (c *Classify) ApiPatchCollectionSingleBuffer(w rest.ResponseWriter, r *rest.Request) {
 
 	// Check the collection exist
@@ -240,7 +240,7 @@ func (c *Classify) ApiPatchCollectionSingleBuffer(w rest.ResponseWriter, r *rest
 	w.WriteHeader(http.StatusNoContent)
 }
 
-// DELETE /collection/:name/buffers/:id
+// DELETE /collections/:name/buffers/:id
 func (c *Classify) ApiDeleteCollectionSingleBuffer(w rest.ResponseWriter, r *rest.Request) {
 
 	// Check the collection exist
@@ -252,7 +252,7 @@ func (c *Classify) ApiDeleteCollectionSingleBuffer(w rest.ResponseWriter, r *res
 	w.WriteHeader(http.StatusNoContent)
 }
 
-// GET /collection/:name/items
+// GET /collections/:name/items
 func (c *Classify) ApiGetCollectionItems(w rest.ResponseWriter, r *rest.Request) {
 
 	// Check the collection exist
@@ -262,7 +262,7 @@ func (c *Classify) ApiGetCollectionItems(w rest.ResponseWriter, r *rest.Request)
 	}
 }
 
-// DELETE /collection/:name/items
+// DELETE /collections/:name/items
 func (c *Classify) ApiDeleteCollectionItems(w rest.ResponseWriter, r *rest.Request) {
 
 	// Check the collection exist
@@ -274,7 +274,7 @@ func (c *Classify) ApiDeleteCollectionItems(w rest.ResponseWriter, r *rest.Reque
 	w.WriteHeader(http.StatusNoContent)
 }
 
-// GET /collection/:name/items/:id
+// GET /collections/:name/items/:id
 func (c *Classify) ApiGetCollectionSingleItem(w rest.ResponseWriter, r *rest.Request) {
 
 	// Check the collection exist
@@ -284,7 +284,7 @@ func (c *Classify) ApiGetCollectionSingleItem(w rest.ResponseWriter, r *rest.Req
 	}
 }
 
-// PATCH /collection/:name/items/:id
+// PATCH /collections/:name/items/:id
 func (c *Classify) ApiPatchCollectionSingleItem(w rest.ResponseWriter, r *rest.Request) {
 
 	// Check the collection exist
@@ -296,7 +296,7 @@ func (c *Classify) ApiPatchCollectionSingleItem(w rest.ResponseWriter, r *rest.R
 	w.WriteHeader(http.StatusNoContent)
 }
 
-// DELETE /collection/:name/items/:id
+// DELETE /collections/:name/items/:id
 func (c *Classify) ApiDeleteCollectionSingleItem(w rest.ResponseWriter, r *rest.Request) {
 
 	// Check the collection exist
@@ -309,7 +309,7 @@ func (c *Classify) ApiDeleteCollectionSingleItem(w rest.ResponseWriter, r *rest.
 }
 
 // StartCollection launch the analysis of the collection
-// PUT /collection/:name/start
+// PUT /collections/:name/start
 func (c *Classify) ApiStartCollection(w rest.ResponseWriter, r *rest.Request) {
 
 	// // Check the collection exist
@@ -338,7 +338,7 @@ func (c *Classify) ApiStartCollection(w rest.ResponseWriter, r *rest.Request) {
 }
 
 // StopCollection stop the analysis of the collection
-// PUT /collection/:name/stop
+// PUT /collections/:name/stop
 func (c *Classify) ApiStopCollection(w rest.ResponseWriter, r *rest.Request) {
 
 	w.WriteHeader(http.StatusNoContent)
