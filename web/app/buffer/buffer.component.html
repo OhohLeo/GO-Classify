@@ -2,16 +2,16 @@
 <div id="buffer" class="modal bottom-sheet">
     <div class="modal-content">
 		<ul class="collection">
-			<li id="{{item.id}}" class="collection row" *ngFor="let item of items">
-				<div class="col s3" (click)="getDetails(item)">{{item.probability}}</div>
-				<div class="col s3" (click)="getDetails(item)">{{item.name}}</div>
-				<div class="col s3" *ngIf="item.best_match">
-					<buffer-movie *ngIf="item.type === 'movies'" [movie]="item.best_match"></buffer-movie>
+			<li id="{{buffer.id}}" class="collection row" *ngFor="let buffer of buffers">
+				<div class="col s3" (click)="getDetails(buffer)">{{buffer.probability}}</div>
+				<div class="col s3" (click)="getDetails(buffer)">{{buffer.name}}</div>
+				<div class="col s3" *ngIf="buffer.best_match">
+					<buffer-movie *ngIf="buffer.type === 'movies'" [movie]="buffer.best_match"></buffer-movie>
 				</div>
-				<div class="col s3" *ngIf="item.best_match == undefined" (click)="getDetails(item)">
+				<div class="col s3" *ngIf="buffer.best_match == undefined" (click)="getDetails(buffer)">
 					<p>Choose it!</p>
 				</div>
-				<button class="col s3" (click)="validate(item)">Valider</button>
+				<button class="col s3" (click)="validate(buffer)">Valider</button>
 			</li>
 		</ul>
     </div>

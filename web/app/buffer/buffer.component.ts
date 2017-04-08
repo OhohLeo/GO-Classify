@@ -16,8 +16,7 @@ export class BufferComponent implements OnInit, OnDestroy {
 
     private action: any
     private events: any
-    private items: BufferItem[] = []
-    private itemsById: Map<string, number> = new Map<string, number>()
+    private buffers: BufferItem[] = []
 
     private detailItem: BufferItem
 
@@ -39,17 +38,28 @@ export class BufferComponent implements OnInit, OnDestroy {
     }
 
     start() {
-        console.log("START")
-        this.bufferService.getItems(this.collection)
-            .subscribe((buffers) => {
-                console.log("REQUEST")
-                this.action.modal("open")
+		this.bufferService.getBufferItems(this.collection)
+            .subscribe((buffers: BufferItem[]) => {
+
+				for (let buffer of buffers) {
+					this.add(buffer);
+				}
+
+				// If has buffer items : open modal
+				if (buffers.length > 0)
+					this.action.modal("open")
             })
     }
 
     // Check if item is displayed
-    hasItem(id: string) {
-        return this.itemsById.get(id) != undefined
+    hasItem(id: string) : number {
+
+		for (let idx in this.buffers) {
+			if (id === this.buffers[idx].id)
+				return +idx
+		}
+
+        return -1
     }
 
     add(item: BufferItem) {
@@ -57,30 +67,31 @@ export class BufferComponent implements OnInit, OnDestroy {
         let id = item.id
 
         // Check if item is already displayed
-        if (this.hasItem(id)) {
+        if (this.hasItem(id) >= 0) {
             console.error("Item with id '" + id + "' already displayed")
-            return;
+            return
         }
 
         // Add & refresh display
         this.zone.run(() => {
-            this.items.push(item)
-            this.itemsById.set(id, this.items.length - 1)
+            this.buffers.push(item)
         })
     }
 
-    remove(id: string) {
+    remove(item: BufferItem) {
 
-        // Check if item does exist
-        if (this.hasItem(id) == false) {
+        let id = item.id
+
+		// Check if item does exist
+		let idx = this.hasItem(id)
+        if (idx < 0) {
             console.error("Item with id '" + id + "' not found")
             return;
         }
 
         // Delete & refresh display
         this.zone.run(() => {
-            this.items.splice(this.itemsById.get(id), 1)
-            this.itemsById.delete(id)
+            this.buffers.splice(idx, 1)
         })
     }
 
@@ -97,6 +108,11 @@ export class BufferComponent implements OnInit, OnDestroy {
     }
 
     validate(item: BufferItem) {
+		this.remove(item)
         console.log("Validate", item)
+
+		// If no more buffer items : close modal
+		if (this.buffers.length <= 0)
+			this.action.modal("close")
     }
 }

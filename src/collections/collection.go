@@ -118,6 +118,11 @@ func (c *Collection) OnInput(input imports.Data) *Item {
 }
 
 func (c *Collection) GetBuffer() []*Item {
+
+	if c.buffer == nil {
+		return []*Item{}
+	}
+
 	return c.buffer.GetCurrentList()
 }
 

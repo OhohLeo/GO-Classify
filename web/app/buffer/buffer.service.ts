@@ -42,53 +42,39 @@ export class BufferItem {
 export class BufferService {
 
     enableCache: boolean
-    itemsByCollection: Map<string, Item[]> = new Map<string, Item[]>()
-    itemsById: Map<string, Item> = new Map<string, Item>()
+    buffersByCollection: Map<string, BufferItem[]> =
+		new Map<string, BufferItem[]>()
+    buffersById: Map<string, BufferItem> =
+		new Map<string, BufferItem>()
 
     private eventObservers = {}
 
     constructor(private apiService: ApiService) { }
 
     // Check if item does exist
-    hasItem(search: Item): boolean {
-        return this.itemsById.get(search.id) != undefined
+    hasBufferItem(search: BufferItem): boolean {
+        return this.buffersById.get(search.id) != undefined
     }
 
     // Add item in all specified collection
-    add(i: Item) {
+    addBufferItem(collection: string, i: BufferItem) {
 
-        // Store items by id
-        this.itemsById.set(i.id, i)
+        // Store buffers by id
+        this.buffersById.set(i.id, i)
 
-        // Store items by collection
-        for (let collection of i.collections) {
-            if (this.itemsByCollection.get(collection) === undefined) {
-                this.itemsByCollection.set(collection, [])
-            }
-
-            this.itemsByCollection.get(collection).push(i)
+        // Store buffers by collection
+        if (this.buffersByCollection.get(collection) === undefined) {
+            this.buffersByCollection.set(collection, [])
         }
+
+        this.buffersByCollection.get(collection).push(i)
     }
 
     // Delete item from all collection
-    deleteItem(i: Item) {
-        for (let collection of i.collections) {
-            this.deleteItemFromCollection(i, collection)
-        }
-    }
-
-    // Delete item from specified collection
-    deleteItemFromCollection(i: Item, collection: string) {
-
-        // Detach item & collection
-        for (let idx in i.collections) {
-            if (i.collections[idx] == collection) {
-                i.collections.splice(+idx, 1);
-            }
-        }
+    deleteBufferItem(collection: string, i: BufferItem) {
 
         // Delete item by type
-        let itemList = this.itemsByCollection.get(collection)
+        let itemList = this.buffersByCollection.get(collection)
         for (let idx in itemList) {
             let item = itemList[idx]
             if (item.id === i.id) {
@@ -97,47 +83,33 @@ export class BufferService {
             }
         }
 
-        // No more collection are referenced by the item
-        if (i.collections.length == 0) {
-            // Delete item by id
-            this.itemsById.delete(i.id)
-        }
+        this.buffersById.delete(i.id)
+
+		this.enableCache = false
     }
 
-    getItems(collection: string) {
+    getBufferItems(collection: string) {
 
         return new Observable(observer => {
 
             // Returns the cache if the list should not have changed
-            // if (this.itemsByCollection && this.enableCache === true) {
-            //     observer.next(this.itemsByCollection.get(collection))
-            //     return
-            // }
+            if (this.buffersByCollection && this.enableCache === true) {
+                observer.next(this.buffersByCollection.get(collection))
+                return
+            }
 
             // Ask for the current list
-            this.apiService.get("collection/" + collection + "/buffers").subscribe(rsp => {
+            this.apiService.get("collections/" + collection + "/buffers")
+				.subscribe((rsp: BufferItem[]) => {
 
-                // // Init the item lists
-                // this.items = new Map<string, Item[]>()
-                // this.itemsById = new Map<string, Item>()
+					for (let buffer of rsp) {
+						this.addBufferItem(collection, buffer)
+					}
 
-                // for (let itemType in rsp) {
+					this.enableCache = true
 
-                //     for (let itemId in rsp[itemType]) {
-                //         let i = convert(itemId, rsp[itemType][itemId])
-                //         if (i === undefined)
-                //             continue
-
-                //         this.add(i)
-                //     }
-                // }
-
-                // this.enableCache = true
-
-                console.log(rsp)
-
-                observer.next(rsp)
-            })
+					observer.next(rsp)
+				})
         })
     }
 
@@ -150,11 +122,8 @@ export class BufferService {
         }
 
         return Observable.create(observer => {
-
-            // Initialisation de l'observer
             this.eventObservers[name] = observer
-
-            return () => delete this.eventObservers[name]
+			return () => delete this.eventObservers[name]
         })
     }
 

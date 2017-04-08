@@ -194,7 +194,6 @@ func (c *Classify) ApiPatchCollectionConfig(w rest.ResponseWriter, r *rest.Reque
 
 // GET /collections/:name/buffers
 func (c *Classify) ApiGetCollectionBuffers(w rest.ResponseWriter, r *rest.Request) {
-
 	// Check the collection exist
 	collection := c.getCollectionByName(w, r)
 	if collection == nil {
