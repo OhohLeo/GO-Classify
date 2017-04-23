@@ -1,13 +1,55 @@
 <div id="detail" class="modal">
 	<div class="modal-content">
-		<div *ngFor="let import of item.imports">
-			<detail-file  *ngIf="import.type === 'file'" [file]="import"></detail-file>
+		<p>NAME</p>
+		<div (click)="getNameDetails()">
+			<div class="input-field">
+				<i class="material-icons prefix">accessibility</i>
+				<input value="{{buffer.getName()}}"
+					   id="filename"
+					   type="text"
+					   class="validate">
+				<label class="active" for="webQuery">Name</label>
+			</div>
 		</div>
-		<div *ngIf="item.best_match">
-			<detail-movie *ngIf="item.type === 'movie'" [movie]="item.best_match"></detail-movie>
+		<div *ngIf="needNameDetails">
+			<label>banned:</label>
+			<stringlist [name]="'banned'"
+						[value]="buffer.banned"
+						(change)="onChange($event)"></stringlist>
+			<label>separators:</label>
+			<stringlist [name]="'separators'"
+						[value]="buffer.separators"
+						(change)="onChange($event)"></stringlist>
 		</div>
-		<div *ngFor="let website of item.websites">
-			<website-movie *ngIf="website.type === 'movie'" [movie]="website"></website-movie>
+
+
+		<p>IMPORTS</p>
+		<div *ngFor="let import of buffer.getImports()">
+			<detail-file  *ngIf="import.type === 'file'"
+						  [file]="import">
+			</detail-file>
+		</div>
+		<p>BEST MATCH</p>
+		<div *ngIf="buffer.best_match">
+			<detail-movie *ngIf="buffer.type === 'movie'"
+						  [movie]="buffer.best_match">
+			</detail-movie>
+		</div>
+		<p>WEB QUERY</p>
+		<div *ngIf="buffer.webQuery" class="row">
+			   <div class="input-field">
+				   <i class="material-icons prefix">search</i>
+				   <input value="{{buffer.webQuery}}"
+						  id="webQuery"
+						  type="text"
+						  class="validate">
+				   <label class="active" for="webQuery">Web Query</label>
+			</div>
+			<div *ngFor="let website of buffer.getWebsites()">
+				<website-movie *ngIf="website.type === 'movie'"
+							   [movie]="website">
+				</website-movie>
+			</div>
 		</div>
 	</div>
 </div>

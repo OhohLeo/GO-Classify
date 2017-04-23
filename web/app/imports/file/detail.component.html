@@ -1,10 +1,4 @@
-<div (click)="getDetails()">
-	<label>filename:</label><p>{{file.name}}</p>
-	<label>search:</label><p>{{file.search}}</p>
-</div>
 <div *ngIf="needDetails">
-	<label>forbiddens:</label><p>{{file.forbiddens}}</p>
-	<p>{{file.fullpath}}</p>
 	<div *ngFor="let key of infos">
 		<p><label>{{key}} :</label>{{file.infos.get(key)}}</p>
 	</div>

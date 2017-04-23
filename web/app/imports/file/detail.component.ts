@@ -28,4 +28,6 @@ export class DetailFileComponent implements OnInit, OnDestroy {
 			this.needDetails = !this.needDetails;
 		})
 	}
+
+
 }

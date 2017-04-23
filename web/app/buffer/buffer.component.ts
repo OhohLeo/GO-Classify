@@ -1,7 +1,8 @@
-import { Component, NgZone, Input, OnInit, OnDestroy } from '@angular/core'
-
-import { BufferService, BufferItem } from './buffer.service'
+import { Component, NgZone, Input, OnInit, OnDestroy, ViewChild } from '@angular/core'
+import { Response } from '@angular/http';
+import { BufferService, BufferItem, BufferEvent } from './buffer.service'
 import { Event, Item } from '../api.service'
+import { DetailComponent } from './detail.component'
 
 declare var jQuery: any
 
@@ -18,19 +19,24 @@ export class BufferComponent implements OnInit, OnDestroy {
     private events: any
     private buffers: BufferItem[] = []
 
-    private detailItem: BufferItem
+	@ViewChild(DetailComponent) detail: DetailComponent
+    private detailBuffer: BufferItem
 
     constructor(private zone: NgZone,
         private bufferService: BufferService) {
-
-        this.events = bufferService.subscribeEvents("status")
-            .subscribe((e: Event) => {
-                this.add(new BufferItem(e.event, e.data))
-            })
     }
 
     ngOnInit() {
-        this.action = jQuery('div#buffer').modal()
+        this.action = jQuery('div#buffer').modal({
+		    complete: () => {
+
+				if (this.events == undefined)
+					return
+
+				this.events.unsubscribe()
+				this.events = undefined
+			}
+		})
     }
 
     ngOnDestroy() {
@@ -38,21 +44,50 @@ export class BufferComponent implements OnInit, OnDestroy {
     }
 
     start() {
+
+		// Get actual buffer items
 		this.bufferService.getBufferItems(this.collection)
             .subscribe((buffers: BufferItem[]) => {
 
+				if (buffers.length <= 0)
+					return;
+
 				for (let buffer of buffers) {
-					this.add(buffer);
+					this.add(new BufferItem(buffer));
 				}
 
 				// If has buffer items : open modal
-				if (buffers.length > 0)
-					this.action.modal("open")
+				this.action.modal("open")
             })
+
+		// Subscribe to buffer modification
+		this.events = this.bufferService.subscribeEvents(this.collection + "/buffer")
+			.subscribe((event: BufferEvent) => {
+
+				// Check if it is the expected collection
+				if (event.collection != this.collection)
+					return;
+
+				console.log("GET BUFFER EVENT", event)
+
+				if (event.status === "create")
+				{
+					this.add(event.buffer)
+				}
+				else if (event.status === "update")
+				{
+					this.update(event.buffer)
+				}
+				else
+				{
+					console.error("Unhandled buffer event status '" + status + "'")
+				}
+
+			})
     }
 
     // Check if item is displayed
-    hasItem(id: string) : number {
+    hasBuffer(id: string) : number {
 
 		for (let idx in this.buffers) {
 			if (id === this.buffers[idx].id)
@@ -62,30 +97,30 @@ export class BufferComponent implements OnInit, OnDestroy {
         return -1
     }
 
-    add(item: BufferItem) {
+    add(buffer: BufferItem) {
 
-        let id = item.id
+        let id = buffer.id
 
-        // Check if item is already displayed
-        if (this.hasItem(id) >= 0) {
-            console.error("Item with id '" + id + "' already displayed")
+        // Check if buffer is already displayed
+        if (this.hasBuffer(id) >= 0) {
+            console.error("Add Buffer with id '" + id + "' already displayed")
             return
         }
 
         // Add & refresh display
         this.zone.run(() => {
-            this.buffers.push(item)
+            this.buffers.push(buffer)
         })
     }
 
-    remove(item: BufferItem) {
+    remove(buffer: BufferItem) {
 
-        let id = item.id
+        let id = buffer.id
 
-		// Check if item does exist
-		let idx = this.hasItem(id)
+		// Check if buffer does exist
+		let idx = this.hasBuffer(id)
         if (idx < 0) {
-            console.error("Item with id '" + id + "' not found")
+            console.error("Remove Buffer with id '" + id + "' not found")
             return;
         }
 
@@ -95,24 +130,56 @@ export class BufferComponent implements OnInit, OnDestroy {
         })
     }
 
-    getDetails(item: BufferItem) {
+	update(buffer: BufferItem)
+	{
+        let id = buffer.id
+
+		// Check if buffer does exist
+		let idx = this.hasBuffer(id)
+		if (idx < 0) {
+			console.error("Update buffer with id '" + id + "' not found")
+            return;
+		}
+
+		if (this.detailBuffer != undefined
+			&& this.detailBuffer.id == id)
+		{
+			this.detail.onUpdate(buffer)
+			this.detailBuffer = buffer
+		}
+
         this.zone.run(() => {
-            this.detailItem = item
+            this.buffers[idx] = buffer
+        })
+	}
+
+    getDetails(buffer: BufferItem) {
+        this.zone.run(() => {
+            this.detailBuffer = buffer
         })
     }
 
     onCloseDetail() {
         this.zone.run(() => {
-            this.detailItem = undefined
+            this.detailBuffer = undefined
         })
     }
 
-    validate(item: BufferItem) {
-		this.remove(item)
-        console.log("Validate", item)
+    validate(buffer: BufferItem) {
 
-		// If no more buffer items : close modal
-		if (this.buffers.length <= 0)
-			this.action.modal("close")
-    }
+		this.bufferService.validateBufferItem(this.collection, buffer)
+            .subscribe((ok : boolean) => {
+
+				if (ok == false) {
+					return
+				}
+
+				console.log("Validate", buffer, ok)
+				this.remove(buffer)
+
+				// If no more buffer items : close modal
+				if (this.buffers.length <= 0)
+					this.action.modal("close")
+			})
+	}
 }

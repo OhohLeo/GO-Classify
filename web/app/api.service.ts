@@ -38,6 +38,7 @@ export interface Item {
 
 export interface Event {
     event: string
+	status: string
     id: string
     data: any
 }

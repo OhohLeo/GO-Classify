@@ -261,7 +261,15 @@ func (c *Classify) GetImports(ids map[string]Import, collections map[string]Coll
 }
 
 func (c *Classify) SendImportEvent(id string, status bool) {
-	c.SendEvent("import/status", id, status)
+
+	var statusStr string
+	if status {
+		statusStr = "start"
+	} else {
+		statusStr = "end"
+	}
+
+	c.SendEvent("import/status", statusStr, id, status)
 }
 
 // Launch the process of importation of specified imports
@@ -295,13 +303,9 @@ func (c *Classify) StartImports(ids map[string]Import, collections map[string]Co
 
 					// For each collections linked with the importation
 					for _, collection := range i.collections {
-
-						// Distribute the new value
-						item := collection.OnInput(input)
-
-						// Send new items
-						c.SendEvent("item/"+collection.GetType(), collection.GetName(), item)
+						collection.OnInput(input)
 					}
+
 					continue
 				}
 

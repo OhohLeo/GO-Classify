@@ -1,8 +1,9 @@
 import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs/Rx';
 import { ApiService, Event } from './../api.service';
+import { BufferService } from './../buffer/buffer.service';
 import { Response } from '@angular/http';
-import { CfgStringList } from './stringlist.component';
+import { CfgStringList, StringListEvent } from './stringlist.component';
 
 export class ConfigBase {
     private cache: boolean
@@ -71,7 +72,8 @@ export class ConfigService {
     // Collections configurations
     public configs: Map<string, ConfigBase> = new Map<string, ConfigBase>()
 
-    constructor(private apiService: ApiService) { }
+    constructor(private apiService: ApiService,
+				private bufferService: BufferService) { }
 
     public hasConfig(collection: string): boolean {
         return this.configs.get(collection) != undefined
@@ -138,6 +140,11 @@ export class ConfigService {
             this.apiService.patch("collections/" + collection + "/config", body)
                 .subscribe((status) => {
                     console.log(status)
+
+					// On change on buffer size : update buffer list
+					if (name === "bufferSize")
+						this.bufferService.disableCache();
+
                     observer.next(status)
                 })
         })
@@ -145,4 +152,34 @@ export class ConfigService {
 
     public update(collection: string) {
     }
+
+	public onChange(collection : string, event) {
+
+		let name, action, value
+
+        if (event instanceof StringListEvent) {
+            name = event.name
+            action = event.action
+            value = event.list
+        } else {
+            name = event.target.name
+            switch (event.target.type) {
+            case "number":
+                value = Number(event.target.value)
+            default:
+                value = event.target.value
+            }
+
+            console.log(event.target.type, value)
+        }
+
+		console.log("CHANGE", name, action, value);
+
+        let observable = this.setConfig(
+            collection, name, action, value)
+        if (observable != undefined) {
+            observable.subscribe((status) => {
+            })
+        }
+	}
 }

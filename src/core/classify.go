@@ -67,7 +67,7 @@ func Start(config Config) (c *Classify, err error) {
 
 	// Specify that the application start
 	go func() {
-		c.SendEvent("start", "", "")
+		c.SendEvent("start", "", "", "")
 	}()
 
 	return

@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/ohohleo/classify/imports"
 	"math/rand"
+	"strings"
 	"time"
 )
 
@@ -20,19 +21,23 @@ type Data interface {
 }
 
 type ItemGeneric struct {
-	Status     int
+	Status     int     `json:"status"`
 	Type       string  `json:"type"`
 	IsMatching float32 `json:"probability"`
 }
 
 type Item struct {
 	ItemGeneric
-	Id        string                    `json:"id"`
-	Name      string                    `json:"name"`
-	CreatedAt time.Time                 `json:"createAt"`
-	Imports   map[string][]imports.Data `json:"imports"`
-	Websites  map[string][]Data         `json:"websites"`
-	BestMatch Data                      `json:"best_match"`
+	Id          string                    `json:"id"`
+	Name        string                    `json:"name"`
+	CleanedName string                    `json:"cleanedName"`
+	CreatedAt   time.Time                 `json:"createAt"`
+	Banned      []string                  `json:"banned"`
+	Separators  []string                  `json:"separators"`
+	Imports     map[string][]imports.Data `json:"imports"`
+	WebQuery    string                    `json:"webQuery"`
+	Websites    map[string][]Data         `json:"websites"`
+	BestMatch   Data                      `json:"bestMatch"`
 }
 
 func NewItem() *Item {
@@ -45,6 +50,46 @@ func NewItem() *Item {
 	item.Status = CREATED
 
 	return item
+}
+
+func (i *Item) SetCleanedName(bannedList []string, separators []string) bool {
+
+	previousName := i.CleanedName
+
+	i.CleanedName = i.Name
+	i.Banned = make([]string, 0)
+	i.Separators = make([]string, 0)
+
+	// No real name set : nothing todo
+	if i.Name == "" {
+		return false
+	}
+
+	// Removed banned strings
+	for _, banned := range bannedList {
+
+		if strings.Contains(i.CleanedName, banned) == false {
+			continue
+		}
+
+		i.CleanedName = strings.Replace(i.CleanedName, banned, "", -1)
+		i.Banned = append(i.Banned, banned)
+	}
+
+	// Separate elements with separators
+	for _, separator := range separators {
+
+		if strings.Contains(i.CleanedName, separator) == false {
+			continue
+		}
+
+		i.CleanedName = strings.Replace(i.CleanedName, separator, " ", -1)
+		i.Separators = append(i.Separators, separator)
+	}
+
+	i.CleanedName = strings.TrimSpace(i.CleanedName)
+
+	return previousName != i.CleanedName
 }
 
 func (i *Item) AddImportData(data imports.Data) {

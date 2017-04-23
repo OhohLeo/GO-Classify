@@ -30,34 +30,6 @@ export class ConfigComponent {
     }
 
     onChange(event) {
-
-        let name, action, value
-
-        if (event instanceof StringListEvent) {
-            name = event.name
-            action = event.action
-            value = event.list
-        } else {
-            name = event.target.name
-            switch (event.target.type) {
-                case "number":
-                    value = Number(event.target.value)
-                default:
-                    value = event.target.value
-            }
-
-            console.log(event.target.type, value)
-        }
-
-        let observable = this.configService.setConfig(
-            this.collection, name, action, value)
-        if (observable != undefined) {
-            observable.subscribe((status) => {
-            })
-        }
-    }
-
-    onApply(event) {
-        console.log("ON APPLY")
+		this.configService.onChange(this.collection, event)
     }
 }

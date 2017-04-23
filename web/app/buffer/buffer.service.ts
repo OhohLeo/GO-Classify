@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs/Rx';
 import { ApiService, Event, Item } from './../api.service';
+import { CfgStringList } from '../config/stringlist.component'
 import { Response } from '@angular/http';
 
 export class BufferItem {
@@ -10,13 +11,24 @@ export class BufferItem {
     public name: string
     public image: string
 
+	public cleanedName: string
+	public banned: CfgStringList
+	public separators: CfgStringList
+
     private bestMatch: any
     private imports: any[] = []
+
+	public webQuery: string
     private websites: any[] = []
 
-    constructor(public type: string, public data: any) {
+    constructor(public data: any) {
         this.id = data.id
         this.name = (data.name != undefined) ? data.name : "<unknown>"
+
+		this.cleanedName = data.cleanedName
+		this.banned = new CfgStringList(data.banned)
+		this.separators = new CfgStringList(data.separators)
+
         this.bestMatch = data.bestMatch
         this.probability = data.probability
 
@@ -28,6 +40,7 @@ export class BufferItem {
             }
         }
 
+		this.webQuery = data.webQuery
         if (data.websites != undefined) {
             for (let key in data.websites) {
                 data.websites[key].forEach((data: any) => {
@@ -36,6 +49,25 @@ export class BufferItem {
             }
         }
     }
+
+	public getName() : string {
+		return (this.cleanedName === "") ? this.name : this.cleanedName;
+	}
+
+	public getImports() : any[] {
+		return this.imports
+	}
+
+	public getWebsites() : any[] {
+		return this.websites
+	}
+}
+
+export class BufferEvent {
+
+	constructor(public collection: string,
+				public status: string,
+				public buffer: BufferItem) {}
 }
 
 @Injectable()
@@ -49,6 +81,15 @@ export class BufferService {
 
     private eventObservers = {}
 
+	private onEvent = {
+		"create": (collection: string, item: BufferItem) => {
+			this.addBufferItem(collection, item)
+		},
+		"update": (collection: string, item: BufferItem) => {
+			this.updateBufferItem(collection, item)
+		},
+	}
+
     constructor(private apiService: ApiService) { }
 
     // Check if item does exist
@@ -56,7 +97,25 @@ export class BufferService {
         return this.buffersById.get(search.id) != undefined
     }
 
-    // Add item in all specified collection
+	// Check if item does exist in specified collection
+    hasCollectionBufferItem(collection: string, search: BufferItem): number {
+
+		let itemList = this.buffersByCollection.get(collection)
+
+        for (let idx in itemList) {
+            if (itemList[idx].id === search.id) {
+                return +idx
+            }
+        }
+
+		return -1
+    }
+
+	disableCache() {
+		this.enableCache = false
+	}
+
+    // Add buffer item in specified collection
     addBufferItem(collection: string, i: BufferItem) {
 
         // Store buffers by id
@@ -68,9 +127,11 @@ export class BufferService {
         }
 
         this.buffersByCollection.get(collection).push(i)
+
+		console.log(this.buffersByCollection.get(collection))
     }
 
-    // Delete item from all collection
+    // Delete buffer item from specified collection
     deleteBufferItem(collection: string, i: BufferItem) {
 
         // Delete item by type
@@ -86,15 +147,21 @@ export class BufferService {
         this.buffersById.delete(i.id)
 
 		this.enableCache = false
-    }
+	}
 
     getBufferItems(collection: string) {
 
         return new Observable(observer => {
 
-            // Returns the cache if the list should not have changed
+            // // Returns the cache if the list should not have changed
             if (this.buffersByCollection && this.enableCache === true) {
-                observer.next(this.buffersByCollection.get(collection))
+
+				let buffers = this.buffersByCollection.get(collection)
+				if (buffers === undefined) {
+					buffers = [];
+				}
+
+                observer.next(buffers)
                 return
             }
 
@@ -113,8 +180,74 @@ export class BufferService {
         })
     }
 
+	updateBufferItem(collection: string, item: BufferItem) {
 
-    subscribeEvents(name: string): Observable<Event> {
+		if (this.hasBufferItem(item) == false)
+		{
+			console.error("Item '" + item.id + "' not found", item)
+			return;
+		}
+
+		let idx = this.hasCollectionBufferItem(collection, item)
+		if (idx < 0)
+		{
+			console.error("Item '" + item.id + "' not found in specified collection '"
+						  + collection +'"', item)
+			return;
+		}
+
+		// Store buffers by id
+        this.buffersById.set(item.id, item)
+        this.buffersByCollection.get(collection)[idx] = item;
+
+		console.log("UPDATE ", item);
+	}
+
+    // Validate item from specified collection
+    validateBufferItem(collection: string, item: BufferItem) {
+
+		return new Observable<boolean>(observer => {
+
+            // Validate for the current list
+            this.apiService.put(
+				"collections/" + collection + "/buffers/" + item.id + "/validate")
+				.subscribe((rsp : Response) => {
+
+					let ok = (rsp.status == 204)
+					if (ok)
+					{
+						this.deleteBufferItem(collection, item)
+						this.getBufferItems(collection)
+					}
+
+					console.log("VALIDATE ", rsp)
+					observer.next(ok)
+				})
+        })
+
+	}
+
+    // Cancel item from specified collection
+	cancelBufferItem(collection: string, item: BufferItem) {
+
+		return new Observable<boolean>(observer => {
+
+            // Validate for the current list
+            this.apiService.delete(
+				"collections/" + collection + "/buffers/" + item.id + "/validate")
+				.subscribe((rsp : Response) => {
+
+					let ok = (rsp.status == 204)
+					if (ok)
+						this.deleteBufferItem(collection, item)
+
+					console.log("DELETE ", rsp)
+					observer.next(ok)
+				})
+        })
+	}
+
+    subscribeEvents(name: string): Observable<BufferEvent> {
 
         if (this.eventObservers[name] != undefined) {
             console.error("Already existing observer", name)
@@ -123,13 +256,29 @@ export class BufferService {
 
         return Observable.create(observer => {
             this.eventObservers[name] = observer
-			return () => delete this.eventObservers[name]
+			return () => {
+				delete this.eventObservers[name]
+			}
         })
     }
 
-    addEvent(event: Event) {
+    addEvent(collection:string, event: Event) {
+
+		let onEventCb = this.onEvent[event.status]
+		if (onEventCb == undefined)
+		{
+			console.log("Unhandled event status '" + event.status + "'", event)
+			return;
+		}
+
+		let buffer = new BufferItem(event.data)
+
+		onEventCb(collection, buffer)
+
+		let bufferEvent = new BufferEvent(collection, event.status, buffer);
+
         for (let name in this.eventObservers) {
-            this.eventObservers[name].next(event)
+            this.eventObservers[name].next(bufferEvent)
         }
     }
 }

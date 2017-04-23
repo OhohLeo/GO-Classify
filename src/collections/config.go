@@ -13,6 +13,12 @@ type Config struct {
 	Banned     CfgStringList `json:"banned"`
 }
 
+func NewConfig(bufferSize int) *Config {
+	return &Config{
+		BufferSize: bufferSize,
+	}
+}
+
 // Returns the list of string with banned chain removed
 func (c *Config) clean(toClean string) (result []string, banned []string) {
 
@@ -66,7 +72,7 @@ func (c *Config) clean(toClean string) (result []string, banned []string) {
 	return
 }
 
-func (c *Collection) ModifyConfig(name string, action string, list []string) error {
+func (c *Collection) ModifyConfig(name string, action string, list []string) (err error) {
 
 	var currentList *CfgStringList
 
@@ -83,18 +89,24 @@ func (c *Collection) ModifyConfig(name string, action string, list []string) err
 	}
 
 	if action == "add" {
-		currentList.Add(list)
+		err = currentList.Add(list)
 	} else if action == "remove" {
-		return currentList.Remove(list)
+		err = currentList.Remove(list)
 	} else {
-		return fmt.Errorf("Invalid config action '%s'", action)
+		err = fmt.Errorf("Invalid config action '%s'", action)
 	}
 
-	return nil
+	// Get cleaned buffer items on change
+	if err == nil && (name == "banned" || name == "separators") {
+		c.buffer.CleanedNames(c.config.Banned, c.config.Separators)
+	}
+
+	fmt.Printf("%s %+v\n", name, currentList)
+
+	return err
 }
 
 func (c *Collection) ModifyConfigValue(name string, value string) error {
-
 	if name == "bufferSize" {
 
 		// Integer is expected
@@ -121,8 +133,32 @@ func (c *Collection) GetConfig() *Config {
 
 type CfgStringList []string
 
-func (c *CfgStringList) Add(toAdd []string) {
-	*c = append(*c, toAdd...)
+func (c *CfgStringList) Add(toAdd []string) error {
+
+	mapCurrent := map[string]struct{}{}
+	for _, current := range *c {
+		mapCurrent[current] = struct{}{}
+	}
+
+	hasChanged := false
+
+	// Check if item doesn't already exist
+	for _, add := range toAdd {
+
+		if _, ok := mapCurrent[add]; ok {
+			continue
+		}
+
+		*c = append(*c, add)
+		hasChanged = true
+	}
+
+	if hasChanged {
+		return nil
+	}
+
+	return fmt.Errorf("invalid config to add '%s': nothing changed",
+		strings.Join(toAdd, ","))
 }
 
 func (c *CfgStringList) Remove(toRemove []string) error {

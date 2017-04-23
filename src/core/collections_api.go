@@ -194,6 +194,7 @@ func (c *Classify) ApiPatchCollectionConfig(w rest.ResponseWriter, r *rest.Reque
 
 // GET /collections/:name/buffers
 func (c *Classify) ApiGetCollectionBuffers(w rest.ResponseWriter, r *rest.Request) {
+
 	// Check the collection exist
 	collection := c.getCollectionByName(w, r)
 	if collection == nil {
@@ -212,7 +213,7 @@ func (c *Classify) ApiDeleteCollectionBuffers(w rest.ResponseWriter, r *rest.Req
 		return
 	}
 
-	collection.CleanBuffer()
+	collection.ResetBuffer()
 
 	w.WriteHeader(http.StatusNoContent)
 }
@@ -235,6 +236,26 @@ func (c *Classify) ApiPatchCollectionSingleBuffer(w rest.ResponseWriter, r *rest
 	if collection == nil {
 		return
 	}
+
+	w.WriteHeader(http.StatusNoContent)
+}
+
+// PUT /collections/:name/buffers/:id/validate
+func (c *Classify) ApiValidateCollectionSingleBuffer(w rest.ResponseWriter, r *rest.Request) {
+
+	// Check the collection exist
+	collection := c.getCollectionByName(w, r)
+	if collection == nil {
+		return
+	}
+
+	err := collection.ValidateBuffer(r.PathParam("id"))
+	if err != nil {
+		rest.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	// Send next item if needed
 
 	w.WriteHeader(http.StatusNoContent)
 }

@@ -3,6 +3,7 @@ import { Component, OnInit, ViewChild } from '@angular/core';
 import { ApiService, CollectionStatus, Event } from './api.service';
 import { ImportsService } from './imports/imports.service';
 import { BufferService } from './buffer/buffer.service';
+import { ConfigService, ConfigBase } from './config/config.service';
 
 import { Collection } from './collections/collection';
 
@@ -42,8 +43,9 @@ export class AppComponent implements OnInit {
     private importsRunningNb: number
 
     constructor(private apiService: ApiService,
-        private importsService: ImportsService,
-        private bufferService: BufferService) { }
+				private importsService: ImportsService,
+				private configService: ConfigService,
+				private bufferService: BufferService) { }
 
     ngOnInit() {
 
@@ -58,26 +60,26 @@ export class AppComponent implements OnInit {
         this.apiService.getStream()
             .subscribe((e: Event) => {
 
-                //console.log("EVENT!", e)
+                console.log("EVENT!", e)
 
+				// Detect restart application
                 if (e.event === "start") {
-                    // restart application
                     window.location.replace("/");
                     return;
                 }
 
-                // Send data to the import service
+                // Import data
                 if (e.event.startsWith("import")) {
                     this.handleImport(e);
                     return;
                 }
 
-                // Items reception
-                if (e.event.startsWith("item")) {
-                    this.handleItem(e);
+               // Collections reception
+                if (e.event.startsWith("collection")) {
+                    this.handleCollection(e);
                     return;
                 }
-            })
+			})
 
         this.apiService.subscribeCollectionChange(
             (collection: Collection, status: CollectionStatus) => {
@@ -87,8 +89,14 @@ export class AppComponent implements OnInit {
                     return
                 }
 
+				console.log(collection.name)
+
                 this.title = collection.name
                 this.collection = collection
+
+				// Get all configuration specific to the collection
+				this.configService.getConfigs(collection.name)
+					.subscribe((config: ConfigBase) => {})
 
                 switch (status) {
                     case CollectionStatus.CREATED:
@@ -153,14 +161,30 @@ export class AppComponent implements OnInit {
         }
     }
 
-    // Gestion des éléments à classer
-    handleItem(e: Event) {
-        // Replace type
-        e.event = e.event.substring(e.event.indexOf('/') + 1)
+	handleCollection(e: Event) {
 
-        // Send notifications to the imports list
-        this.bufferService.addEvent(e)
-    }
+		let names = e.event.split("/");
+		let size = names.length;
+
+		if (size <= 1)
+		{
+			console.error("Invalid collection event '" + e.event + "'")
+			return;
+		}
+
+		let collection = names[1];
+		let destination: string
+		if (size > 2)
+		{
+			destination = names[2];
+		}
+
+		if (destination === "buffer")
+		{
+			// Send notifications to the imports list
+			this.bufferService.addEvent(collection, e)
+		}
+	}
 
     onError(title: string, msg: string) {
 

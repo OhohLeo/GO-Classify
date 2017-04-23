@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs/Rx';
 import { ApiService, Event } from './../api.service';
+import { BufferService } from './../buffer/buffer.service';
 import { Response } from '@angular/http';
 
 export class ImportBase {
@@ -109,7 +110,8 @@ export class ImportsService {
     };
 
 
-    constructor(private apiService: ApiService) { }
+    constructor(private apiService: ApiService,
+				private bufferService: BufferService) { }
 
     // Set update import list function
     setUpdateList(updateList: any) {
@@ -264,6 +266,9 @@ export class ImportsService {
                 if (rsp.status != 204) {
                     throw new Error('Error when ' + action + ' import: ' + rsp.status)
                 }
+
+				if (isStart)
+					this.bufferService.disableCache();
             })
     }
 

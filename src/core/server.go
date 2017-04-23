@@ -29,9 +29,10 @@ type ProtocolReq struct {
 }
 
 type Event struct {
-	Event string      `json:"event"`
-	Id    string      `json:"id"`
-	Data  interface{} `json:"data"`
+	Event  string      `json:"event"`
+	Status string      `json:"status"`
+	Id     string      `json:"id"`
+	Data   interface{} `json:"data"`
 }
 
 // ServerStart launches web server
@@ -71,8 +72,10 @@ func (c *Classify) CreateServer(config ServerConfig) (server *Server, err error)
 			fmt.Printf("REQUEST %s %+v\n", origin, request.URL)
 			return true
 		},
-		AllowedMethods:                []string{"GET", "POST", "PUT", "PATCH", "DELETE"},
-		AllowedHeaders:                []string{"Accept", "Content-Type", "Origin"},
+		AllowedMethods: []string{
+			"GET", "POST", "PUT", "PATCH", "DELETE"},
+		AllowedHeaders: []string{
+			"Accept", "Content-Type", "Origin"},
 		AccessControlAllowCredentials: true,
 		AccessControlMaxAge:           3600,
 	})
@@ -94,31 +97,50 @@ func (c *Classify) CreateServer(config ServerConfig) (server *Server, err error)
 		rest.Get("/imports/config", c.ApiGetImportsConfig),
 
 		// Handle collections
-		rest.Post("/collections", c.ApiPostCollection),
-		rest.Get("/collections", c.ApiGetCollections),
-		rest.Get("/collections/:name", c.ApiGetCollectionByName),
-		rest.Patch("/collections/:name", c.ApiPatchCollection),
-		rest.Delete("/collections/:name", c.ApiDeleteCollectionByName),
+		rest.Post("/collections",
+			c.ApiPostCollection),
+		rest.Get("/collections",
+			c.ApiGetCollections),
+		rest.Get("/collections/:name",
+			c.ApiGetCollectionByName),
+		rest.Patch("/collections/:name",
+			c.ApiPatchCollection),
+		rest.Delete("/collections/:name",
+			c.ApiDeleteCollectionByName),
 
 		// Handle collection configuration
-		rest.Get("/collections/:name/config", c.ApiGetCollectionConfig),
-		rest.Patch("/collections/:name/config", c.ApiPatchCollectionConfig),
+		rest.Get("/collections/:name/config",
+			c.ApiGetCollectionConfig),
+		rest.Patch("/collections/:name/config",
+			c.ApiPatchCollectionConfig),
 
 		// Handle collection buffer
-		rest.Get("/collections/:name/buffers", c.ApiGetCollectionBuffers),
-		rest.Delete("/collections/:name/buffers", c.ApiDeleteCollectionBuffers),
+		rest.Get("/collections/:name/buffers",
+			c.ApiGetCollectionBuffers),
+		rest.Delete("/collections/:name/buffers",
+			c.ApiDeleteCollectionBuffers),
 
-		rest.Get("/collections/:name/buffers/:id", c.ApiGetCollectionSingleBuffer),
-		rest.Patch("/collections/:name/buffers/:id", c.ApiPatchCollectionSingleBuffer),
-		rest.Delete("/collections/:name/buffers/:id", c.ApiDeleteCollectionSingleBuffer),
+		rest.Get("/collections/:name/buffers/:id",
+			c.ApiGetCollectionSingleBuffer),
+		rest.Put("/collections/:name/buffers/:id/validate",
+			c.ApiValidateCollectionSingleBuffer),
+		rest.Patch("/collections/:name/buffers/:id",
+			c.ApiPatchCollectionSingleBuffer),
+		rest.Delete("/collections/:name/buffers/:id",
+			c.ApiDeleteCollectionSingleBuffer),
 
 		// Handle collection items
-		rest.Get("/collections/:name/items", c.ApiGetCollectionItems),
-		rest.Delete("/collections/:name/items", c.ApiDeleteCollectionItems),
+		rest.Get("/collections/:name/items",
+			c.ApiGetCollectionItems),
+		rest.Delete("/collections/:name/items",
+			c.ApiDeleteCollectionItems),
 
-		rest.Get("/collections/:name/items/:id", c.ApiGetCollectionSingleItem),
-		rest.Patch("/collections/:name/items/:id", c.ApiPatchCollectionSingleItem),
-		rest.Delete("/collections/:name/items/:id", c.ApiDeleteCollectionSingleItem),
+		rest.Get("/collections/:name/items/:id",
+			c.ApiGetCollectionSingleItem),
+		rest.Patch("/collections/:name/items/:id",
+			c.ApiPatchCollectionSingleItem),
+		rest.Delete("/collections/:name/items/:id",
+			c.ApiDeleteCollectionSingleItem),
 	)
 
 	if err != nil {
@@ -133,8 +155,8 @@ func (c *Classify) CreateServer(config ServerConfig) (server *Server, err error)
 	return
 }
 
-func (c *Classify) SendEvent(event string, id string, data interface{}) {
-	c.Server.SendEvent(event, id, data)
+func (c *Classify) SendEvent(event string, status string, id string, data interface{}) {
+	c.Server.SendEvent(event, status, id, data)
 }
 
 func (s *Server) Start() {
@@ -152,14 +174,15 @@ func (s *Server) Stop() {
 }
 
 // SendEvent add new event on the event channel
-func (s *Server) SendEvent(eventType string, id string, data interface{}) {
+func (s *Server) SendEvent(eventType string, status string, id string, data interface{}) {
 
-	fmt.Printf("SEND EVENT %s id:%s %+v\n", eventType, id, data)
+	fmt.Printf("SEND EVENT %s [%s] id:%s %+v\n", eventType, status, id, data)
 
 	s.events.Add(Event{
-		Event: eventType,
-		Id:    id,
-		Data:  data,
+		Event:  eventType,
+		Status: status,
+		Id:     id,
+		Data:   data,
 	})
 }
 

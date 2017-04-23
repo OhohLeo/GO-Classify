@@ -6,6 +6,17 @@ export class CfgStringList {
 
     public stringlist = new Array<string>()
 
+    constructor(values?: string[]) {
+
+		if (values)
+		{
+			for (let value of values)
+			{
+				this.add(value)
+			}
+		}
+	}
+
     init(values: any) {
 
         if (values == undefined) {
@@ -109,7 +120,8 @@ export class StringListComponent implements AfterViewChecked {
 
         // Initialisation des valeurs
         this.chip.material_chip({
-            data: this.value.getTags(),
+            data: (this.value != undefined) ?
+				this.value.getTags() : [],
             placeholder: 'Enter a tag',
             secondaryPlaceholder: '+Tag',
         })

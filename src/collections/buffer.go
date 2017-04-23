@@ -5,16 +5,29 @@ import (
 )
 
 type Buffer struct {
-	waitings []string
-	items    map[string]*Item
-	maxSize  int
+	waitings   []string
+	items      map[string]*Item
+	maxSize    int
+	collection *Collection
 }
 
-func NewBuffer(defaultSize int) *Buffer {
+func NewBuffer(collection *Collection, defaultSize int) *Buffer {
 	return &Buffer{
-		waitings: make([]string, 0),
-		items:    make(map[string]*Item),
-		maxSize:  defaultSize,
+		waitings:   make([]string, 0),
+		items:      make(map[string]*Item),
+		maxSize:    defaultSize,
+		collection: collection,
+	}
+}
+
+func (b *Buffer) CleanedNames(bannedList []string, separators []string) {
+
+	for _, item := range b.items {
+		fmt.Printf("CLEAN %s ?", item.CleanedName)
+		if item.SetCleanedName(bannedList, separators) {
+			fmt.Printf("CLEAN AFTER! %s ?", item.CleanedName)
+			b.collection.SendEvent("buffer", "update", item)
+		}
 	}
 }
 
@@ -24,7 +37,7 @@ func (b *Buffer) SetSize(size int) {
 		return
 	}
 
-	isSizeInc := b.maxSize > size
+	isSizeInc := (b.maxSize < size)
 
 	b.maxSize = size
 
@@ -54,22 +67,27 @@ func (b *Buffer) SetSize(size int) {
 	b.waitings = b.waitings[:size]
 }
 
-func (b *Buffer) Add(name string, item *Item) {
-
-	// TODO Preprocess to watch for matching item in the buffer
+func (b *Buffer) Add(name string, item *Item) bool {
 
 	if _, ok := b.items[name]; ok {
 		fmt.Println("already existing item '" + name + "' in buffer")
-		return
+		return false
 	}
 
 	// Add to the hash list
 	b.items[name] = item
 
 	b.SendNext(name)
+
+	return true
 }
 
-func (b *Buffer) Remove(name string) {
+func (b *Buffer) Remove(name string) bool {
+
+	if _, ok := b.items[name]; ok == false {
+		fmt.Println("not existing item '" + name + "' in buffer")
+		return false
+	}
 
 	// Remove from the waiting list
 	for idx, itemName := range b.waitings {
@@ -83,6 +101,18 @@ func (b *Buffer) Remove(name string) {
 	delete(b.items, name)
 
 	b.SendNext("")
+
+	return true
+}
+
+func (b *Buffer) Validate(name string) *Item {
+
+	item, ok := b.items[name]
+	if ok {
+		b.Remove(name)
+	}
+
+	return item
 }
 
 func (b *Buffer) GetCurrentList() (items []*Item) {
@@ -124,6 +154,9 @@ func (b *Buffer) SendNext(next string) {
 			items = append(items, item)
 			keys = append(keys, next)
 			itemsNb--
+
+			// Launch research on item
+			b.collection.Search("buffer", item)
 		} else {
 			fmt.Println("key '" + next + "' not in buffer")
 		}
@@ -133,11 +166,11 @@ func (b *Buffer) SendNext(next string) {
 	for key, item := range b.items {
 
 		// No need to send more items
-		if itemsNb == 0 {
+		if itemsNb <= 0 {
 			break
 		}
 
-		if item.Status != BUFFER_WAITING {
+		if item.Status > BUFFER_WAITING {
 			continue
 		}
 
@@ -145,10 +178,11 @@ func (b *Buffer) SendNext(next string) {
 		items = append(items, item)
 		keys = append(keys, key)
 		itemsNb--
+
+		// Launch research on item
+		b.collection.Search("buffer", item)
 	}
 
 	// Store keys
 	b.waitings = append(b.waitings, keys...)
-
-	// Send items
 }

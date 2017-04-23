@@ -1,10 +1,14 @@
-<detail *ngIf="detailItem" [item]="detailItem" (close)="onCloseDetail($event)"></detail>
+<detail *ngIf="detailBuffer"
+		[collection]="collection"
+		[buffer]="detailBuffer"
+		(close)="onCloseDetail($event)">
+</detail>
 <div id="buffer" class="modal bottom-sheet">
     <div class="modal-content">
 		<ul class="collection">
 			<li id="{{buffer.id}}" class="collection row" *ngFor="let buffer of buffers">
 				<div class="col s3" (click)="getDetails(buffer)">{{buffer.probability}}</div>
-				<div class="col s3" (click)="getDetails(buffer)">{{buffer.name}}</div>
+				<div class="col s3" (click)="getDetails(buffer)">{{buffer.getName()}}</div>
 				<div class="col s3" *ngIf="buffer.best_match">
 					<buffer-movie *ngIf="buffer.type === 'movies'" [movie]="buffer.best_match"></buffer-movie>
 				</div>

@@ -9,15 +9,16 @@ import (
 
 // Collection common methods
 type Collection interface {
+	Init(string) chan collections.Event
 	SetName(string)
 	GetName() string
 	GetType() string
-	SetConfig()
 	ModifyConfig(string, string, []string) error
 	ModifyConfigValue(string, string) error
 	GetConfig() *collections.Config
+	ResetBuffer()
 	GetBuffer() []*collections.Item
-	CleanBuffer()
+	ValidateBuffer(string) error
 	AddWebsite(website websites.Website)
 	DeleteWebsite(name string) error
 	OnInput(input imports.Data) *collections.Item
@@ -72,11 +73,19 @@ func (c *Classify) AddCollection(name string, collectionType string) (collection
 	// Store the collection
 	c.collections[name] = new
 
-	// Set the collection name
-	new.SetName(name)
-
 	// Associate configuration
-	new.SetConfig()
+	eventsChannel := new.Init(name)
+
+	go func() {
+
+		for {
+			event, ok := <-eventsChannel
+			if ok {
+				c.SendEvent("collection/"+name+"/"+event.Source,
+					event.Status, event.Id, *event.Item)
+			}
+		}
+	}()
 
 	return new, nil
 }
