@@ -69,13 +69,13 @@ export class AppComponent implements OnInit {
                 }
 
                 // Import data
-                if (e.event.startsWith("import")) {
+                if (new RegExp("^imports").test(e.event)) {
                     this.handleImport(e);
                     return;
                 }
 
                // Collections reception
-                if (e.event.startsWith("collection")) {
+                if (new RegExp("^collection").test(e.event)) {
                     this.handleCollection(e);
                     return;
                 }
@@ -142,7 +142,7 @@ export class AppComponent implements OnInit {
         this.importsService.addEvent(e);
 
         // Display imports status
-        if (e.event.endsWith("status")) {
+        if (new RegExp('status$').test(e.event)) {
 
             // Status 'TRUE': rotate refresh logo
             if (e.data) {

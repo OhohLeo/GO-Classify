@@ -70,20 +70,20 @@ export class ConfigBase {
 export class ConfigService {
 
     // Collections configurations
-    public configs: Map<string, ConfigBase> = new Map<string, ConfigBase>()
+    public configs: { [key:string]:ConfigBase; } = {}
 
     constructor(private apiService: ApiService,
 				private bufferService: BufferService) { }
 
     public hasConfig(collection: string): boolean {
-        return this.configs.get(collection) != undefined
+        return this.configs[collection] != undefined
     }
 
     public getConfigs(collection: string) {
 
         return new Observable(observer => {
 
-            let currentConfs = this.configs.get(collection)
+            let currentConfs = this.configs[collection]
             if (currentConfs != undefined && currentConfs.hasCache()) {
                 observer.next(currentConfs)
                 return
@@ -103,7 +103,7 @@ export class ConfigService {
                     let config = new ConfigBase()
                     config.init(confs)
                     config.enableCache()
-                    this.configs.set(collection, config)
+                    this.configs[collection] = config
 
                     observer.next(config)
                 })
@@ -112,7 +112,7 @@ export class ConfigService {
 
     public setConfig(collection: string, name: string, action: any, value: any) {
 
-        let currentConfs = this.configs.get(collection)
+        let currentConfs = this.configs[collection]
         if (currentConfs == undefined) {
             console.log("No configuration found for collection '" + collection + "'")
             return

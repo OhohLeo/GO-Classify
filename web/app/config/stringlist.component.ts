@@ -39,7 +39,7 @@ export class CfgStringList {
     add(name: string): boolean {
 
         // Check that the name doesn't already exist
-        if (this.stringlist.includes(name)) {
+        if (this.hasName(name)) {
             console.log("String '" + name + "'already existing")
             return false
         }
@@ -48,7 +48,7 @@ export class CfgStringList {
         return true
     }
 
-    remove(name: string): boolean {
+	remove(name: string): boolean {
 
         // Check if the name exist
         let index = this.stringlist.indexOf(name)
@@ -61,6 +61,16 @@ export class CfgStringList {
         return true
     }
 
+	hasName(search: string): boolean {
+
+		this.stringlist.forEach((name) => {
+			if (name === search)
+				return true;
+		})
+
+		return false
+	}
+
     hasChanged(values: string[]): boolean {
 
         // S'agit-il d'un tableau
@@ -70,7 +80,7 @@ export class CfgStringList {
         }
 
         values.forEach((name) => {
-            if (this.stringlist.includes(name) == false)
+            if (this.hasName(name) == false)
                 return true;
         })
 

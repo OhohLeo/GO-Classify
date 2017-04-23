@@ -35,7 +35,7 @@ export class Collection {
             return false
         }
 
-        delete (this.imports[type], name)
+        delete this.imports[type]
         return true
     }
 }

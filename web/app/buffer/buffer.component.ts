@@ -29,18 +29,13 @@ export class BufferComponent implements OnInit, OnDestroy {
     ngOnInit() {
         this.action = jQuery('div#buffer').modal({
 		    complete: () => {
-
-				if (this.events == undefined)
-					return
-
-				this.events.unsubscribe()
-				this.events = undefined
+				this.stop();
 			}
 		})
     }
 
     ngOnDestroy() {
-        this.action.modal("close")
+		this.stop
     }
 
     start() {
@@ -62,7 +57,9 @@ export class BufferComponent implements OnInit, OnDestroy {
 
 		// Subscribe to buffer modification
 		this.events = this.bufferService.subscribeEvents(this.collection + "/buffer")
-			.subscribe((event: BufferEvent) => {
+		if (this.events != undefined) {
+
+			this.events.subscribe((event: BufferEvent) => {
 
 				// Check if it is the expected collection
 				if (event.collection != this.collection)
@@ -84,7 +81,17 @@ export class BufferComponent implements OnInit, OnDestroy {
 				}
 
 			})
+		}
     }
+
+	stop() {
+
+		if (this.events == undefined)
+			return;
+
+		this.events.unsubscribe()
+		this.events = undefined
+	}
 
     // Check if item is displayed
     hasBuffer(id: string) : number {

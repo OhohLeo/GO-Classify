@@ -34,6 +34,7 @@ export class BufferItem {
 
         if (data.imports != undefined) {
             for (let key in data.imports) {
+				console.log("******** ", key, data.imports[key])
                 data.imports[key].forEach((data: any) => {
                     this.imports.push(data)
                 })
@@ -74,10 +75,8 @@ export class BufferEvent {
 export class BufferService {
 
     enableCache: boolean
-    buffersByCollection: Map<string, BufferItem[]> =
-		new Map<string, BufferItem[]>()
-    buffersById: Map<string, BufferItem> =
-		new Map<string, BufferItem>()
+    buffersByCollection: { [key:string]:BufferItem[]; } = {}
+    buffersById: { [key:string]:BufferItem; } = {}
 
     private eventObservers = {}
 
@@ -94,13 +93,13 @@ export class BufferService {
 
     // Check if item does exist
     hasBufferItem(search: BufferItem): boolean {
-        return this.buffersById.get(search.id) != undefined
+        return this.buffersById[search.id] != undefined
     }
 
 	// Check if item does exist in specified collection
     hasCollectionBufferItem(collection: string, search: BufferItem): number {
 
-		let itemList = this.buffersByCollection.get(collection)
+		let itemList = this.buffersByCollection[collection]
 
         for (let idx in itemList) {
             if (itemList[idx].id === search.id) {
@@ -119,23 +118,21 @@ export class BufferService {
     addBufferItem(collection: string, i: BufferItem) {
 
         // Store buffers by id
-        this.buffersById.set(i.id, i)
+        this.buffersById[i.id] = i
 
         // Store buffers by collection
-        if (this.buffersByCollection.get(collection) === undefined) {
-            this.buffersByCollection.set(collection, [])
+        if (this.buffersByCollection[collection] === undefined) {
+            this.buffersByCollection[collection] = []
         }
 
-        this.buffersByCollection.get(collection).push(i)
-
-		console.log(this.buffersByCollection.get(collection))
+        this.buffersByCollection[collection].push(i)
     }
 
     // Delete buffer item from specified collection
     deleteBufferItem(collection: string, i: BufferItem) {
 
         // Delete item by type
-        let itemList = this.buffersByCollection.get(collection)
+        let itemList = this.buffersByCollection[collection]
         for (let idx in itemList) {
             let item = itemList[idx]
             if (item.id === i.id) {
@@ -144,7 +141,7 @@ export class BufferService {
             }
         }
 
-        this.buffersById.delete(i.id)
+        delete this.buffersById[i.id]
 
 		this.enableCache = false
 	}
@@ -156,7 +153,7 @@ export class BufferService {
             // // Returns the cache if the list should not have changed
             if (this.buffersByCollection && this.enableCache === true) {
 
-				let buffers = this.buffersByCollection.get(collection)
+				let buffers = this.buffersByCollection[collection]
 				if (buffers === undefined) {
 					buffers = [];
 				}
@@ -197,8 +194,8 @@ export class BufferService {
 		}
 
 		// Store buffers by id
-        this.buffersById.set(item.id, item)
-        this.buffersByCollection.get(collection)[idx] = item;
+        this.buffersById[item.id] = item
+        this.buffersByCollection[collection][idx] = item
 
 		console.log("UPDATE ", item);
 	}
@@ -271,6 +268,7 @@ export class BufferService {
 			return;
 		}
 
+		console.log(event.data)
 		let buffer = new BufferItem(event.data)
 
 		onEventCb(collection, buffer)
