@@ -8,6 +8,7 @@ import (
 	"io/ioutil"
 	"os"
 	"os/exec"
+	"path/filepath"
 	"strings"
 )
 
@@ -118,12 +119,17 @@ func (r *Directory) readDirectory(c chan imports.Data, path string, isRecursive 
 			continue
 		}
 
+		fullname := f.Name()
+		extension := filepath.Ext(fullname)
+
 		file := &imports.File{
-			Type:     "file",
-			Name:     f.Name(),
-			Path:     path,
-			FullPath: fullpath,
-			FileInfo: f,
+			Type:      "file",
+			Name:      strings.TrimRight(fullname, extension),
+			FullName:  fullname,
+			Extension: extension,
+			Path:      path,
+			FullPath:  fullpath,
+			FileInfo:  f,
 		}
 
 		// Search for file header infos

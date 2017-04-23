@@ -19,12 +19,14 @@ type Data interface {
 }
 
 type File struct {
-	Type     string            `json:"type"`
-	Name     string            `json:"name"`
-	Path     string            `json:"path"`
-	FullPath string            `json:"fullpath"`
-	Infos    map[string]string `json:"infos"`
-	FileInfo os.FileInfo       `json:"-"`
+	Type      string            `json:"type"`
+	Name      string            `json:"name"`
+	FullName  string            `json:"fullname"`
+	Extension string            `json:"extension"`
+	Path      string            `json:"path"`
+	FullPath  string            `json:"fullpath"`
+	Infos     map[string]string `json:"infos"`
+	FileInfo  os.FileInfo       `json:"-"`
 }
 
 func (f *File) GetType() string {
