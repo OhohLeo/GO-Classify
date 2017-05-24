@@ -146,18 +146,11 @@ func (c *Collection) Search(src string, item *Item) {
 	c.SendEvent(src, "searchOk", item)
 }
 
-func (c *Collection) GetKeywords(item *Item) string {
-	return "Star+Wars"
-}
-
 // SearchWeb launch resarch through specified websites
 func (c *Collection) SearchWeb(item *Item) {
 
 	// Get name to search
-	keywords := c.GetKeywords(item)
-
-	// Store query
-	item.WebQuery = keywords
+	keywords := item.WebQuery
 
 	// For all specified websites
 	for _, website := range c.websites {

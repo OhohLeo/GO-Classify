@@ -2,6 +2,7 @@ package collections
 
 import (
 	"fmt"
+	"sort"
 	"strconv"
 	"strings"
 )
@@ -141,6 +142,7 @@ func (c *CfgStringList) Add(toAdd []string) error {
 	}
 
 	hasChanged := false
+	list := *c
 
 	// Check if item doesn't already exist
 	for _, add := range toAdd {
@@ -149,11 +151,15 @@ func (c *CfgStringList) Add(toAdd []string) error {
 			continue
 		}
 
-		*c = append(*c, add)
+		list = append(list, add)
 		hasChanged = true
 	}
 
 	if hasChanged {
+
+		// Sort longest item first, short one at the end
+		sort.Sort(CfgStringList(list))
+		*c = list
 		return nil
 	}
 
@@ -204,4 +210,17 @@ func (c *CfgStringList) Remove(toRemove []string) error {
 	}
 
 	return fmt.Errorf("invalid config to remove '%s'", strings.Join(keys, ","))
+}
+
+// Methods used to implement sort.Interface
+func (c CfgStringList) Len() int {
+	return len(c)
+}
+
+func (c CfgStringList) Swap(i, j int) {
+	c[i], c[j] = c[j], c[i]
+}
+
+func (c CfgStringList) Less(i, j int) bool {
+	return len(c[j]) < len(c[i])
 }

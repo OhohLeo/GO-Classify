@@ -2,17 +2,20 @@
     "imports": {
 	"directory": {
 	    "*": [
-		"/home/lmartin/Vidéos",
-		"/home/lmartin/Téléchargements"
+			"/media/ohohleo/Linux/video/test",
+			"/home/ohohleo/Téléchargements"
 	    ]
 	}
     },
     "websites": {
-	"IMDB": {
-	    "api_key":"9b19457b-dab3-480a-b198-0a5124801c17"
-	}
+		"IMDB": {
+			"api_key":"9b19457b-dab3-480a-b198-0a5124801c17"
+		},
+		"TMDB": {
+			"api_key":"80e1027731e519ce1f4faacf21ecc13a"
+		}
     },
     "server": {
-	"url": "localhost:1234"
+		"url": "localhost:1234"
     }
 }

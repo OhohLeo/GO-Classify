@@ -1,5 +1,5 @@
 <h2>Create Collection</h2>
-<form (ngSubmit)="onSubmit()" #createForm="ngForm">
+<form (ngSubmit)="onSubmit(selectedWebsites.value)" #createForm="ngForm">
     <div>
 	<label>Name</label>
 	<input name="name" type="text" [(ngModel)]="collection.name" required>
@@ -15,7 +15,7 @@
     </div>
     <div>
 	<label>Websites</label>
-	<select name="website"
+	<select #selectedWebsites name="website"
                 [(ngModel)]="collection.websites"
                 class="browser-default"
                 required>

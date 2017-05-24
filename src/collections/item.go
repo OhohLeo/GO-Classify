@@ -21,9 +21,10 @@ type Data interface {
 }
 
 type ItemGeneric struct {
-	Status     int     `json:"status"`
-	Type       string  `json:"type"`
-	IsMatching float32 `json:"probability"`
+	Status     int         `json:"status"`
+	Type       string      `json:"type"`
+	IsMatching float32     `json:"probability"`
+	Specific   interface{} `json:"specific"`
 }
 
 type Item struct {
@@ -65,17 +66,6 @@ func (i *Item) SetCleanedName(bannedList []string, separators []string) bool {
 		return false
 	}
 
-	// Removed banned strings
-	for _, banned := range bannedList {
-
-		if strings.Contains(i.CleanedName, banned) == false {
-			continue
-		}
-
-		i.CleanedName = strings.Replace(i.CleanedName, banned, "", -1)
-		i.Banned = append(i.Banned, banned)
-	}
-
 	// Separate elements with separators
 	for _, separator := range separators {
 
@@ -87,12 +77,28 @@ func (i *Item) SetCleanedName(bannedList []string, separators []string) bool {
 		i.Separators = append(i.Separators, separator)
 	}
 
+	// Removed banned strings
+	for _, banned := range bannedList {
+
+		if strings.Contains(i.CleanedName, banned) == false {
+			continue
+		}
+
+		i.CleanedName = strings.Replace(i.CleanedName, banned, "", -1)
+		i.Banned = append(i.Banned, banned)
+
+	}
+
 	i.CleanedName = strings.TrimSpace(i.CleanedName)
+
+	// Set web query
+	i.WebQuery = strings.Replace(i.CleanedName, " ", "+", -1)
 
 	return previousName != i.CleanedName
 }
 
 func (i *Item) AddImportData(data imports.Data) {
+
 	if i.Imports == nil {
 		i.Imports = make(map[string][]imports.Data)
 	}

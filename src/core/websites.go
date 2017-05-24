@@ -4,10 +4,12 @@ import (
 	"errors"
 	"github.com/ohohleo/classify/websites"
 	"github.com/ohohleo/classify/websites/IMDB"
+	"github.com/ohohleo/classify/websites/TMDB"
 )
 
 var newWebsites = map[string]websites.Website{
 	"IMDB": IMDB.New(),
+	"TMDB": TMDB.New(),
 }
 
 // AddWebsite add new website

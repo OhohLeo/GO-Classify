@@ -23,12 +23,12 @@ export class CreateCollectionComponent {
             });
     }
 
-    onSubmit() {
+    onSubmit(website: string) {
 
         // Check that a collection with same name doesn't already
         // exist
 
-        this.collection.websites = this.websites;
+        this.collection.websites = [ website ];
 
         // Create new collection
         this.apiSercice.newCollection(this.collection)

@@ -23,10 +23,13 @@ func NewBuffer(collection *Collection, defaultSize int) *Buffer {
 func (b *Buffer) CleanedNames(bannedList []string, separators []string) {
 
 	for _, item := range b.items {
-		fmt.Printf("CLEAN %s ?", item.CleanedName)
+		fmt.Printf("CLEAN %s ?\n", item.CleanedName)
 		if item.SetCleanedName(bannedList, separators) {
-			fmt.Printf("CLEAN AFTER! %s ?", item.CleanedName)
+			fmt.Printf("CLEAN AFTER! %s ?\n", item.CleanedName)
 			b.collection.SendEvent("buffer", "update", item)
+
+			// Launch research on item
+			b.collection.Search("buffer", item)
 		}
 	}
 }
