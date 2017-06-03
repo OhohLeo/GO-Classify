@@ -63,21 +63,45 @@ func (t *TMDB) Search(input string) chan websites.Data {
 				options["page"] = strconv.Itoa(currentPage)
 			}
 
-			results, err := t.api.SearchMovie(input, options)
-			if err != nil {
-				close(c)
-				return
+			results := &api.MovieSearchResults{
+				Page: 0,
+				Results: []api.MovieShort{
+					api.MovieShort{
+						ID:            1,
+						OriginalTitle: "original title",
+						Title:         "title",
+						ReleaseDate:   "2010-01-02",
+						PosterPath:    "path",
+					},
+					api.MovieShort{
+						ID:            2,
+						OriginalTitle: "original title 2",
+						Title:         "title 2",
+						ReleaseDate:   "2011-01-02",
+						PosterPath:    "path2",
+					},
+				},
+				TotalPages:   0,
+				TotalResults: 2,
 			}
+
+			// , err := t.api.SearchMovie(input, options)
+			// if err != nil {
+			// 	close(c)
+			// 	return
+			// }
 
 			currentPage = results.Page
 			totalPages = results.TotalPages
 
 			for _, data := range results.Results {
-				//fmt.Printf("movie: %+v\n", data)
+
+				fmt.Printf("movie: %+v\n", data)
 
 				release, _ := time.Parse("2006-01-02", data.ReleaseDate)
 
 				movie := &collections.Movie{
+					Id:       t.GetName() + "_" + strconv.Itoa(data.ID),
 					Name:     data.OriginalTitle,
 					Image:    t.posterPath + data.PosterPath,
 					Released: release,

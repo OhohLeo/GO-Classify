@@ -9,7 +9,7 @@ func TestBuffer(t *testing.T) {
 
 	assert := assert.New(t)
 
-	buffer := NewBuffer(2)
+	buffer := NewBuffer(&Collection{}, 2)
 
 	// Init state
 	assert.Equal(buffer.maxSize, 2)

@@ -73,6 +73,28 @@ func (c *Config) clean(toClean string) (result []string, banned []string) {
 	return
 }
 
+func (c *Config) GetBannedList() []string {
+
+	if len(c.Separators) == 0 {
+		return c.Banned
+	}
+
+	bannedList := make([]string, 0)
+
+	// Removed banned strings
+	for _, banned := range c.Banned {
+
+		// Separate elements with separators
+		for _, separator := range c.Separators {
+			banned = strings.Replace(banned, separator, "`", -1)
+		}
+
+		bannedList = append(bannedList, strings.Split(banned, "`")...)
+	}
+
+	return bannedList
+}
+
 func (c *Collection) ModifyConfig(name string, action string, list []string) (err error) {
 
 	var currentList *CfgStringList
@@ -99,7 +121,7 @@ func (c *Collection) ModifyConfig(name string, action string, list []string) (er
 
 	// Get cleaned buffer items on change
 	if err == nil && (name == "banned" || name == "separators") {
-		c.buffer.CleanedNames(c.config.Banned, c.config.Separators)
+		c.buffer.CleanedNames(c.config.GetBannedList(), c.config.Separators)
 	}
 
 	fmt.Printf("%s %+v\n", name, currentList)
@@ -108,6 +130,7 @@ func (c *Collection) ModifyConfig(name string, action string, list []string) (er
 }
 
 func (c *Collection) ModifyConfigValue(name string, value string) error {
+
 	if name == "bufferSize" {
 
 		// Integer is expected

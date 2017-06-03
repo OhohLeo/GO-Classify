@@ -136,6 +136,8 @@ func (c *Collection) Search(src string, item *Item) {
 	// Launch research through web
 	if len(c.websites) > 0 {
 		c.SearchWeb(item)
+
+		item.BestMatchId = item.Websites["TMDB"][0].GetId()
 	}
 
 	// // TODO Research for best matching
@@ -161,8 +163,8 @@ func (c *Collection) SearchWeb(item *Item) {
 		for {
 			data, ok := <-channel
 			if ok {
-				log.Printf("WEB DATA\n")
 				item.AddWebsiteData(website.GetName(), data)
+				continue
 			}
 
 			break
@@ -171,6 +173,11 @@ func (c *Collection) SearchWeb(item *Item) {
 }
 
 func (c *Collection) SendEvent(src string, status string, item *Item) {
+
+	if c.events == nil {
+		return
+	}
+
 	c.events <- Event{
 		Source: src,
 		Status: status,

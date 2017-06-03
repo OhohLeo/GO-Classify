@@ -7,6 +7,7 @@ import (
 // Generic movie format
 type Movie struct {
 	ItemGeneric
+	Id          string    `json:"id"`
 	Name        string    `json:"name"`
 	Url         string    `json:"url"`
 	Released    time.Time `json:"released"`
@@ -25,6 +26,11 @@ func (m *Movie) Init() {
 // GetType returns the type of collection
 func (m Movie) GetType() string {
 	return "movie"
+}
+
+// GetType returns the type of collection
+func (m *Movie) GetId() string {
+	return m.Id
 }
 
 type MovieItem struct {

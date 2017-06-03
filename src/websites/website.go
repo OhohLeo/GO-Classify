@@ -8,4 +8,5 @@ type Website interface {
 
 type Data interface {
 	GetType() string
+	GetId() string
 }

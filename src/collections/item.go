@@ -18,6 +18,7 @@ const (
 
 type Data interface {
 	GetType() string
+	GetId() string
 }
 
 type ItemGeneric struct {
@@ -38,6 +39,7 @@ type Item struct {
 	Imports     map[string][]imports.Data `json:"imports"`
 	WebQuery    string                    `json:"webQuery"`
 	Websites    map[string][]Data         `json:"websites"`
+	BestMatchId string                    `json:"bestMatchId"`
 	BestMatch   Data                      `json:"bestMatch"`
 }
 
@@ -89,6 +91,8 @@ func (i *Item) SetCleanedName(bannedList []string, separators []string) bool {
 
 	}
 
+	// Cleaned spaces
+	i.CleanedName = strings.Replace(i.CleanedName, "  ", " ", -1)
 	i.CleanedName = strings.TrimSpace(i.CleanedName)
 
 	// Set web query
