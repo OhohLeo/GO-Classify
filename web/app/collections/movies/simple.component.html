@@ -1,0 +1,10 @@
+<div class="col s2">
+    <img *ngIf="movie.image"
+	 src="{{movie.image}}" height="100" width="100">
+</div>
+<div class="col s10">
+    <a href={{movie.url}}>{{movie.name}}</a>
+    <p *ngIf="movie.released"><label>Release:</label>({{movie.released})</p>
+    <p *ngIf="movie.duration"><label>Duration:</label>({{movie.duration})</p>
+    <p *ngIf="movie.description">{{movie.description}}</p>
+</div>

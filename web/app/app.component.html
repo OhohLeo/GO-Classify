@@ -28,9 +28,7 @@
     <collections title="title"></collections>
 </div>
 <div class="row">
-    <div class="col s3">
-    </div>
-    <div class="col s9" [ngSwitch]="status">
+    <div [ngSwitch]="status" class="center">
         <div *ngSwitchCase="appStatus.HOME">HOME</div>
         <div *ngSwitchCase="appStatus.IMPORT">
             <imports></imports>
@@ -38,6 +36,11 @@
         <div *ngSwitchCase="appStatus.EXPORT">EXPORT</div>
         <div *ngSwitchCase="appStatus.CONFIG">
 	    <config [collection]="title"></config>
+	</div>
+	<div *ngSwitchCase="appStatus.ITEM">
+	    <item *ngIf="item" [collection]="collection.name"
+		  [item]="item">
+	    </item>
 	</div>
         <div *ngSwitchCase="appStatus.NONE"></div>
     </div>
@@ -51,5 +54,6 @@
 	    <i id="imports-loop" class="material-icons right">loop</i>
 	</div>
     </div>
-    <buffer [collection]="title"></buffer>
+    <buffer [collection]="title"
+	    (onItemSelected)="onItem($event)"></buffer>
 </footer>

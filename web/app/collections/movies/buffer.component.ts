@@ -11,6 +11,7 @@ export class BufferMovieComponent implements OnInit, OnDestroy {
     @Input() movie: Movie
 
     ngOnInit() {
+        console.log("BufferMovieComponent", this.movie)
     }
 
     ngOnDestroy() {

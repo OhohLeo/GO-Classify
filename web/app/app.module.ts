@@ -8,6 +8,7 @@ import { CollectionsModule } from './collections/collections.module';
 import { ConfigModule } from './config/config.module';
 import { ImportsModule } from './imports/imports.module';
 import { BufferModule } from './buffer/buffer.module';
+import { ItemModule } from './item/item.module';
 
 import { ApiService } from './api.service';
 
@@ -22,7 +23,8 @@ import { AppComponent } from './app.component';
         CollectionsModule,
         ConfigModule,
         ImportsModule,
-        BufferModule
+        BufferModule,
+        ItemModule
     ],
     providers: [ApiService],
     declarations: [AppComponent],

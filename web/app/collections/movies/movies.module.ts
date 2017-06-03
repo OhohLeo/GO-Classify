@@ -5,7 +5,7 @@ import { FormsModule } from '@angular/forms'
 
 import { BufferMovieComponent } from './buffer.component'
 import { DetailMovieComponent } from './detail.component'
-import { WebsiteMovieComponent } from './website.component'
+import { SimpleMovieComponent } from './simple.component'
 
 @NgModule({
     imports: [
@@ -13,8 +13,16 @@ import { WebsiteMovieComponent } from './website.component'
         BrowserModule,
         FormsModule
     ],
-    declarations: [BufferMovieComponent, DetailMovieComponent, WebsiteMovieComponent],
-    exports: [BufferMovieComponent, DetailMovieComponent, WebsiteMovieComponent]
+    declarations: [
+        BufferMovieComponent,
+        DetailMovieComponent,
+        SimpleMovieComponent
+    ],
+    exports: [
+        BufferMovieComponent,
+        DetailMovieComponent,
+        SimpleMovieComponent
+    ]
 })
 
 export class MoviesModule { }

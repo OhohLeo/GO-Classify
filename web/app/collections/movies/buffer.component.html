@@ -1,1 +1,4 @@
-<div class="col s3"><p>RESULT</p></div>
+<a href={{movie.url}}>{{movie.name}}</a>
+<p *ngIf="movie.released">
+    <label>Release:</label>({{movie.released})
+</p>

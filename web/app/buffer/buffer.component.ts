@@ -1,8 +1,13 @@
-import { Component, NgZone, Input, OnInit, OnDestroy, ViewChild } from '@angular/core'
+import {
+    Component, NgZone, Input, Output,
+    EventEmitter, OnInit, OnDestroy
+} from '@angular/core'
+
 import { Response } from '@angular/http';
-import { BufferService, BufferItem, BufferEvent } from './buffer.service'
-import { Event, Item } from '../api.service'
-import { DetailComponent } from './detail.component'
+import { BufferService, BufferEvent } from './buffer.service'
+import { Event } from '../api.service'
+import { ItemComponent } from '../item/item.component'
+import { Item } from '../item/item'
 
 declare var jQuery: any
 
@@ -14,13 +19,11 @@ declare var jQuery: any
 export class BufferComponent implements OnInit, OnDestroy {
 
     @Input() collection: string
+    @Output() onItemSelected = new EventEmitter();
 
     private action: any
     private events: any
-    private buffers: BufferItem[] = []
-
-	@ViewChild(DetailComponent) detail: DetailComponent
-    private detailBuffer: BufferItem
+    private buffers: Item[] = []
 
     constructor(private zone: NgZone,
         private bufferService: BufferService) {
@@ -28,83 +31,74 @@ export class BufferComponent implements OnInit, OnDestroy {
 
     ngOnInit() {
         this.action = jQuery('div#buffer').modal({
-		    complete: () => {
-				this.stop();
-			}
-		})
+            complete: () => {
+                this.stop();
+            }
+        })
     }
 
     ngOnDestroy() {
-		this.stop
+        this.stop
     }
 
     start() {
 
-		// Get actual buffer items
-		this.bufferService.getBufferItems(this.collection)
-            .subscribe((buffers: BufferItem[]) => {
+        // Get actual buffer items
+        this.bufferService.getItems(this.collection)
+            .subscribe((buffers: Item[]) => {
 
-				if (buffers.length <= 0)
-					return;
+                if (buffers.length <= 0)
+                    return;
 
-				for (let buffer of buffers) {
-					this.add(new BufferItem(buffer));
-				}
+                this.zone.run(() => {
+                    this.buffers = buffers
+                })
 
-				// If has buffer items : open modal
-				this.action.modal("open")
+                // If has buffer items : open modal
+                this.action.modal("open")
             })
 
-		// Subscribe to buffer modification
-		this.events = this.bufferService.subscribeEvents(this.collection + "/buffer")
-		if (this.events != undefined) {
+        // Subscribe to buffer modification
+        this.events = this.bufferService.subscribeEvents(
+            this.collection + "/buffer")
+            .subscribe((event: BufferEvent) => {
 
-			this.events.subscribe((event: BufferEvent) => {
+                // Check if it is the expected collection
+                if (event.collection != this.collection)
+                    return;
 
-				// Check if it is the expected collection
-				if (event.collection != this.collection)
-					return;
+                if (event.status === "create") {
+                    this.add(event.buffer)
+                }
+                else if (event.status === "update") {
+                    this.update(event.buffer)
+                }
+                else {
+                    console.error("Unhandled buffer event status '"
+                        + status + "'")
+                }
 
-				console.log("GET BUFFER EVENT", event)
-
-				if (event.status === "create")
-				{
-					this.add(event.buffer)
-				}
-				else if (event.status === "update")
-				{
-					this.update(event.buffer)
-				}
-				else
-				{
-					console.error("Unhandled buffer event status '" + status + "'")
-				}
-
-			})
-		}
+            })
     }
 
-	stop() {
 
-		if (this.events == undefined)
-			return;
-
-		this.events.unsubscribe()
-		this.events = undefined
-	}
+    stop() {
+        this.events.unsubscribe()
+        this.events = undefined
+    }
 
     // Check if item is displayed
-    hasBuffer(id: string) : number {
+    hasBuffer(id: string): number {
 
-		for (let idx in this.buffers) {
-			if (id === this.buffers[idx].id)
-				return +idx
-		}
+        for (let idx in this.buffers) {
+            if (id === this.buffers[idx].id)
+                return +idx
+        }
 
         return -1
     }
 
-    add(buffer: BufferItem) {
+    add(buffer: Item) {
 
         let id = buffer.id
 
@@ -120,12 +114,12 @@ export class BufferComponent implements OnInit, OnDestroy {
         })
     }
 
-    remove(buffer: BufferItem) {
+    remove(buffer: Item) {
 
         let id = buffer.id
 
-		// Check if buffer does exist
-		let idx = this.hasBuffer(id)
+        // Check if buffer does exist
+        let idx = this.hasBuffer(id)
         if (idx < 0) {
             console.error("Remove Buffer with id '" + id + "' not found")
             return;
@@ -137,56 +131,41 @@ export class BufferComponent implements OnInit, OnDestroy {
         })
     }
 
-	update(buffer: BufferItem)
-	{
+    update(buffer: Item) {
         let id = buffer.id
 
-		// Check if buffer does exist
-		let idx = this.hasBuffer(id)
-		if (idx < 0) {
-			console.error("Update buffer with id '" + id + "' not found")
+        // Check if buffer does exist
+        let idx = this.hasBuffer(id)
+        if (idx < 0) {
+            console.error("Update buffer with id '" + id + "' not found")
             return;
-		}
-
-		if (this.detailBuffer != undefined
-			&& this.detailBuffer.id == id)
-		{
-			this.detail.onUpdate(buffer)
-			this.detailBuffer = buffer
-		}
+        }
 
         this.zone.run(() => {
             this.buffers[idx] = buffer
         })
-	}
-
-    getDetails(buffer: BufferItem) {
-        this.zone.run(() => {
-            this.detailBuffer = buffer
-        })
     }
 
-    onCloseDetail() {
-        this.zone.run(() => {
-            this.detailBuffer = undefined
-        })
+    onItem(item: Item) {
+        this.onItemSelected.emit(item)
+        this.action.modal('close')
     }
 
-    validate(buffer: BufferItem) {
+    validate(item: Item) {
 
-		this.bufferService.validateBufferItem(this.collection, buffer)
-            .subscribe((ok : boolean) => {
+        this.bufferService.validateItem(this.collection, item)
+            .subscribe((ok: boolean) => {
 
-				if (ok == false) {
-					return
-				}
+                if (ok == false) {
+                    return
+                }
 
-				console.log("Validate", buffer, ok)
-				this.remove(buffer)
+                console.log("Validate", item, ok)
+                this.remove(item)
 
-				// If no more buffer items : close modal
-				if (this.buffers.length <= 0)
-					this.action.modal("close")
-			})
-	}
+                // If no more buffer items : close modal
+                if (this.buffers.length <= 0)
+                    this.action.modal("close")
+            })
+    }
 }

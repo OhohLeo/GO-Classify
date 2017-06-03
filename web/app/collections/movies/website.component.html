@@ -1,9 +1,0 @@
-<div>
-	<img *ngIf="movie.image" src="{{movie.image}}" height="100" width="100" (click)="getDetails()">
-	<a href={{movie.url}}>{{movie.name}}</a>
-	<div *ngIf="needDetails">
-		<p *ngIf="movie.released"><label>Release:</label>({{movie.released})</p>
-		<p *ngIf="movie.duration"><label>Duration:</label>({{movie.duration})</p>
-		<p *ngIf="movie.description">{{movie.description}}</p>
-	</div>
-</div>

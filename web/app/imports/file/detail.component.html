@@ -1,5 +1,3 @@
-<div *ngIf="needDetails">
-	<div *ngFor="let key of infos">
-		<p><label>{{key}} :</label>{{file.infos.get(key)}}</p>
-	</div>
+<div *ngFor="let key of infos">
+    <p><label>{{key}} :</label>{{file[key]}}</p>
 </div>

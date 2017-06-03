@@ -70,10 +70,10 @@ export class ConfigBase {
 export class ConfigService {
 
     // Collections configurations
-    public configs: { [key:string]:ConfigBase; } = {}
+    public configs: { [key: string]: ConfigBase; } = {}
 
     constructor(private apiService: ApiService,
-				private bufferService: BufferService) { }
+        private bufferService: BufferService) { }
 
     public hasConfig(collection: string): boolean {
         return this.configs[collection] != undefined
@@ -95,7 +95,7 @@ export class ConfigService {
 
                     // No config
                     if (confs == null) {
-                        console.log("No configuration found for collection "
+                        console.error("No configuration found for collection "
                             + collection)
                         return
                     }
@@ -114,7 +114,8 @@ export class ConfigService {
 
         let currentConfs = this.configs[collection]
         if (currentConfs == undefined) {
-            console.log("No configuration found for collection '" + collection + "'")
+            console.error("No configuration found for collection '"
+                + collection + "'")
             return
         }
 
@@ -141,9 +142,9 @@ export class ConfigService {
                 .subscribe((status) => {
                     console.log(status)
 
-					// On change on buffer size : update buffer list
-					if (name === "bufferSize")
-						this.bufferService.disableCache();
+                    // On change on buffer size : update buffer list
+                    if (name === "bufferSize")
+                        this.bufferService.disableCache();
 
                     observer.next(status)
                 })
@@ -153,9 +154,9 @@ export class ConfigService {
     public update(collection: string) {
     }
 
-	public onChange(collection : string, event) {
+    public onChange(collection: string, event) {
 
-		let name, action, value
+        let name, action, value
 
         if (event instanceof StringListEvent) {
             name = event.name
@@ -164,16 +165,16 @@ export class ConfigService {
         } else {
             name = event.target.name
             switch (event.target.type) {
-            case "number":
-                value = Number(event.target.value)
-            default:
-                value = event.target.value
+                case "number":
+                    value = Number(event.target.value)
+                default:
+                    value = event.target.value
             }
 
             console.log(event.target.type, value)
         }
 
-		console.log("CHANGE", name, action, value);
+        console.log("CHANGE", name, action, value);
 
         let observable = this.setConfig(
             collection, name, action, value)
@@ -181,5 +182,5 @@ export class ConfigService {
             observable.subscribe((status) => {
             })
         }
-	}
+    }
 }

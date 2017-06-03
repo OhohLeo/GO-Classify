@@ -23,13 +23,12 @@ export class ConfigComponent {
         this.configService.getConfigs(this.collection)
             .subscribe((config: ConfigBase) => {
                 this.zone.run(() => {
-                    console.log("GET CONFIG", config)
                     this.config = config
                 })
             })
     }
 
     onChange(event) {
-		this.configService.onChange(this.collection, event)
+        this.configService.onChange(this.collection, event)
     }
 }

@@ -1,23 +1,17 @@
-<detail *ngIf="detailBuffer"
-		[collection]="collection"
-		[buffer]="detailBuffer"
-		(close)="onCloseDetail($event)">
-</detail>
 <div id="buffer" class="modal bottom-sheet">
     <div class="modal-content">
-		<ul class="collection">
-			<li id="{{buffer.id}}" class="collection row" *ngFor="let buffer of buffers">
-				<div class="col s3" (click)="getDetails(buffer)">{{buffer.probability}}</div>
-				<div class="col s3" (click)="getDetails(buffer)">{{buffer.getName()}}</div>
-				<div class="col s3" *ngIf="buffer.best_match">
-					<buffer-movie *ngIf="buffer.type === 'movies'" [movie]="buffer.best_match"></buffer-movie>
-				</div>
-				<div class="col s3" *ngIf="buffer.best_match == undefined" (click)="getDetails(buffer)">
-					<p>Choose it!</p>
-				</div>
-				<button class="col s3" (click)="validate(buffer)">Valider</button>
-			</li>
-		</ul>
+	<ul class="collection">
+	    <li id="{{item.id}}" class="collection row" *ngFor="let item of buffers">
+		<div class="col s3" (click)="onItem(item)">{{item.probability}}</div>
+		<div class="col s3" (click)="onItem(item)">{{item.getName()}}</div>
+		<div class="col s3" *ngIf="item.bestMatch">
+		    <buffer-movie *ngIf="item.bestMatch.type === 'movie'"
+				  [movie]="item.bestMatch">
+		    </buffer-movie>
+		</div>
+		<button class="col s3" (click)="validate(item)">Valider</button>
+	    </li>
+	</ul>
     </div>
     <div class="modal-footer">
     </div>

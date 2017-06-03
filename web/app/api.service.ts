@@ -28,7 +28,7 @@ interface WebsitesData {
     [websiteName: string]: any[]
 }
 
-export interface Item {
+export interface ItemInterface {
     id: string
     createdAt: string
     collections: string[]
@@ -38,7 +38,7 @@ export interface Item {
 
 export interface Event {
     event: string
-	status: string
+    status: string
     id: string
     data: any
 }

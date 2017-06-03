@@ -1,4 +1,4 @@
-import { Component, OnInit, ViewChild } from '@angular/core';
+import { Component, NgZone, OnInit, ViewChild } from '@angular/core';
 
 import { ApiService, CollectionStatus, Event } from './api.service';
 import { ImportsService } from './imports/imports.service';
@@ -9,6 +9,8 @@ import { Collection } from './collections/collection';
 
 import { CollectionsComponent } from './collections/collections.component'
 import { BufferComponent } from './buffer/buffer.component'
+import { ItemComponent } from './item/item.component'
+import { Item } from './item/item'
 
 declare var jQuery: any;
 
@@ -17,7 +19,8 @@ enum AppStatus {
     HOME,
     IMPORT,
     EXPORT,
-    CONFIG
+    CONFIG,
+    ITEM,
 }
 
 @Component({
@@ -42,10 +45,14 @@ export class AppComponent implements OnInit {
     private importsLoop: any
     private importsRunningNb: number
 
-    constructor(private apiService: ApiService,
-				private importsService: ImportsService,
-				private configService: ConfigService,
-				private bufferService: BufferService) { }
+    @ViewChild(ItemComponent) itemComponent: ItemComponent
+    public item: Item
+
+    constructor(private zone: NgZone,
+        private apiService: ApiService,
+        private importsService: ImportsService,
+        private configService: ConfigService,
+        private bufferService: BufferService) { }
 
     ngOnInit() {
 
@@ -62,7 +69,7 @@ export class AppComponent implements OnInit {
 
                 console.log("EVENT!", e)
 
-				// Detect restart application
+                // Detect restart application
                 if (e.event === "start") {
                     window.location.replace("/");
                     return;
@@ -74,12 +81,12 @@ export class AppComponent implements OnInit {
                     return;
                 }
 
-               // Collections reception
+                // Collections reception
                 if (new RegExp("^collection").test(e.event)) {
                     this.handleCollection(e);
                     return;
                 }
-			})
+            })
 
         this.apiService.subscribeCollectionChange(
             (collection: Collection, status: CollectionStatus) => {
@@ -89,14 +96,12 @@ export class AppComponent implements OnInit {
                     return
                 }
 
-				console.log(collection.name)
-
                 this.title = collection.name
                 this.collection = collection
 
-				// Get all configuration specific to the collection
-				this.configService.getConfigs(collection.name)
-					.subscribe((config: ConfigBase) => {})
+                // Get all configuration specific to the collection
+                this.configService.getConfigs(collection.name)
+                    .subscribe((config: ConfigBase) => { })
 
                 switch (status) {
                     case CollectionStatus.CREATED:
@@ -125,6 +130,14 @@ export class AppComponent implements OnInit {
 
     onConfig() {
         this.onNewState(AppStatus.CONFIG)
+    }
+
+    onItem(item: Item) {
+        console.log("ON ITEM", item)
+        this.zone.run(() => {
+            this.item = item
+            this.onNewState(AppStatus.ITEM)
+        })
     }
 
     onBuffer() {
@@ -161,30 +174,34 @@ export class AppComponent implements OnInit {
         }
     }
 
-	handleCollection(e: Event) {
+    handleCollection(e: Event) {
 
-		let names = e.event.split("/");
-		let size = names.length;
+        let names = e.event.split("/");
+        let size = names.length;
 
-		if (size <= 1)
-		{
-			console.error("Invalid collection event '" + e.event + "'")
-			return;
-		}
+        if (size <= 1) {
+            console.error("Invalid collection event '" + e.event + "'")
+            return;
+        }
 
-		let collection = names[1];
-		let destination: string
-		if (size > 2)
-		{
-			destination = names[2];
-		}
+        let collection = names[1];
+        let destination: string
+        if (size > 2) {
+            destination = names[2];
+        }
 
-		if (destination === "buffer")
-		{
-			// Send notifications to the imports list
-			this.bufferService.addEvent(collection, e)
-		}
-	}
+        let item = new Item(e.data)
+
+        if (this.item != undefined && this.item.id == item.id) {
+            this.itemComponent.onUpdate(item)
+            this.item = item
+        }
+
+        // Send notifications to the imports list
+        if (destination === "buffer") {
+            this.bufferService.addEvent(collection, e, item)
+        }
+    }
 
     onError(title: string, msg: string) {
 

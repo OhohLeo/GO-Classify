@@ -6,9 +6,7 @@ import { FileModule } from '../imports/file/file.module'
 import { MoviesModule } from '../collections/movies/movies.module'
 import { ConfigModule } from '../config/config.module'
 
-import { BufferService } from './buffer.service'
-
-import { BufferComponent } from './buffer.component'
+import { ItemComponent } from './item.component'
 
 @NgModule({
     imports: [
@@ -19,9 +17,9 @@ import { BufferComponent } from './buffer.component'
         FileModule,
         MoviesModule
     ],
-    providers: [BufferService],
-    declarations: [BufferComponent],
-    exports: [BufferComponent]
+    providers: [],
+    declarations: [ItemComponent],
+    exports: [ItemComponent]
 })
 
-export class BufferModule { }
+export class ItemModule { }

@@ -8,14 +8,12 @@ export class CfgStringList {
 
     constructor(values?: string[]) {
 
-		if (values)
-		{
-			for (let value of values)
-			{
-				this.add(value)
-			}
-		}
-	}
+        if (values) {
+            for (let value of values) {
+                this.add(value)
+            }
+        }
+    }
 
     init(values: any) {
 
@@ -31,7 +29,6 @@ export class CfgStringList {
         }
 
         values.forEach((item: string) => {
-            console.log(item)
             this.stringlist.push(item)
         })
     }
@@ -48,7 +45,7 @@ export class CfgStringList {
         return true
     }
 
-	remove(name: string): boolean {
+    remove(name: string): boolean {
 
         // Check if the name exist
         let index = this.stringlist.indexOf(name)
@@ -61,15 +58,15 @@ export class CfgStringList {
         return true
     }
 
-	hasName(search: string): boolean {
+    hasName(search: string): boolean {
 
-		this.stringlist.forEach((name) => {
-			if (name === search)
-				return true;
-		})
+        this.stringlist.forEach((name) => {
+            if (name === search)
+                return true;
+        })
 
-		return false
-	}
+        return false
+    }
 
     hasChanged(values: string[]): boolean {
 
@@ -131,7 +128,7 @@ export class StringListComponent implements AfterViewChecked {
         // Initialisation des valeurs
         this.chip.material_chip({
             data: (this.value != undefined) ?
-				this.value.getTags() : [],
+                this.value.getTags() : [],
             placeholder: 'Enter a tag',
             secondaryPlaceholder: '+Tag',
         })

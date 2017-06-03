@@ -1,5 +1,3 @@
-import { BufferItem } from '../../buffer/buffer.service'
-
 export interface Movie {
     name: string
     url: string
