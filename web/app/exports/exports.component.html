@@ -1,0 +1,15 @@
+<div *ngFor="let type of exportTypes">
+   <h3>{{type}}</h3>
+   <table>
+   <tr *ngFor="let export of exports.get(type)">
+       <th>{{export.display()}}</th>
+       <th><i id="{{export.id}}"
+	      class="material-icons refresh"
+	      (click)="onRefresh(export)">refresh</i>
+       </th>
+       <th><i class="material-icons"
+	      (click)="onDelete(export)">delete</i>
+       </th>
+   </tr>
+   </table>
+</div>

@@ -17,10 +17,11 @@ export class ItemComponent implements OnInit, OnDestroy {
 
     @Input() collection: string
     @Input() item: Item
-
     @Output() close: EventEmitter<any> = new EventEmitter()
+
+    private isBuffer: boolean = false
     private needNameDetails: boolean = false
-    private bestMatch: any
+    private match: any
     private bufferIdx: number
 
     private selectColor: { [key: string]: string } = {}
@@ -66,6 +67,11 @@ export class ItemComponent implements OnInit, OnDestroy {
         if (collectionBuffer === undefined)
             return
 
+        if (collectionBuffer.isEmpty()) {
+            this.close.emit()
+            return
+        }
+
         let idx = this.bufferIdx + (isNext ? 1 : -1)
         if (idx < 0)
             idx += collectionBuffer.items.length
@@ -81,18 +87,23 @@ export class ItemComponent implements OnInit, OnDestroy {
     }
 
     onValidate() {
-        console.log("validate")
+        this.bufferService.validateItem(this.collection, this.item)
+            .subscribe((ok: boolean) => {
+                if (ok) {
+                    this.onNext()
+                }
+            })
     }
 
     onUpdate(item: Item) {
         this.zone.run(() => {
+            this.isBuffer = item.isBuffer()
             this.item = item
             this.bufferIdx = this.bufferService.hasCollectionItem(
                 this.collection, item.id)
-            console.log("BUFFER IDX", this.bufferIdx, item)
         })
 
-        this.onSelect(item.bestMatchId)
+        this.onSelect(item.matchId)
     }
 
     onChange(event) {
@@ -125,7 +136,7 @@ export class ItemComponent implements OnInit, OnDestroy {
     onSelect(id: string) {
 
         // Select best match item
-        this.item.setBestMatch(id)
+        this.item.setMatch(id)
 
         // Reset other selection
         for (let id in this.selectColor) {
@@ -133,7 +144,7 @@ export class ItemComponent implements OnInit, OnDestroy {
         }
 
         this.zone.run(() => {
-            this.bestMatch = this.item.getBestMatch()
+            this.match = this.item.getMatch()
             this.selectColor[id] = "red"
         })
     }

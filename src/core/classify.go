@@ -12,6 +12,7 @@ type Classify struct {
 	requests    *requests.RequestsPool
 	Server      *Server
 	imports     map[string]Import
+	exports     map[string]Export
 	collections map[string]Collection
 	websites    map[string]websites.Website
 }
@@ -46,7 +47,7 @@ func Start(config Config) (c *Classify, err error) {
 
 	// TODO: Reload all collections saved
 
-	// TODO: Relaoad all imports
+	// TODO: Reload all imports
 
 	log.Info("Start Classify")
 

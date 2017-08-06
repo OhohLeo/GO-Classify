@@ -96,6 +96,13 @@ func (c *Classify) CreateServer(config ServerConfig) (server *Server, err error)
 		rest.Put("/imports/stop", c.ApiStopImport),
 		rest.Get("/imports/config", c.ApiGetImportsConfig),
 
+		// Handle exports
+		rest.Post("/exports", c.ApiAddExport),
+		rest.Get("/exports", c.ApiGetExports),
+		rest.Delete("/exports", c.ApiDeleteExport),
+		rest.Put("/exports/stop", c.ApiStopExport),
+		rest.Get("/exports/config", c.ApiGetExportsConfig),
+
 		// Handle collections
 		rest.Post("/collections",
 			c.ApiPostCollection),
@@ -122,7 +129,7 @@ func (c *Classify) CreateServer(config ServerConfig) (server *Server, err error)
 
 		rest.Get("/collections/:name/buffers/:id",
 			c.ApiGetCollectionSingleBuffer),
-		rest.Put("/collections/:name/buffers/:id/validate",
+		rest.Post("/collections/:name/buffers/:id/validate",
 			c.ApiValidateCollectionSingleBuffer),
 		rest.Patch("/collections/:name/buffers/:id",
 			c.ApiPatchCollectionSingleBuffer),

@@ -2,8 +2,7 @@
     "imports": {
 	"directory": {
 	    "*": [
-			"/media/ohohleo/Linux/video/test",
-			"/home/ohohleo/Téléchargements"
+		"/home/lmartin/Vidéos"
 	    ]
 	}
     },

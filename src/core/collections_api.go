@@ -1,6 +1,7 @@
 package core
 
 import (
+	"encoding/json"
 	"github.com/ant0ine/go-json-rest/rest"
 	"github.com/ohohleo/classify/websites"
 	"golang.org/x/net/websocket"
@@ -240,7 +241,7 @@ func (c *Classify) ApiPatchCollectionSingleBuffer(w rest.ResponseWriter, r *rest
 	w.WriteHeader(http.StatusNoContent)
 }
 
-// PUT /collections/:name/buffers/:id/validate
+// POST /collections/:name/buffers/:id/validate
 func (c *Classify) ApiValidateCollectionSingleBuffer(w rest.ResponseWriter, r *rest.Request) {
 
 	// Check the collection exist
@@ -249,7 +250,7 @@ func (c *Classify) ApiValidateCollectionSingleBuffer(w rest.ResponseWriter, r *r
 		return
 	}
 
-	err := collection.ValidateBuffer(r.PathParam("id"))
+	err := collection.Validate(r.PathParam("id"), json.NewDecoder(r.Body))
 	if err != nil {
 		rest.Error(w, err.Error(), http.StatusBadRequest)
 		return
@@ -280,6 +281,8 @@ func (c *Classify) ApiGetCollectionItems(w rest.ResponseWriter, r *rest.Request)
 	if collection == nil {
 		return
 	}
+
+	w.WriteJson(collection.GetItems())
 }
 
 // DELETE /collections/:name/items

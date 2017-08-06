@@ -3,12 +3,14 @@ import { Component, NgZone, OnInit, ViewChild } from '@angular/core';
 import { ApiService, CollectionStatus, Event } from './api.service';
 import { ImportsService } from './imports/imports.service';
 import { BufferService } from './buffer/buffer.service';
+import { HomeService } from './home/home.service';
 import { ConfigService, ConfigBase } from './config/config.service';
 
 import { Collection } from './collections/collection';
 
 import { CollectionsComponent } from './collections/collections.component'
 import { BufferComponent } from './buffer/buffer.component'
+import { HomeComponent } from './home/home.component'
 import { ItemComponent } from './item/item.component'
 import { Item } from './item/item'
 
@@ -31,6 +33,7 @@ enum AppStatus {
 export class AppComponent implements OnInit {
     @ViewChild(CollectionsComponent) collections: CollectionsComponent
     @ViewChild(BufferComponent) buffer: BufferComponent
+    @ViewChild(HomeComponent) home: HomeComponent
 
     public appStatus = AppStatus
     public status = AppStatus.NONE
@@ -52,7 +55,8 @@ export class AppComponent implements OnInit {
         private apiService: ApiService,
         private importsService: ImportsService,
         private configService: ConfigService,
-        private bufferService: BufferService) { }
+        private bufferService: BufferService,
+        private homeService: HomeService) { }
 
     ngOnInit() {
 
@@ -133,7 +137,6 @@ export class AppComponent implements OnInit {
     }
 
     onItem(item: Item) {
-        console.log("ON ITEM", item)
         this.zone.run(() => {
             this.item = item
             this.onNewState(AppStatus.ITEM)
@@ -201,6 +204,10 @@ export class AppComponent implements OnInit {
         if (destination === "buffer") {
             this.bufferService.addEvent(collection, e, item)
         }
+        else if (destination === "items") {
+            this.homeService.addEvent(collection, e, item)
+        }
+
     }
 
     onError(title: string, msg: string) {

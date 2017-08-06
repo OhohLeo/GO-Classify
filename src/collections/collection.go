@@ -3,6 +3,7 @@ package collections
 import (
 	"errors"
 	"fmt"
+	"github.com/ohohleo/classify/exports"
 	"github.com/ohohleo/classify/imports"
 	"github.com/ohohleo/classify/websites"
 	"log"
@@ -10,19 +11,19 @@ import (
 
 type Collection struct {
 	name     string
-	websites map[string]websites.Website
 	buffer   *Buffer
 	items    *Items
 	config   *Config
 	events   chan Event
-	//exports map[exports.Export][]string
+	websites map[string]websites.Website
+	exports  []exports.Export
 }
 
 type Event struct {
 	Source string
 	Status string
 	Id     string
-	Item   *Item
+	Item   Data
 }
 
 func (c *Collection) Init(name string) chan Event {
@@ -34,6 +35,9 @@ func (c *Collection) Init(name string) chan Event {
 
 	// Init the items buffer
 	c.ResetBuffer()
+
+	// Init the items storage
+	c.items = NewItems()
 
 	// Init event handler
 	c.events = make(chan Event)
@@ -54,59 +58,6 @@ func (c *Collection) SetName(name string) {
 // GetName returns the name of the collection
 func (c *Collection) GetName() string {
 	return c.name
-}
-
-// OnInput handle new data to classify
-func (c *Collection) OnInput(input imports.Data) *Item {
-
-	// Create a new item
-	item := NewItem()
-
-	log.Printf("OnInput %s\n", item)
-
-	// Add the import to the item
-	item.AddImportData(input)
-
-	// Get Cleaned name
-	item.SetCleanedName(c.config.Banned, c.config.Separators)
-
-	// Store the import to the buffer collection
-	c.buffer.Add(item.GetId(), item)
-
-	return item
-}
-
-func (c *Collection) ResetBuffer() {
-	c.buffer = NewBuffer(c, c.config.BufferSize)
-}
-
-func (c *Collection) GetBuffer() []*Item {
-
-	if c.buffer == nil {
-		return []*Item{}
-	}
-
-	return c.buffer.GetCurrentList()
-}
-
-func (c *Collection) ValidateBuffer(name string) (err error) {
-
-	if c.buffer == nil {
-		err = fmt.Errorf("buffer not initialized")
-		return
-	}
-
-	item := c.buffer.Validate(name)
-	if item == nil {
-		err = fmt.Errorf("name '%s' not referenced in buffer", name)
-		return
-	}
-
-	// TODO: store in definitive items
-
-	// TODO: export list
-
-	return nil
 }
 
 // AddWebsite add new website
@@ -137,7 +88,7 @@ func (c *Collection) Search(src string, item *Item) {
 	if len(c.websites) > 0 {
 		c.SearchWeb(item)
 
-		item.BestMatchId = item.Websites["TMDB"][0].GetId()
+		item.MatchId = item.Websites["TMDB"][0].GetId()
 	}
 
 	// // TODO Research for best matching
@@ -145,7 +96,7 @@ func (c *Collection) Search(src string, item *Item) {
 	// item.IsMatching = 10.2
 	// item.BestMatch = item.Websites["IMDB"][0]
 
-	c.SendEvent(src, "searchOk", item)
+	c.SendEvent(src, "update", item)
 }
 
 // SearchWeb launch resarch through specified websites
@@ -172,7 +123,27 @@ func (c *Collection) SearchWeb(item *Item) {
 	}
 }
 
-func (c *Collection) SendEvent(src string, status string, item *Item) {
+// OnInput handle new data to classify
+func (c *Collection) OnInput(input imports.Data) *Item {
+
+	// Create a new item
+	item := NewItem()
+
+	log.Printf("OnInput %s\n", item)
+
+	// Add the import to the item
+	item.AddImportData(input)
+
+	// Get Cleaned name
+	item.SetCleanedName(c.config.Banned, c.config.Separators)
+
+	// Store the import to the buffer collection
+	c.buffer.Add(item.GetId(), item)
+
+	return item
+}
+
+func (c *Collection) SendEvent(src string, status string, item Data) {
 
 	if c.events == nil {
 		return
@@ -181,7 +152,69 @@ func (c *Collection) SendEvent(src string, status string, item *Item) {
 	c.events <- Event{
 		Source: src,
 		Status: status,
-		Id:     item.Id,
+		Id:     item.GetId(),
 		Item:   item,
 	}
+}
+
+func (c *Collection) GetBuffer() []*Item {
+
+	if c.buffer == nil {
+		return []*Item{}
+	}
+
+	return c.buffer.GetCurrentList()
+}
+
+func (c *Collection) ResetBuffer() {
+	c.buffer = NewBuffer(c, c.config.BufferSize)
+}
+
+func (c *Collection) GetItems() []Data {
+
+	if c.items == nil {
+		return []Data{}
+	}
+
+	return c.items.GetCurrentList()
+}
+
+func (c *Collection) ResetItems() {
+	c.items = NewItems()
+}
+
+func (c *Collection) Validate(id string, data Data) (item *Item, err error) {
+
+	if c.buffer == nil {
+		err = fmt.Errorf("buffer not initialized")
+		return
+	}
+
+	item = c.buffer.Validate(id)
+	if item == nil {
+		err = fmt.Errorf("name '%s' not referenced in buffer", id)
+		return
+	}
+
+	// Store in definitive items
+	err = c.items.Add(id, data)
+	if err != nil {
+		return
+	}
+
+	c.SendEvent("items", "add", data)
+
+	// TODO: export list
+
+	return
+}
+
+func (c *Collection) SetExports(exports []exports.Export) {
+	c.exports = exports
+}
+
+// OnOutput export data from classify
+func (c *Collection) onOutput(item *Item) error {
+
+	return nil
 }

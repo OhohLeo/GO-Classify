@@ -1,13 +1,14 @@
 package collections
 
 import (
+	"encoding/json"
+	//"fmt"
 	"time"
 )
 
 // Generic movie format
 type Movie struct {
 	ItemGeneric
-	Id          string    `json:"id"`
 	Name        string    `json:"name"`
 	Url         string    `json:"url"`
 	Released    time.Time `json:"released"`
@@ -19,28 +20,30 @@ type Movie struct {
 	Genres      []string  `json:"genres"`
 }
 
+func NewMovieFromData(decoder *json.Decoder) (movie *Movie, err error) {
+	err = decoder.Decode(&movie)
+	return
+}
+
 func (m *Movie) Init() {
 	m.Type = m.GetType()
 }
 
-// GetType returns the type of collection
 func (m Movie) GetType() string {
 	return "movie"
 }
 
-// GetType returns the type of collection
 func (m *Movie) GetId() string {
 	return m.Id
 }
 
-type MovieItem struct {
-	Item
-	Match Movie
+func (m *Movie) Update(decoder *json.Decoder) (err error) {
+	err = decoder.Decode(&m)
+	return
 }
 
 type Movies struct {
 	Collection
-	movies map[string]*MovieItem
 }
 
 // GetType returns the type of collection
@@ -53,6 +56,23 @@ func (m *Movies) CreateItem() *Movie {
 	return new(Movie)
 }
 
-func (m *Movies) Validate(movie *Movie) {
+func (m *Movies) Validate(id string, decoder *json.Decoder) error {
+
+	// Try to parse data received
+	movie, err := NewMovieFromData(decoder)
+	if err != nil {
+		return err
+	}
+
+	// Force id
+	movie.ItemGeneric.Id = id
+
+	// Remove collection from buffer and store final item
+	_, err = m.Collection.Validate(id, movie)
+	if err != nil {
+		return err
+	}
+
+	return nil
 
 }

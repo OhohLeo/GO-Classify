@@ -48,36 +48,36 @@ export class BufferComponent implements OnInit, OnDestroy {
             .subscribe((buffers: Item[]) => {
 
                 if (buffers.length <= 0)
-                    return;
+                    return
 
                 this.zone.run(() => {
                     this.buffers = buffers
                 })
 
+                // Subscribe to buffer modification
+                this.events = this.bufferService.subscribeEvents(
+                    this.collection + "/buffer")
+                    .subscribe((event: BufferEvent) => {
+
+                        // Check if it is the expected collection
+                        if (event.collection != this.collection)
+                            return;
+
+                        if (event.status === "create") {
+                            this.add(event.buffer)
+                        }
+                        else if (event.status === "update") {
+                            this.update(event.buffer)
+                        }
+                        else {
+                            console.error("Unhandled buffer event status '"
+                                + status + "'")
+                        }
+
+                    })
+
                 // If has buffer items : open modal
                 this.action.modal("open")
-            })
-
-        // Subscribe to buffer modification
-        this.events = this.bufferService.subscribeEvents(
-            this.collection + "/buffer")
-            .subscribe((event: BufferEvent) => {
-
-                // Check if it is the expected collection
-                if (event.collection != this.collection)
-                    return;
-
-                if (event.status === "create") {
-                    this.add(event.buffer)
-                }
-                else if (event.status === "update") {
-                    this.update(event.buffer)
-                }
-                else {
-                    console.error("Unhandled buffer event status '"
-                        + status + "'")
-                }
-
             })
     }
 
@@ -160,7 +160,6 @@ export class BufferComponent implements OnInit, OnDestroy {
                     return
                 }
 
-                console.log("Validate", item, ok)
                 this.remove(item)
 
                 // If no more buffer items : close modal

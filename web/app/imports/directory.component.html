@@ -1,24 +1,28 @@
-<p><i class="material-icons">add</i>add new directory</p>
-<form (ngSubmit)="onSubmit()" #createForm="ngForm">
-    <div>
-	<select name="path"
-                [(ngModel)]="path"
-                class="browser-default"
-                required>
-            <option *ngFor="let path of paths" [value]="path">{{path}}</option>
-        </select>
-    </div>
-    <p>
-	<input name="isRecursive"
-               type="checkbox"
-               id="isRecursive"
-               [(ngModel)]="isRecursive" />
-        <label for="isRecursive">with sub-directories</label>
-    </p>
-    <button type="submit"
-            [disabled]="!createForm.form.valid"
-            class="btn waves-effect waves-light">
-        New directory
-        <i class="material-icons right">send</i>
-    </button>
-</form>
+<div class="row">
+    <div class="col s2"><i class="material-icons">add</i>New directory</div>
+    <form class="col s10" (ngSubmit)="onSubmit()" #createForm="ngForm">
+	<div class="input-field col s5">
+	    <select name="path"
+		    [(ngModel)]="path"
+		    class="browser-default"
+		    required>
+		<option *ngFor="let path of paths" [value]="path">{{path}}</option>
+	    </select>
+	</div>
+	<div class="input-field col s5">
+	    <input name="isRecursive"
+		   type="checkbox"
+		   id="isRecursive"
+		   [(ngModel)]="isRecursive" />
+	    <label for="isRecursive">with sub-directories</label>
+	</div>
+	<div class="col s2">
+	    <button type="submit"
+		    [disabled]="!createForm.form.valid"
+		    class="btn waves-effect waves-light">
+		New directory
+		<i class="material-icons right">send</i>
+	    </button>
+	</div>
+    </form>
+</div>

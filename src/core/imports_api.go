@@ -12,8 +12,8 @@ func (c *Classify) ApiGetImportsConfig(w rest.ResponseWriter, r *rest.Request) {
 	w.WriteJson(c.config.Imports)
 }
 
-// getIdsAndCollections get from Url parameters imports and the collections
-func (c *Classify) getIdsAndCollections(r *rest.Request) (imports map[string]Import, collections map[string]Collection, err error) {
+// getImportIdsAndCollections get from Url parameters imports and the collections
+func (c *Classify) getImportIdsAndCollections(r *rest.Request) (imports map[string]Import, collections map[string]Collection, err error) {
 
 	// From the url query list
 	values := r.URL.Query()
@@ -71,7 +71,7 @@ func (c *Classify) ApiAddImport(w rest.ResponseWriter, r *rest.Request) {
 // GET /imports?id=IMPORT_ID&collection=COLLECTION_NAME
 func (c *Classify) ApiGetImports(w rest.ResponseWriter, r *rest.Request) {
 
-	ids, collections, err := c.getIdsAndCollections(r)
+	ids, collections, err := c.getImportIdsAndCollections(r)
 	if err != nil {
 		rest.Error(w, err.Error(), http.StatusBadRequest)
 		return
@@ -91,7 +91,7 @@ func (c *Classify) ApiGetImports(w rest.ResponseWriter, r *rest.Request) {
 // DELETE /imports?id=IMPORT_ID&collection=COLLECTION_NAME
 func (c *Classify) ApiDeleteImport(w rest.ResponseWriter, r *rest.Request) {
 
-	ids, collections, err := c.getIdsAndCollections(r)
+	ids, collections, err := c.getImportIdsAndCollections(r)
 	if err != nil {
 		rest.Error(w, err.Error(), http.StatusBadRequest)
 		return
@@ -109,7 +109,7 @@ func (c *Classify) ApiDeleteImport(w rest.ResponseWriter, r *rest.Request) {
 // PUT /imports/start?id=IMPORT_ID&collection=COLLECTION_NAME
 func (c *Classify) ApiStartImport(w rest.ResponseWriter, r *rest.Request) {
 
-	ids, collections, err := c.getIdsAndCollections(r)
+	ids, collections, err := c.getImportIdsAndCollections(r)
 	if err != nil {
 		rest.Error(w, err.Error(), http.StatusBadRequest)
 		return
@@ -127,7 +127,7 @@ func (c *Classify) ApiStartImport(w rest.ResponseWriter, r *rest.Request) {
 // PUT /imports/stop?id=IMPORT_ID&collection=COLLECTION_NAME
 func (c *Classify) ApiStopImport(w rest.ResponseWriter, r *rest.Request) {
 
-	ids, collections, err := c.getIdsAndCollections(r)
+	ids, collections, err := c.getImportIdsAndCollections(r)
 	if err != nil {
 		rest.Error(w, err.Error(), http.StatusBadRequest)
 		return

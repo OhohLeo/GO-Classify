@@ -22,6 +22,7 @@ type Data interface {
 }
 
 type ItemGeneric struct {
+	Id         string      `json:"id"`
 	Status     int         `json:"status"`
 	Type       string      `json:"type"`
 	IsMatching float32     `json:"probability"`
@@ -30,7 +31,6 @@ type ItemGeneric struct {
 
 type Item struct {
 	ItemGeneric
-	Id          string                    `json:"id"`
 	Name        string                    `json:"name"`
 	CleanedName string                    `json:"cleanedName"`
 	CreatedAt   time.Time                 `json:"createAt"`
@@ -39,15 +39,16 @@ type Item struct {
 	Imports     map[string][]imports.Data `json:"imports"`
 	WebQuery    string                    `json:"webQuery"`
 	Websites    map[string][]Data         `json:"websites"`
-	BestMatchId string                    `json:"bestMatchId"`
-	BestMatch   Data                      `json:"bestMatch"`
+	MatchId     string                    `json:"matchId"`
+	Data        Data                      `json:"data"`
 }
 
 func NewItem() *Item {
 	item := &Item{
-		Id:        GetRandomId(),
 		CreatedAt: time.Now(),
 	}
+
+	item.ItemGeneric.Id = GetRandomId()
 
 	// Status init
 	item.Status = CREATED
@@ -127,6 +128,10 @@ func (i *Item) AddWebsiteData(name string, data Data) {
 }
 
 func (i *Item) RemoveWebsiteData(data Data) {
+}
+
+func (i *Item) GetType() string {
+	return "buffer"
 }
 
 func (i *Item) GetId() string {

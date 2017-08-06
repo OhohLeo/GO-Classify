@@ -1,6 +1,7 @@
 package core
 
 import (
+	"encoding/json"
 	"fmt"
 	"github.com/ohohleo/classify/collections"
 	"github.com/ohohleo/classify/imports"
@@ -18,7 +19,8 @@ type Collection interface {
 	GetConfig() *collections.Config
 	ResetBuffer()
 	GetBuffer() []*collections.Item
-	ValidateBuffer(string) error
+	GetItems() []collections.Data
+	Validate(string, *json.Decoder) error
 	AddWebsite(website websites.Website)
 	DeleteWebsite(name string) error
 	OnInput(input imports.Data) *collections.Item
@@ -82,7 +84,7 @@ func (c *Classify) AddCollection(name string, collectionType string) (collection
 			event, ok := <-eventsChannel
 			if ok {
 				c.SendEvent("collection/"+name+"/"+event.Source,
-					event.Status, event.Id, *event.Item)
+					event.Status, event.Id, event.Item)
 			}
 		}
 	}()

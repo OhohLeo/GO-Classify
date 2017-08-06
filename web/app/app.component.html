@@ -29,17 +29,23 @@
 </div>
 <div class="row">
     <div [ngSwitch]="status" class="center">
-        <div *ngSwitchCase="appStatus.HOME">HOME</div>
+        <div *ngSwitchCase="appStatus.HOME">
+	    <home [collection]="title"></home>
+	</div>
         <div *ngSwitchCase="appStatus.IMPORT">
             <imports></imports>
         </div>
-        <div *ngSwitchCase="appStatus.EXPORT">EXPORT</div>
+        <div *ngSwitchCase="appStatus.EXPORT">
+	     <exports></exports>
+	</div>
         <div *ngSwitchCase="appStatus.CONFIG">
 	    <config [collection]="title"></config>
 	</div>
 	<div *ngSwitchCase="appStatus.ITEM">
-	    <item *ngIf="item" [collection]="collection.name"
-		  [item]="item">
+	    <item *ngIf="item"
+		  [collection]="collection.name"
+		  [item]="item"
+		  (close)="onHome()">
 	    </item>
 	</div>
         <div *ngSwitchCase="appStatus.NONE"></div>

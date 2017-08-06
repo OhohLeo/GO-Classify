@@ -4,9 +4,9 @@
 	    <li id="{{item.id}}" class="collection row" *ngFor="let item of buffers">
 		<div class="col s3" (click)="onItem(item)">{{item.probability}}</div>
 		<div class="col s3" (click)="onItem(item)">{{item.getName()}}</div>
-		<div class="col s3" *ngIf="item.bestMatch">
-		    <buffer-movie *ngIf="item.bestMatch.type === 'movie'"
-				  [movie]="item.bestMatch">
+		<div class="col s3" *ngIf="item.match">
+		    <buffer-movie *ngIf="item.match.type === 'movie'"
+				  [movie]="item.match">
 		    </buffer-movie>
 		</div>
 		<button class="col s3" (click)="validate(item)">Valider</button>

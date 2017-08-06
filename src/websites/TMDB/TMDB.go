@@ -101,11 +101,12 @@ func (t *TMDB) Search(input string) chan websites.Data {
 				release, _ := time.Parse("2006-01-02", data.ReleaseDate)
 
 				movie := &collections.Movie{
-					Id:       t.GetName() + "_" + strconv.Itoa(data.ID),
 					Name:     data.OriginalTitle,
 					Image:    t.posterPath + data.PosterPath,
 					Released: release,
 				}
+
+				movie.ItemGeneric.Id = t.GetName() + "_" + strconv.Itoa(data.ID)
 
 				movie.Init()
 

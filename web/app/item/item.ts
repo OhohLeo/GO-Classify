@@ -3,16 +3,19 @@ import { CfgStringList } from '../config/stringlist.component'
 export class Item {
 
     public id: string
-    public probability: number
     public name: string
+    public type: string
+
     public image: string
 
     public cleanedName: string
     public banned: CfgStringList
     public separators: CfgStringList
 
-    public bestMatchId: string
-    public bestMatch: Item
+    public probability: number
+    public matchId: string
+    public match: Item
+
     private imports: any[] = []
 
     public webQuery: string
@@ -23,13 +26,17 @@ export class Item {
     constructor(public data: any) {
         this.id = data.id
         this.name = (data.name != undefined) ? data.name : "<unknown>"
+        this.type = data.type
+
+        if (data.cleanedName === undefined)
+            return
 
         this.cleanedName = data.cleanedName
         this.banned = new CfgStringList(data.banned)
         this.separators = new CfgStringList(data.separators)
 
-        this.bestMatchId = data.bestMatchId
-        this.bestMatch = data.bestMatch
+        this.matchId = data.matchId
+        this.match = data.match
 
         this.probability = data.probability
 
@@ -47,9 +54,9 @@ export class Item {
             for (let websiteId in data.websites) {
                 data.websites[websiteId].forEach((result: any) => {
 
-                    if (this.bestMatchId !== undefined
-                        && this.bestMatchId === result.id) {
-                        this.bestMatch = result
+                    if (this.matchId !== undefined
+                        && this.matchId === result.id) {
+                        this.match = result
                     }
 
                     if (this.websitesById[result.id] !== undefined)
@@ -60,8 +67,10 @@ export class Item {
                 })
             }
         }
+    }
 
-        console.log(this.bestMatch)
+    public isBuffer(): boolean {
+        return (this.cleanedName !== undefined)
     }
 
     public getName(): string {
@@ -72,13 +81,13 @@ export class Item {
         return this.imports
     }
 
-    public setBestMatch(id: string) {
-        this.bestMatchId = id
-        this.bestMatch = this.websitesById[id]
+    public setMatch(id: string) {
+        this.matchId = id
+        this.match = this.websitesById[id]
     }
 
-    public getBestMatch(): any {
-        return this.bestMatch
+    public getMatch(): any {
+        return this.match
     }
 
     public getWebsite(id: string): any {

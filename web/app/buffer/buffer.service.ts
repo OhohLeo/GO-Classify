@@ -13,12 +13,11 @@ export class BufferEvent {
 
 export class CollectionBuffer {
 
-    public currentIndex: number
-    public items: Item[]
+    public currentIndex: number = 0
+    public items: Item[] = []
 
-    constructor() {
-        this.currentIndex = 0
-        this.items = []
+    isEmpty(): boolean {
+        return (this.items.length === 0)
     }
 
     hasItem(idx: number): boolean {
@@ -52,7 +51,7 @@ export class CollectionBuffer {
         return undefined
     }
 
-    searchItem(id: string): number {
+    getIdx(id: string): number {
 
         for (let idx in this.items) {
             if (this.items[idx].id === id) {
@@ -87,15 +86,10 @@ export class BufferService {
         },
         "update": (collection: string, item: Item) => {
             this.updateItem(collection, item)
-        },
+        }
     }
 
     constructor(private apiService: ApiService) { }
-
-    // Check if item does exist
-    hasItem(search: Item): boolean {
-        return this.buffersById[search.id] != undefined
-    }
 
     getCollection(collection: string): CollectionBuffer {
 
@@ -108,6 +102,11 @@ export class BufferService {
         return collectionBuffer
     }
 
+    // Check if item does exist
+    hasItem(search: Item): boolean {
+        return this.buffersById[search.id] != undefined
+    }
+
     // Check if item does exist in specified collection
     hasCollectionItem(collection: string, id: string): number {
 
@@ -115,7 +114,7 @@ export class BufferService {
         if (collectionBuffer === undefined)
             return -1
 
-        return collectionBuffer.searchItem(id)
+        return collectionBuffer.getIdx(id)
     }
 
     getCollectionItem(collection: string, idx: number): Item {
@@ -132,37 +131,51 @@ export class BufferService {
     }
 
     // Add buffer item in specified collection
-    addItem(collection: string, i: Item) {
+    addItem(collection: string, item: Item) {
+
+        // Do not store already existing item
+        if (this.buffersById[item.id] !== undefined)
+            return
 
         // Store buffers by id
-        this.buffersById[i.id] = i
+        this.buffersById[item.id] = item
 
         // Store buffers by collection
         if (this.buffersByCollection[collection] === undefined) {
             this.buffersByCollection[collection] = new CollectionBuffer()
         }
 
-        this.buffersByCollection[collection].addItem(i)
+        this.buffersByCollection[collection].addItem(item)
     }
 
-    // Delete buffer item from specified collection
-    deleteItem(collection: string, i: Item) {
+    // Remove buffer item from specified collection
+    removeItem(collection: string, item: Item) {
 
-        // Delete item by type
-        let collectionBuffer = this.buffersByCollection[collection]
+        let collectionBuffer = this.getCollection(collection)
+        if (collectionBuffer === undefined)
+            return
 
-        delete this.buffersById[i.id]
+        let itemIdx = collectionBuffer.getIdx(item.id)
+        if (itemIdx < 0)
+            return
+
+        collectionBuffer.removeItem(itemIdx)
+        delete this.buffersById[item.id]
 
         this.enableCache = false
     }
 
     getItems(collection: string) {
 
+        if (this.buffersByCollection[collection] === undefined) {
+            this.buffersByCollection[collection] = new CollectionBuffer()
+        }
+
         return new Observable(observer => {
 
             let buffers = this.buffersByCollection[collection]
 
-            // // Returns the cache if the list should not have changed
+            // Returns the cache if the list should not have changed
             if (buffers && this.enableCache === true) {
 
                 observer.next(buffers.items)
@@ -179,7 +192,7 @@ export class BufferService {
 
                     this.enableCache = true
 
-                    observer.next(this.buffersByCollection[collection].items)
+                    observer.next(buffers.items)
                 })
         })
     }
@@ -187,21 +200,21 @@ export class BufferService {
     updateItem(collection: string, item: Item) {
 
         if (this.hasItem(item) == false) {
-            console.error("Item '" + item.id + "' not found", item)
-            return;
+            this.addItem(collection, item)
+            return
         }
 
-        let idx = this.hasCollectionItem(collection, item.id)
-        if (idx < 0) {
+        let itemIdx = this.hasCollectionItem(collection, item.id)
+        if (itemIdx < 0) {
             console.error("Item '" + item.id
                 + "' not found in specified collection '"
                 + collection + '"', item)
-            return;
+            return
         }
 
         // Store buffers by id
         this.buffersById[item.id] = item
-        this.buffersByCollection[collection][idx] = item
+        this.buffersByCollection[collection][itemIdx] = item
     }
 
     // Validate item from specified collection
@@ -209,18 +222,20 @@ export class BufferService {
 
         return new Observable<boolean>(observer => {
 
+            let match = item.getMatch()
+
             // Validate for the current list
-            this.apiService.put(
-                "collections/" + collection + "/buffers/" + item.id + "/validate")
+            this.apiService.post(
+                "collections/" + collection + "/buffers/" + item.id + "/validate",
+                match)
                 .subscribe((rsp: Response) => {
 
                     let ok = (rsp.status == 204)
                     if (ok) {
-                        this.deleteItem(collection, item)
-                        this.getItems(collection)
+                        // Remove item from buffer
+                        this.removeItem(collection, item)
                     }
 
-                    console.log("VALIDATE ", rsp)
                     observer.next(ok)
                 })
         })
@@ -239,9 +254,8 @@ export class BufferService {
 
                     let ok = (rsp.status == 204)
                     if (ok)
-                        this.deleteItem(collection, item)
+                        this.removeItem(collection, item)
 
-                    console.log("DELETE ", rsp)
                     observer.next(ok)
                 })
         })
