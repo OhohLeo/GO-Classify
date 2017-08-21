@@ -1,4 +1,9 @@
 {
+    "database": {
+	"enable": true,
+	"driver": "sqlite3",
+	"source": "classify"
+    },
     "imports": {
 	"directory": {
 	    "*": [

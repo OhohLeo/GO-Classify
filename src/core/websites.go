@@ -8,8 +8,8 @@ import (
 )
 
 var newWebsites = map[string]websites.Website{
-	"IMDB": IMDB.New(),
-	"TMDB": TMDB.New(),
+	websites.TYPE_IDX2STR[websites.IMDB]: IMDB.New(),
+	websites.TYPE_IDX2STR[websites.TMDB]: TMDB.New(),
 }
 
 // AddWebsite add new website
@@ -58,22 +58,7 @@ func (c *Classify) DeleteWebsite(name string) error {
 	return errors.New("no website name '" + name + "' found")
 }
 
-var websitesList []string
-
 // Returns the list of websites available
 func (c *Classify) GetWebsites() []string {
-
-	if websitesList == nil {
-
-		websitesList = make([]string, len(newWebsites))
-
-		id := 0
-
-		for name, _ := range newWebsites {
-			websitesList[id] = name
-			id++
-		}
-	}
-
-	return websitesList
+	return websites.TYPE_IDX2STR
 }

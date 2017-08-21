@@ -2,6 +2,9 @@ package core
 
 import (
 	log "github.com/Sirupsen/logrus"
+	"github.com/jmoiron/sqlx"
+	"github.com/ohohleo/classify/collections"
+	"github.com/ohohleo/classify/database"
 	"github.com/ohohleo/classify/requests"
 	"github.com/ohohleo/classify/websites"
 	"math/rand"
@@ -9,6 +12,7 @@ import (
 
 type Classify struct {
 	config      *Config
+	database    *sqlx.DB
 	requests    *requests.RequestsPool
 	Server      *Server
 	imports     map[string]Import
@@ -19,24 +23,26 @@ type Classify struct {
 
 type Config struct {
 
-	// Configuration du serveur
+	// Server configuration
 	Server ServerConfig `json:"server"`
 
-	// Liste les configurations par type d'importation
-	Imports map[string]map[string][]string `json:"imports"`
+	// Database configuration
+	DataBase database.Config `json:"database"`
 
-	Websites map[string]map[string]string `json:"websites"`
+	// Liste les configurations par type d'importation
+	Imports  map[string]map[string][]string `json:"imports"`
+	Websites map[string]map[string]string   `json:"websites"`
 
 	// Liste les configurations par type d'exportation
 	Exports map[string]map[string][]string `json:"exports"`
 }
 
 // Application startup
-func Start(config Config) (c *Classify, err error) {
+func Start(config *Config) (c *Classify, err error) {
 
 	c = new(Classify)
 
-	log.Info("Config check...")
+	log.Info("Reading configuration ...")
 
 	err = c.CheckImportsConfig(config.Imports)
 	if err != nil {
@@ -45,11 +51,48 @@ func Start(config Config) (c *Classify, err error) {
 
 	log.SetLevel(log.DebugLevel)
 
-	// TODO: Reload all collections saved
+	// Activate database if enabled
+	if config.DataBase.Enable {
 
-	// TODO: Reload all imports
+		log.Info("Starting Database")
 
-	log.Info("Start Classify")
+		// Establish database connection
+		if c.database, err = config.DataBase.Connect(); err != nil {
+			return
+		}
+
+		// Create basic database tables
+		if err = database.Create(c.database, c); err != nil {
+			return
+		}
+
+		// Insert collection type references
+		if err = database.InsertRef(
+			c.database, &collections.DB_TYPES_REF,
+			collections.TYPE_IDX2STR); err != nil {
+			return
+		}
+
+		// Insert websites references
+		if err = database.InsertRef(
+			c.database, &websites.DB_TYPES_REF,
+			websites.TYPE_IDX2STR); err != nil {
+			return
+		}
+
+		// Get all collections saved
+		// var list []collections.DB
+		// list, err = collections.GetDBCollections(c.database)
+		// if err != nil {
+		// 	return
+		// }
+
+		// log.Info("COLLECTIONS %+v", list)
+	}
+
+	// TODO: Read all imports
+
+	log.Info("Starting Classify")
 
 	// HTTP requests
 	c.requests = requests.New(2, true)
@@ -64,7 +107,7 @@ func Start(config Config) (c *Classify, err error) {
 	c.Server = server
 
 	// Store config file
-	c.config = &config
+	c.config = config
 
 	// Specify that the application start
 	go func() {
@@ -77,6 +120,16 @@ func Start(config Config) (c *Classify, err error) {
 // Application stop
 func (c *Classify) Stop() {
 	c.Server.Stop()
+}
+
+func (m *Classify) GetDBTables() []*database.Table {
+
+	return []*database.Table{
+		&collections.DB_DETAILS,
+		&collections.DB_TYPES_REF,
+		&websites.DB_DETAILS,
+		&websites.DB_TYPES_REF,
+	}
 }
 
 const nameLetters = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"

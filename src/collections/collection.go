@@ -9,8 +9,27 @@ import (
 	"log"
 )
 
+const (
+	MOVIES Type = iota
+)
+
+type Type int
+
+func (t Type) String() string {
+	return TYPE_IDX2STR[t]
+}
+
+var TYPE_IDX2STR = []string{
+	"movies",
+}
+
+var TYPE_STR2IDX = map[string]Type{
+	TYPE_IDX2STR[MOVIES]: MOVIES,
+}
+
 type Collection struct {
 	name     string
+	typ      Type
 	buffer   *Buffer
 	items    *Items
 	config   *Config
@@ -26,9 +45,10 @@ type Event struct {
 	Item   Data
 }
 
-func (c *Collection) Init(name string) chan Event {
+func (c *Collection) Init(name string, typ Type) chan Event {
 
 	c.SetName(name)
+	c.typ = typ
 
 	// Set default Buffer size at 2
 	c.config = NewConfig(2)
@@ -46,8 +66,8 @@ func (c *Collection) Init(name string) chan Event {
 }
 
 // GetType returns the type of the collection (mandatory)
-func (c *Collection) GetType() string {
-	panic("collection type should be specified!")
+func (c *Collection) GetType() Type {
+	return c.typ
 }
 
 // SetName set the name of the collection

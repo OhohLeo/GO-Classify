@@ -51,7 +51,7 @@ func (c *Classify) ApiPostCollection(w rest.ResponseWriter, r *rest.Request) {
 	}
 
 	// Create new collection
-	collection, err := c.AddCollection(body.Name, body.Type)
+	collection, err := c.AddCollection(body.Name, body.Type, true)
 	if err != nil {
 		rest.Error(w, err.Error(), http.StatusBadRequest)
 		return
@@ -78,7 +78,7 @@ func (c *Classify) ApiGetCollections(w rest.ResponseWriter, r *rest.Request) {
 
 		collections[i] = ApiCollection{
 			Name: name,
-			Type: collectionType,
+			Type: collectionType.String(),
 		}
 
 		i++

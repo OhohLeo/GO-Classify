@@ -37,7 +37,7 @@ func main() {
 	}
 
 	// Start application
-	classify, err := core.Start(config)
+	classify, err := core.Start(&config)
 	if err != nil {
 		log.Fatal(err.Error())
 	}

@@ -4,16 +4,17 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/ohohleo/classify/collections"
+	"github.com/ohohleo/classify/database"
 	"github.com/ohohleo/classify/imports"
 	"github.com/ohohleo/classify/websites"
 )
 
 // Collection common methods
 type Collection interface {
-	Init(string) chan collections.Event
+	Init(string, collections.Type) chan collections.Event
 	SetName(string)
 	GetName() string
-	GetType() string
+	GetType() collections.Type
 	ModifyConfig(string, string, []string) error
 	ModifyConfigValue(string, string) error
 	GetConfig() *collections.Config
@@ -27,8 +28,8 @@ type Collection interface {
 }
 
 // Type of collections
-var newCollections = map[string]func() Collection{
-	"movies": func() Collection { return new(collections.Movies) },
+var newCollections = []func() Collection{
+	func() Collection { return new(collections.Movies) },
 }
 
 // Check collection names, returns the list of selected collections
@@ -50,7 +51,7 @@ func (c *Classify) GetCollectionsByNames(names []string) (map[string]Collection,
 }
 
 // Add a new collection
-func (c *Classify) AddCollection(name string, collectionType string) (collection Collection, err error) {
+func (c *Classify) AddCollection(name string, collectionTypeStr string, toStore bool) (collection Collection, err error) {
 
 	// Check that the name of the collection is unique
 	if _, ok := c.collections[name]; ok {
@@ -58,15 +59,15 @@ func (c *Classify) AddCollection(name string, collectionType string) (collection
 		return
 	}
 
-	// Get method to create new collection
-	newCollection, ok := newCollections[collectionType]
-	if ok == false {
-		err = fmt.Errorf("invalid collection type '%s'", collectionType)
+	// Check the collection type
+	collectionType, ok := collections.TYPE_STR2IDX[collectionTypeStr]
+	if ok == false || len(newCollections) <= int(collectionType) {
+		err = fmt.Errorf("invalid collection type '%s'", collectionTypeStr)
 		return
 	}
 
 	// Create the new collection
-	new := newCollection()
+	new := newCollections[collectionType]()
 
 	if c.collections == nil {
 		c.collections = make(map[string]Collection)
@@ -76,7 +77,16 @@ func (c *Classify) AddCollection(name string, collectionType string) (collection
 	c.collections[name] = new
 
 	// Associate configuration
-	eventsChannel := new.Init(name)
+	eventsChannel := new.Init(name, collectionType)
+
+	// Store the collection
+	hDB, ok := new.(database.HandleDB)
+	if toStore && ok {
+		err = database.Insert(c.database, &collections.DB_DETAILS, hDB)
+		if err != nil {
+			fmt.Printf("=== ERROR %s \n", err.Error())
+		}
+	}
 
 	go func() {
 
@@ -89,7 +99,7 @@ func (c *Classify) AddCollection(name string, collectionType string) (collection
 		}
 	}()
 
-	return new, nil
+	return new, err
 }
 
 // Remove an existing collection
@@ -120,7 +130,7 @@ func (c *Classify) GetCollection(name string) (Collection, error) {
 
 // Modify an existing collection
 func (c *Classify) ModifyCollection(
-	name string, newName string, newType string) (isModified bool, err error) {
+	name string, newName string, newTypeStr string) (isModified bool, err error) {
 
 	// Check that the name of the collection exists
 	collection, ok := c.collections[name]
@@ -131,19 +141,25 @@ func (c *Classify) ModifyCollection(
 
 	isModified = false
 
-	if newType != "" && newType != collection.GetType() {
+	if newTypeStr != "" {
 
 		// Check the collection type
-		newCollection, ok := newCollections[newType]
-		if ok == false {
-			err = fmt.Errorf("invalid collection type '%s'", newType)
+		newType, ok := collections.TYPE_STR2IDX[newTypeStr]
+		if ok == false || len(newCollections) <= int(newType) {
+			err = fmt.Errorf("invalid collection type '%s'", newTypeStr)
 			return
 		}
 
-		delete(c.collections, name)
-		collection = newCollection()
-		c.collections[name] = newCollection()
-		isModified = true
+		if newType != collection.GetType() {
+
+			// Check the collection type
+			newCollection := newCollections[newType]
+
+			delete(c.collections, name)
+			collection = newCollection()
+			c.collections[name] = newCollection()
+			isModified = true
+		}
 	}
 
 	if newName != "" && newName != name {
@@ -164,22 +180,7 @@ func (c *Classify) ModifyCollection(
 	return
 }
 
-var collectionTypes []string
-
 // Returns the type of collection
 func (c *Classify) GetCollectionTypes() []string {
-
-	if collectionTypes == nil {
-
-		collectionTypes = make([]string, len(newCollections))
-
-		id := 0
-
-		for name, _ := range newCollections {
-			collectionTypes[id] = name
-			id++
-		}
-	}
-
-	return collectionTypes
+	return collections.TYPE_IDX2STR
 }
