@@ -80,14 +80,18 @@ func Start(config *Config) (c *Classify, err error) {
 			return
 		}
 
-		// Get all collections saved
-		// var list []collections.DB
-		// list, err = collections.GetDBCollections(c.database)
-		// if err != nil {
-		// 	return
-		// }
+		// Retreive all stored collections
+		var storedCollections []collections.DB
+		storedCollections, err = collections.GetDBCollections(c.database)
+		if err != nil {
+			return
+		}
 
-		// log.Info("COLLECTIONS %+v", list)
+		for _, stored := range storedCollections {
+			c.AddCollection(
+				stored.Name, collections.TYPE_IDX2STR[stored.Type], false)
+		}
+
 	}
 
 	// TODO: Read all imports
