@@ -3,8 +3,8 @@ package core
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/jmoiron/sqlx"
 	"github.com/ohohleo/classify/collections"
-	"github.com/ohohleo/classify/database"
 	"github.com/ohohleo/classify/imports"
 	"github.com/ohohleo/classify/websites"
 )
@@ -25,6 +25,7 @@ type Collection interface {
 	AddWebsite(website websites.Website)
 	DeleteWebsite(name string) error
 	OnInput(input imports.Data) *collections.Item
+	Store2DB(db *sqlx.DB) error
 }
 
 // Type of collections
@@ -50,8 +51,39 @@ func (c *Classify) GetCollectionsByNames(names []string) (map[string]Collection,
 	return collections, nil
 }
 
+func (c *Classify) AddCollection(name string, typ collections.Type, webNames []string) (collection Collection, err error) {
+
+	var website websites.Website
+
+	// Check if the websites does exists
+	websites := make([]websites.Website, 0)
+	for _, name := range webNames {
+
+		website, err = c.AddWebsite(name)
+		if err != nil {
+			return
+		}
+
+		// Add new website
+		websites = append(websites, website)
+	}
+
+	// Add stored collection
+	collection, err = c.addCollection(name, typ)
+	if err != nil {
+		return
+	}
+
+	// Add websites to the collection created
+	for _, website := range websites {
+		collection.AddWebsite(website)
+	}
+
+	return
+}
+
 // Add a new collection
-func (c *Classify) AddCollection(name string, collectionTypeStr string, toStore bool) (collection Collection, err error) {
+func (c *Classify) addCollection(name string, typ collections.Type) (collection Collection, err error) {
 
 	// Check that the name of the collection is unique
 	if _, ok := c.collections[name]; ok {
@@ -59,34 +91,18 @@ func (c *Classify) AddCollection(name string, collectionTypeStr string, toStore 
 		return
 	}
 
-	// Check the collection type
-	collectionType, ok := collections.TYPE_STR2IDX[collectionTypeStr]
-	if ok == false || len(newCollections) <= int(collectionType) {
-		err = fmt.Errorf("invalid collection type '%s'", collectionTypeStr)
-		return
-	}
-
 	// Create the new collection
-	new := newCollections[collectionType]()
+	collection = newCollections[typ]()
 
 	if c.collections == nil {
 		c.collections = make(map[string]Collection)
 	}
 
 	// Store the collection
-	c.collections[name] = new
+	c.collections[name] = collection
 
 	// Associate configuration
-	eventsChannel := new.Init(name, collectionType)
-
-	// Store the collection
-	hDB, ok := new.(database.HandleDB)
-	if toStore && ok {
-		err = database.Insert(c.database, &collections.DB_DETAILS, hDB)
-		if err != nil {
-			fmt.Printf("=== ERROR %s \n", err.Error())
-		}
-	}
+	eventsChannel := collection.Init(name, typ)
 
 	go func() {
 
@@ -99,7 +115,7 @@ func (c *Classify) AddCollection(name string, collectionTypeStr string, toStore 
 		}
 	}()
 
-	return new, err
+	return
 }
 
 // Remove an existing collection

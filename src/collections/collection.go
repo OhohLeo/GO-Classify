@@ -102,6 +102,19 @@ func (c *Collection) DeleteWebsite(name string) error {
 	return errors.New("no website name '" + name + "' found")
 }
 
+func (c *Collection) GetWebsiteParams() []string {
+
+	keys := make([]string, len(c.websites))
+
+	idx := 0
+	for name := range c.websites {
+		keys[idx] = name
+		idx++
+	}
+
+	return keys
+}
+
 func (c *Collection) Search(src string, item *Item) {
 
 	// Launch research through web

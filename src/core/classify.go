@@ -68,15 +68,8 @@ func Start(config *Config) (c *Classify, err error) {
 
 		// Insert collection type references
 		if err = database.InsertRef(
-			c.database, &collections.DB_TYPES_REF,
+			c.database, &collections.DB_REFS,
 			collections.TYPE_IDX2STR); err != nil {
-			return
-		}
-
-		// Insert websites references
-		if err = database.InsertRef(
-			c.database, &websites.DB_TYPES_REF,
-			websites.TYPE_IDX2STR); err != nil {
 			return
 		}
 
@@ -88,8 +81,20 @@ func Start(config *Config) (c *Classify, err error) {
 		}
 
 		for _, stored := range storedCollections {
-			c.AddCollection(
-				stored.Name, collections.TYPE_IDX2STR[stored.Type], false)
+
+			// Get collection params
+			var params collections.Params
+			params, err = stored.GetParams()
+			if err != nil {
+				return
+			}
+
+			// Create new collection
+			_, err = c.AddCollection(
+				stored.Name, collections.Type(stored.Type), params.Websites)
+			if err != nil {
+				return
+			}
 		}
 
 	}
@@ -129,10 +134,8 @@ func (c *Classify) Stop() {
 func (m *Classify) GetDBTables() []*database.Table {
 
 	return []*database.Table{
-		&collections.DB_DETAILS,
-		&collections.DB_TYPES_REF,
-		&websites.DB_DETAILS,
-		&websites.DB_TYPES_REF,
+		&collections.DB_LIST,
+		&collections.DB_REFS,
 	}
 }
 

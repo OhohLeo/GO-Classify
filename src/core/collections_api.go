@@ -3,7 +3,7 @@ package core
 import (
 	"encoding/json"
 	"github.com/ant0ine/go-json-rest/rest"
-	"github.com/ohohleo/classify/websites"
+	"github.com/ohohleo/classify/collections"
 	"golang.org/x/net/websocket"
 	"net/http"
 )
@@ -36,30 +36,29 @@ func (c *Classify) ApiPostCollection(w rest.ResponseWriter, r *rest.Request) {
 		return
 	}
 
-	// Check if the websites does existxsxs
-	websites := make([]websites.Website, 0)
-	for _, name := range body.Websites {
-
-		website, err := c.AddWebsite(name)
-		if err != nil {
-			rest.Error(w, err.Error(), http.StatusBadRequest)
-			return
-		}
-
-		// Add new website
-		websites = append(websites, website)
+	// Check the collection type
+	typ, ok := collections.TYPE_STR2IDX[body.Type]
+	if ok == false {
+		rest.Error(w, "invalid collection type",
+			http.StatusBadRequest)
+		return
 	}
 
 	// Create new collection
-	collection, err := c.AddCollection(body.Name, body.Type, true)
+	collection, err := c.AddCollection(body.Name, typ, body.Websites)
 	if err != nil {
 		rest.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 
-	// Add websites to the collection created
-	for _, website := range websites {
-		collection.AddWebsite(website)
+	// Store collection if enable
+	if c.database != nil {
+
+		err := collection.Store2DB(c.database)
+		if err != nil {
+			rest.Error(w, err.Error(), http.StatusBadRequest)
+			return
+		}
 	}
 
 	w.WriteHeader(http.StatusNoContent)

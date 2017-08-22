@@ -28,10 +28,6 @@ type RequireDB interface {
 	GetDBTables() []*Table
 }
 
-type HandleDB interface {
-	GetDBAttributes() map[string]interface{}
-}
-
 func Create(db *sqlx.DB, rDB RequireDB) error {
 
 	tx, err := db.Begin()
@@ -57,7 +53,7 @@ func Create(db *sqlx.DB, rDB RequireDB) error {
 	return tx.Commit()
 }
 
-func Insert(db *sqlx.DB, t *Table, add HandleDB) error {
+func Insert(db *sqlx.DB, t *Table, toStore interface{}) error {
 
 	tx, err := db.Beginx()
 	if err != nil {
@@ -71,7 +67,7 @@ func Insert(db *sqlx.DB, t *Table, add HandleDB) error {
 
 	log.Info("DB:" + query)
 
-	_, err = tx.NamedExec(query, add.GetDBAttributes())
+	_, err = tx.NamedExec(query, toStore)
 	if err != nil {
 		tx.Rollback()
 		return err
@@ -151,6 +147,7 @@ func (a *Attribute) String() string {
 type Table struct {
 	Name       string
 	Attributes map[string]*Attribute
+	Unique     []string
 }
 
 func (t *Table) GetAttributes(ignore bool, prefix string) []string {
@@ -196,8 +193,13 @@ func (t *Table) Create() (result string, err error) {
 		result += name + " " + t.Attributes[name].Create() + ","
 	}
 
-	// Remove last if ends with coma
-	if last := len(result) - 1; last >= 0 && result[last] == ',' {
+	// Handle unicity on multiples attributes
+	if len(t.Unique) > 0 {
+		result += " UNIQUE(" + strings.Join(t.Unique, ",") + ") ON CONFLICT REPLACE"
+
+		// Remove last if ends with coma
+	} else if last := len(result) - 1; last >= 0 && result[last] == ',' {
+
 		result = result[0:last]
 	}
 
