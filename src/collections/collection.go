@@ -115,7 +115,7 @@ func (c *Collection) GetWebsiteParams() []string {
 	return keys
 }
 
-func (c *Collection) Search(src string, item *Item) {
+func (c *Collection) Search(src string, item *BufferItem) {
 
 	// Launch research through web
 	if len(c.websites) > 0 {
@@ -133,7 +133,7 @@ func (c *Collection) Search(src string, item *Item) {
 }
 
 // SearchWeb launch resarch through specified websites
-func (c *Collection) SearchWeb(item *Item) {
+func (c *Collection) SearchWeb(item *BufferItem) {
 
 	// Get name to search
 	keywords := item.WebQuery
@@ -157,10 +157,10 @@ func (c *Collection) SearchWeb(item *Item) {
 }
 
 // OnInput handle new data to classify
-func (c *Collection) OnInput(input imports.Data) *Item {
+func (c *Collection) OnInput(input imports.Data) *BufferItem {
 
 	// Create a new item
-	item := NewItem()
+	item := NewBufferItem()
 
 	log.Printf("OnInput %s\n", item)
 
@@ -190,10 +190,10 @@ func (c *Collection) SendEvent(src string, status string, item Data) {
 	}
 }
 
-func (c *Collection) GetBuffer() []*Item {
+func (c *Collection) GetBuffer() []*BufferItem {
 
 	if c.buffer == nil {
-		return []*Item{}
+		return []*BufferItem{}
 	}
 
 	return c.buffer.GetCurrentList()
@@ -203,7 +203,7 @@ func (c *Collection) ResetBuffer() {
 	c.buffer = NewBuffer(c, c.config.BufferSize)
 }
 
-func (c *Collection) GetItems() []Data {
+func (c *Collection) GetBufferItems() []Data {
 
 	if c.items == nil {
 		return []Data{}
@@ -212,11 +212,11 @@ func (c *Collection) GetItems() []Data {
 	return c.items.GetCurrentList()
 }
 
-func (c *Collection) ResetItems() {
+func (c *Collection) ResetBufferItems() {
 	c.items = NewItems()
 }
 
-func (c *Collection) Validate(id string, data Data) (item *Item, err error) {
+func (c *Collection) Validate(id string, data Data) (item *BufferItem, err error) {
 
 	if c.buffer == nil {
 		err = fmt.Errorf("buffer not initialized")
@@ -247,7 +247,7 @@ func (c *Collection) SetExports(exports []exports.Export) {
 }
 
 // OnOutput export data from classify
-func (c *Collection) onOutput(item *Item) error {
+func (c *Collection) onOutput(item *BufferItem) error {
 
 	return nil
 }

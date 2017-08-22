@@ -6,7 +6,7 @@ import (
 
 type Buffer struct {
 	waitings   []string
-	items      map[string]*Item
+	items      map[string]*BufferItem
 	maxSize    int
 	collection *Collection
 }
@@ -14,7 +14,7 @@ type Buffer struct {
 func NewBuffer(collection *Collection, defaultSize int) *Buffer {
 	return &Buffer{
 		waitings:   make([]string, 0),
-		items:      make(map[string]*Item),
+		items:      make(map[string]*BufferItem),
 		maxSize:    defaultSize,
 		collection: collection,
 	}
@@ -70,7 +70,7 @@ func (b *Buffer) SetSize(size int) {
 	b.waitings = b.waitings[:size]
 }
 
-func (b *Buffer) Add(name string, item *Item) bool {
+func (b *Buffer) Add(name string, item *BufferItem) bool {
 
 	if _, ok := b.items[name]; ok {
 		fmt.Println("already existing item '" + name + "' in buffer")
@@ -108,7 +108,7 @@ func (b *Buffer) Remove(name string) bool {
 	return true
 }
 
-func (b *Buffer) Validate(name string) *Item {
+func (b *Buffer) Validate(name string) *BufferItem {
 
 	item, ok := b.items[name]
 	if ok {
@@ -118,9 +118,9 @@ func (b *Buffer) Validate(name string) *Item {
 	return item
 }
 
-func (b *Buffer) GetCurrentList() (items []*Item) {
+func (b *Buffer) GetCurrentList() (items []*BufferItem) {
 
-	items = make([]*Item, 0)
+	items = make([]*BufferItem, 0)
 
 	for _, key := range b.waitings {
 
@@ -146,7 +146,7 @@ func (b *Buffer) SendNext(next string) {
 	// Search for next item to send
 	itemsNb := b.maxSize - len(b.waitings)
 
-	items := make([]*Item, 0)
+	items := make([]*BufferItem, 0)
 	keys := make([]string, 0)
 
 	if len(next) != 0 {

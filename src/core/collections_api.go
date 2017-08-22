@@ -275,13 +275,13 @@ func (c *Classify) ApiDeleteCollectionSingleBuffer(w rest.ResponseWriter, r *res
 // GET /collections/:name/items
 func (c *Classify) ApiGetCollectionItems(w rest.ResponseWriter, r *rest.Request) {
 
-	// Check the collection exist
-	collection := c.getCollectionByName(w, r)
-	if collection == nil {
-		return
-	}
+	// // Check the collection exist
+	// collection := c.getCollectionByName(w, r)
+	// if collection == nil {
+	// 	return
+	// }
 
-	w.WriteJson(collection.GetItems())
+	// w.WriteJson(collection.GetItems())
 }
 
 // DELETE /collections/:name/items

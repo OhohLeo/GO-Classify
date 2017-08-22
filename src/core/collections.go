@@ -19,12 +19,11 @@ type Collection interface {
 	ModifyConfigValue(string, string) error
 	GetConfig() *collections.Config
 	ResetBuffer()
-	GetBuffer() []*collections.Item
-	GetItems() []collections.Data
+	GetBuffer() []*collections.BufferItem
 	Validate(string, *json.Decoder) error
 	AddWebsite(website websites.Website)
 	DeleteWebsite(name string) error
-	OnInput(input imports.Data) *collections.Item
+	OnInput(input imports.Data) *collections.BufferItem
 	Store2DB(db *sqlx.DB) error
 }
 
