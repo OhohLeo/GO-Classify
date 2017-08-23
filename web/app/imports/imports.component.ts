@@ -1,5 +1,5 @@
 import { Component, NgZone, OnInit, OnDestroy } from '@angular/core';
-import { ImportsService, ImportBase, Directory } from './imports.service';
+import { ImportsService, ImportBase } from './imports.service';
 import { Event } from '../api.service';
 
 declare var jQuery: any;

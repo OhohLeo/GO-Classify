@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"github.com/ohohleo/classify/imports"
 	"github.com/ohohleo/classify/imports/directory"
+	"github.com/ohohleo/classify/imports/email"
 	"os"
 )
 
@@ -47,6 +48,17 @@ var newImports = map[string]BuildImport{
 			}
 
 			i = &directory
+			return
+		},
+	},
+	"email": BuildImport{
+		Create: func(input json.RawMessage, config map[string][]string, collections []string) (i imports.Import, err error) {
+			var email email.Email
+			err = json.Unmarshal(input, &email)
+			if err != nil {
+				return
+			}
+			i = &email
 			return
 		},
 	},

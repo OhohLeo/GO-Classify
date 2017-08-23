@@ -7,6 +7,7 @@ import { ImportsService } from './imports.service'
 
 import { ImportsComponent } from './imports.component'
 import { DirectoryComponent } from './directory.component'
+import { EmailComponent } from './email.component'
 
 @NgModule({
     imports: [
@@ -15,7 +16,7 @@ import { DirectoryComponent } from './directory.component'
         FormsModule
     ],
     providers: [ImportsService],
-    declarations: [ImportsComponent, DirectoryComponent],
+    declarations: [ImportsComponent, DirectoryComponent, EmailComponent],
     exports: [ImportsComponent]
 })
 

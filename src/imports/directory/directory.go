@@ -20,6 +20,10 @@ type Directory struct {
 	needToStop  bool
 }
 
+func (r *Directory) GetType() string {
+	return "directory"
+}
+
 func (r *Directory) Check(config map[string][]string, collections []string) error {
 
 	// Check we have an existing directory
@@ -71,7 +75,7 @@ func (r *Directory) Start() (chan imports.Data, error) {
 
 	// Check if the analysis is not already going on
 	if r.isRunning {
-		return c, fmt.Errorf("Imports already started!")
+		return c, fmt.Errorf("import 'directory' already started!")
 	}
 
 	// Analysis is starting
@@ -140,10 +144,6 @@ func (r *Directory) readDirectory(c chan imports.Data, path string, isRecursive 
 		// Send file info through channel
 		c <- file
 	}
-}
-
-func (r *Directory) GetType() string {
-	return "directory"
 }
 
 func (r *Directory) Eq(new imports.Import) bool {
