@@ -4,6 +4,7 @@ import (
 	log "github.com/Sirupsen/logrus"
 	"github.com/ohohleo/classify/collections"
 	"github.com/ohohleo/classify/database"
+	"github.com/ohohleo/classify/imports"
 	"github.com/ohohleo/classify/requests"
 	"github.com/ohohleo/classify/websites"
 	"math/rand"
@@ -98,24 +99,36 @@ func (c *Classify) StartDB(config *Config) (err error) {
 
 	log.Info("Starting Database")
 
+	// Init database tables
 	if err = collections.INIT_DB(c.database); err != nil {
 		return
 	}
 
-	// Création des tables
+	if err = imports.INIT_DB(c.database); err != nil {
+		return
+	}
+
+	// Create tables
 	if err = c.database.Create(); err != nil {
 		return
 	}
 
-	// Insertion des références
+	// Insert all references
 	if err = collections.INIT_REF_DB(c.database); err != nil {
+		return
+	}
+
+	if err = imports.INIT_REF_DB(c.database); err != nil {
 		return
 	}
 
 	// Retreive all stored collections
 	err = collections.RetreiveDBCollections(c.database,
-		func(name string, ref collections.Ref, params collections.Params) (err error) {
-			_, err = c.AddCollection(name, ref, params.Websites)
+		func(id uint64, name string, ref collections.Ref, params collections.Params) (err error) {
+			collection, err := c.AddCollection(name, ref, params.Websites)
+			if err != nil {
+				collection.SetId(id)
+			}
 			return
 		})
 	if err != nil {

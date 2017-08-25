@@ -33,8 +33,8 @@ func ToBuild() imports.BuildImport {
 	}
 }
 
-func (e *Email) GetRef() string {
-	return "email"
+func (e *Email) GetRef() imports.Ref {
+	return imports.EMAIL
 }
 
 func (e *Email) Check(config map[string][]string, collections []string) error {

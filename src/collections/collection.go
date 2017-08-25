@@ -28,6 +28,7 @@ var REF_STR2IDX = map[string]Ref{
 }
 
 type Collection struct {
+	id       uint64
 	name     string
 	ref      Ref
 	buffer   *Buffer
@@ -68,6 +69,16 @@ func (c *Collection) Init(name string, ref Ref) chan Event {
 // GetRef returns the type of the collection (mandatory)
 func (c *Collection) GetRef() Ref {
 	return c.ref
+}
+
+// SetName set the id of the collection
+func (c *Collection) SetId(id uint64) {
+	c.id = id
+}
+
+// GetName returns the id of the collection
+func (c *Collection) GetId() uint64 {
+	return c.id
 }
 
 // SetName set the name of the collection

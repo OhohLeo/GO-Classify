@@ -4,9 +4,11 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"github.com/ohohleo/classify/database"
 	"github.com/ohohleo/classify/imports"
 	"github.com/ohohleo/classify/imports/directory"
 	"github.com/ohohleo/classify/imports/email"
+	"strconv"
 )
 
 // Type of imports
@@ -42,6 +44,84 @@ func (i *Import) HasCollections(collections map[string]Collection) bool {
 	}
 
 	return true
+}
+
+func (i *Import) Store2DB(db *database.Database) error {
+
+	// Check if db is enabled
+	if db == nil {
+		return nil
+	}
+
+	// Convert import to JSON
+	paramsStr, err := json.Marshal(i.engine)
+	if err != nil {
+		return err
+	}
+
+	// Store the imports
+	lastId, err := db.Insert("imports", &database.GenStruct{
+		Ref:    uint64(i.engine.GetRef()),
+		Params: paramsStr,
+	})
+	if err != nil {
+		return err
+	}
+
+	// Store the imports
+	for _, collection := range i.collections {
+
+		_, err := db.Insert("imports_mappings",
+			map[string]interface{}{
+				"imports_id":     lastId,
+				"collections_id": collection.GetId(),
+			})
+		if err != nil {
+			return err
+		}
+	}
+
+	// Store current DB id
+	i.Id = strconv.Itoa(int(lastId))
+
+	return nil
+}
+
+func (i *Import) Unlink2DB(db *database.Database, collection Collection) error {
+
+	// Check if db is enabled
+	if db == nil {
+		return nil
+	}
+
+	// Get Id
+	id, err := strconv.Atoi(i.Id)
+	if err != nil {
+		return err
+	}
+
+	return db.Delete("imports_mappings",
+		map[string]interface{}{
+			"imports_id":     id,
+			"collections_id": collection.GetId()}, "id = :id")
+}
+
+func (i *Import) Delete2DB(db *database.Database) error {
+
+	// Check if db is enabled
+	if db == nil {
+		return nil
+	}
+
+	id, err := strconv.Atoi(i.Id)
+	if err != nil {
+		return err
+	}
+
+	return db.Delete("imports", &database.GenStruct{
+		Id:  uint64(id),
+		Ref: uint64(i.engine.GetRef()),
+	}, "id = :id AND ref = :ref")
 }
 
 // Check imports configuration
@@ -130,7 +210,7 @@ func (c *Classify) AddImport(importRef string, params json.RawMessage, collectio
 	for _, i = range c.imports {
 
 		// Returns similar import found
-		if i.engine.GetRef() == importRef && i.engine.Eq(importEngine) {
+		if i.engine.GetRef().String() == importRef && i.engine.Eq(importEngine) {
 			alreadyExists = true
 			break
 		}
@@ -181,12 +261,21 @@ func (c *Classify) DeleteImports(ids map[string]Import, collections map[string]C
 	for id, i := range ids {
 
 		// Unlink the collection with the specified import
-		for name, _ := range collections {
+		for name, collection := range collections {
+
+			if err = i.Unlink2DB(c.database, collection); err != nil {
+				return
+			}
+
 			delete(i.collections, name)
 		}
 
 		// If no collection are linked with specified import
 		if len(i.collections) < 1 {
+
+			if err = i.Delete2DB(c.database); err != nil {
+				return
+			}
 
 			// Remove the import
 			delete(c.imports, id)
@@ -213,11 +302,11 @@ func (c *Classify) GetImports(ids map[string]Import, collections map[string]Coll
 
 		t := i.engine.GetRef()
 
-		if res[t] == nil {
-			res[t] = make(map[string]imports.Import)
+		if res[t.String()] == nil {
+			res[t.String()] = make(map[string]imports.Import)
 		}
 
-		res[t][name] = i.engine
+		res[t.String()][name] = i.engine
 	}
 
 	return

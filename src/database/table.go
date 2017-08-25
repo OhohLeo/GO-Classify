@@ -12,6 +12,11 @@ type Table struct {
 	Unique     []string
 }
 
+func (t *Table) HasAttribute(name string) (ok bool) {
+	_, ok = t.Attributes[name]
+	return
+}
+
 func (t *Table) GetAttributes(ignore bool, prefix string) []string {
 
 	var attributes []string

@@ -12,6 +12,8 @@ import (
 // Collection common methods
 type Collection interface {
 	Init(string, collections.Ref) chan collections.Event
+	SetId(uint64)
+	GetId() uint64
 	SetName(string)
 	GetName() string
 	GetRef() collections.Ref

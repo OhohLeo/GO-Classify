@@ -34,7 +34,7 @@ func (c *Classify) getImportIdsAndCollections(r *rest.Request) (imports map[stri
 }
 
 type ApiAddImportsBody struct {
-	Type        string          `json:"type"`
+	Ref         string          `json:"ref"`
 	Collections []string        `json:"collections"`
 	Params      json.RawMessage `json:"params"`
 }
@@ -58,8 +58,14 @@ func (c *Classify) ApiAddImport(w rest.ResponseWriter, r *rest.Request) {
 		return
 	}
 
-	i, err := c.AddImport(body.Type, body.Params, collections)
+	i, err := c.AddImport(body.Ref, body.Params, collections)
 	if err != nil {
+		rest.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	// Handle DB storage
+	if err := i.Store2DB(c.database); err != nil {
 		rest.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}

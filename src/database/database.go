@@ -6,6 +6,7 @@ import (
 	log "github.com/Sirupsen/logrus"
 	"github.com/jmoiron/sqlx"
 	_ "github.com/mattn/go-sqlite3"
+	"regexp"
 )
 
 type GenStruct struct {
@@ -65,6 +66,8 @@ func New(config Config) (d *Database, err error) {
 	return
 }
 
+var reTableName = regexp.MustCompile("([a-z0-9_]+)_id$")
+
 func (d *Database) AddTable(table string, parameters []string) error {
 
 	// Check if table name already exists
@@ -81,14 +84,41 @@ func (d *Database) AddTable(table string, parameters []string) error {
 		d.tables = make(map[string]*Table)
 	}
 
+	var unique []string
+
 	// Initialize attributes
 	attributes := make(map[string]*Attribute)
 	for _, name := range parameters {
 
-		attribute, ok := genAttributes[name]
-		if ok == false {
-			return fmt.Errorf("no DB generic attribute found for table '%s/%s'",
-				table, name)
+		var ok bool
+		var attribute *Attribute
+
+		// Handle specific {table_name}_id attributes
+		if tableNameId := reTableName.FindStringSubmatch(name); len(tableNameId) > 1 {
+
+			tableId, ok := d.tables[tableNameId[1]]
+			if ok == false {
+				return fmt.Errorf("Table '%s' not found and referenced by '%s'",
+					tableNameId, table)
+			}
+
+			// Check referenced table exists
+			if tableId.HasAttribute("id") == false {
+				return fmt.Errorf("No attribute id found on table '%s' referenced by '%s'",
+					tableNameId, table)
+			}
+
+			unique = append(unique, name)
+			attribute = &Attribute{Type: INTEGER}
+
+		} else {
+
+			// Handle generic attributes
+			attribute, ok = genAttributes[name]
+			if ok == false {
+				return fmt.Errorf("no DB generic attribute found for table '%s/%s'",
+					table, name)
+			}
 		}
 
 		attributes[name] = attribute
@@ -98,6 +128,7 @@ func (d *Database) AddTable(table string, parameters []string) error {
 	d.tables[table] = &Table{
 		Name:       table,
 		Attributes: attributes,
+		Unique:     unique,
 	}
 
 	return nil
@@ -128,7 +159,7 @@ func (d *Database) Create() error {
 			return err
 		}
 
-		log.Info("DB " + name + " : " + query)
+		log.Info("DB [" + name + "] " + query)
 
 		_, err = tx.Exec(query)
 		if err != nil {
@@ -154,7 +185,7 @@ func (d *Database) Delete(name string, toStore interface{}, condition string) er
 
 	query := table.Delete(condition)
 
-	log.Info("DB " + name + " " + query)
+	log.Info("DB [" + name + "] " + query)
 
 	_, err = tx.NamedExec(query, toStore)
 	if err != nil {
@@ -165,41 +196,34 @@ func (d *Database) Delete(name string, toStore interface{}, condition string) er
 	return tx.Commit()
 }
 
-// func (SimpleDB *s) Store(db *sqlx.DB, t *Table, params interface{}) error {
-
-// 	// Convert to JSON
-// 	s.Params, err := json.Marshal(params)
-// 	if err != nil {
-// 		return err
-// 	}
-
-// 	// Store the collection
-// 	return Insert(db, &DB_LIST, s)
-// }
-
-func (d *Database) Insert(name string, toStore interface{}) error {
+func (d *Database) Insert(name string, toStore interface{}) (uint64, error) {
 
 	table, err := d.GetTable(name)
 	if err != nil {
-		return err
+		return 0, err
 	}
 
 	tx, err := d.db.Beginx()
 	if err != nil {
-		return err
+		return 0, err
 	}
 
 	query := table.Insert(false)
 
-	log.Info("DB:" + query)
+	log.Info("DB [" + name + "] " + query)
 
-	_, err = tx.NamedExec(query, toStore)
+	row, err := tx.NamedExec(query, toStore)
 	if err != nil {
 		tx.Rollback()
-		return err
+		return 0, err
 	}
 
-	return tx.Commit()
+	if err := tx.Commit(); err != nil {
+		return 0, err
+	}
+
+	id, err := row.LastInsertId()
+	return uint64(id), err
 }
 
 func (d *Database) InsertRef(name string, refs []string) error {
@@ -216,7 +240,7 @@ func (d *Database) InsertRef(name string, refs []string) error {
 
 	query := table.Insert(true)
 
-	log.Info("DB:" + query)
+	log.Info("DB [" + name + "] " + query)
 
 	for _, ref := range refs {
 
@@ -240,7 +264,7 @@ func (d *Database) SelectAll(name string) (result []GenStruct, err error) {
 
 	query := table.SelectAll()
 
-	log.Info("DB:" + query)
+	log.Info("DB [" + name + "] " + query)
 
 	err = d.db.Select(&result, query)
 	return

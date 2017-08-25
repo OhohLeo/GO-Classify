@@ -29,7 +29,7 @@ type Import interface {
 	Check(map[string][]string, []string) error
 	Start() (chan Data, error)
 	Stop()
-	GetRef() string
+	GetRef() Ref
 	Eq(Import) bool
 }
 

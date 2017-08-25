@@ -59,8 +59,8 @@ func ToBuild() imports.BuildImport {
 	}
 }
 
-func (r *Directory) GetRef() string {
-	return "directory"
+func (r *Directory) GetRef() imports.Ref {
+	return imports.DIRECTORY
 }
 
 func (r *Directory) Check(config map[string][]string, collections []string) error {

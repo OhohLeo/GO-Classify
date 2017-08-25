@@ -7,14 +7,14 @@ import (
 
 func INIT_DB(db *database.Database) (err error) {
 
-	err = db.AddTable("collections", []string{
-		"id", "name", "ref", "params"})
+	err = db.AddTable("collections",
+		[]string{"id", "name", "ref", "params"})
 	if err != nil {
 		return
 	}
 
-	err = db.AddTable("collections_refs", []string{
-		"id", "name"})
+	err = db.AddTable("collections_refs",
+		[]string{"id", "name"})
 	if err != nil {
 		return
 	}
@@ -44,11 +44,15 @@ func (c *Collection) Store2DB(db *database.Database) error {
 	}
 
 	// Store the collection
-	return db.Insert("collections", &database.GenStruct{
+	lastId, err := db.Insert("collections", &database.GenStruct{
 		Name:   c.name,
 		Ref:    uint64(c.GetRef()),
 		Params: paramsStr,
 	})
+
+	c.SetId(lastId)
+
+	return err
 }
 
 func (c *Collection) Delete2DB(db *database.Database) error {
@@ -59,7 +63,7 @@ func (c *Collection) Delete2DB(db *database.Database) error {
 	}, "name = :name AND ref = :ref")
 }
 
-type OnCollection func(name string, ref Ref, params Params) error
+type OnCollection func(id uint64, name string, ref Ref, params Params) error
 
 func RetreiveDBCollections(db *database.Database, onCollection OnCollection) (err error) {
 
@@ -79,7 +83,7 @@ func RetreiveDBCollections(db *database.Database, onCollection OnCollection) (er
 		}
 
 		// Add new stored collection
-		err = onCollection(dbCollection.Name, Ref(dbCollection.Ref), params)
+		err = onCollection(dbCollection.Id, dbCollection.Name, Ref(dbCollection.Ref), params)
 		if err != nil {
 			return
 		}
