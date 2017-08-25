@@ -23,7 +23,7 @@ export class Email extends ImportBase {
     }
 
 	display(): string {
-        return this.host + ':' + this.port
+        return this.host + ':' + this.port + '(' + this.login + ')'
     }
 
     compare(i: Email): boolean {
@@ -31,7 +31,6 @@ export class Email extends ImportBase {
             && this.host === i.host
 			&& this.port == i.port
 			&& this.login == i.login
-			&& this.password == i.password
     }
 }
 

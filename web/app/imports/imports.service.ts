@@ -8,7 +8,7 @@ export class ImportBase {
 
     public isRunning: boolean
 
-    constructor(private type: string, public id: string) { }
+    constructor(private ref: string, public id: string) { }
 
     setId(id: string) {
         this.id = id;
@@ -18,11 +18,11 @@ export class ImportBase {
         return this.id
     }
 
-    getType(): string {
-        if (this.type === undefined)
-            throw new Error("attribute 'type' should be defined!")
+    getRef(): string {
+        if (this.ref === undefined)
+            throw new Error("attribute 'ref' should be defined!")
 
-        return this.type
+        return this.ref
     }
 
     getParams(): any {
@@ -34,10 +34,10 @@ export class ImportBase {
     }
 
     compare(i: ImportBase): boolean {
-        if (this.type === undefined)
-            throw new Error("attribute 'type' should be defined!")
+        if (this.ref === undefined)
+            throw new Error("attribute 'ref' should be defined!")
 
-        if (this.type != i.getType())
+        if (this.ref != i.getRef())
             return false
 
         return true
@@ -81,7 +81,7 @@ export class ImportsService {
 
     // Check if import does exist
     hasSameImport(search: ImportBase): boolean {
-        let imports = this.imports.get(search.getType())
+        let imports = this.imports.get(search.getRef())
         if (imports === undefined) {
             return false
         }
@@ -100,12 +100,12 @@ export class ImportsService {
         // Store imports by id
         this.importsById.set(i.id, i)
 
-        // Store imports by type
-        if (this.imports.get(i.getType()) === undefined) {
-            this.imports.set(i.getType(), [])
+        // Store imports by ref
+        if (this.imports.get(i.getRef()) === undefined) {
+            this.imports.set(i.getRef(), [])
         }
 
-        this.imports.get(i.getType()).push(i)
+        this.imports.get(i.getRef()).push(i)
     }
 
     addImport(i: ImportBase) {
@@ -114,13 +114,13 @@ export class ImportsService {
         this.enableCache = false
 
         if (this.hasSameImport(i)) {
-            console.error("Already existing " + i.getType())
+            console.error("Already existing " + i.getRef())
             return
         }
 
         return this.apiService.post(
             "imports", {
-                "type": i.getType(),
+                "ref": i.getRef(),
                 "params": i.getParams(),
                 "collections": [this.apiService.getCollectionName()],
             })
@@ -149,8 +149,8 @@ export class ImportsService {
         // Delete import by id
         this.importsById.delete(i.id)
 
-        // Delete import by type
-        let importList = this.imports.get(i.getType())
+        // Delete import by ref
+        let importList = this.imports.get(i.getRef())
         for (let idx in importList) {
             let importItem = importList[idx]
             if (importItem.id === i.getId()) {
@@ -159,9 +159,9 @@ export class ImportsService {
             }
         }
 
-        // Remove import types with no imports
+        // Remove import refs with no imports
         if (importList.length == 0) {
-            this.imports.delete(i.getType())
+            this.imports.delete(i.getRef())
         }
     }
 
@@ -171,7 +171,7 @@ export class ImportsService {
         this.enableCache = false
 
         if (this.hasImport(i) === false) {
-            console.error("No existing " + i.getType())
+            console.error("No existing " + i.getRef())
             return
         }
 
@@ -203,7 +203,7 @@ export class ImportsService {
     actionImport(isStart: boolean, i: ImportBase) {
 
         if (this.hasImport(i) === false) {
-            console.error("No existing " + i.getType())
+            console.error("No existing " + i.getRef())
             return
         }
 
@@ -239,17 +239,17 @@ export class ImportsService {
                 this.imports = new Map<string, ImportBase[]>()
                 this.importsById = new Map<string, ImportBase>()
 
-                for (let importType in rsp) {
+                for (let importRef in rsp) {
 
-                    let convert = this.convertToImport[importType]
+                    let convert = this.convertToImport[importRef]
                     if (convert === undefined) {
                         console.error(
-                            "Unknown import type '" + importType + "'")
+                            "Unknown import ref '" + importRef + "'")
                         continue
                     }
 
-                    for (let importId in rsp[importType]) {
-                        let i = convert(importId, rsp[importType][importId])
+                    for (let importId in rsp[importRef]) {
+                        let i = convert(importId, rsp[importRef][importId])
                         if (i === undefined)
                             continue
 
@@ -265,12 +265,12 @@ export class ImportsService {
     }
 
     // Ask for current import config list
-    getImportsConfig(importType: string) {
+    getImportsConfig(importRef: string) {
         return new Observable(observer => {
 
             // Import config list should not change a lot
             if (this.configs) {
-                observer.next(this.configs[importType])
+                observer.next(this.configs[importRef])
                 return
             }
 
@@ -282,7 +282,7 @@ export class ImportsService {
                     this.configs = rsp
 
                     // Return the import config list
-                    observer.next(rsp[importType])
+                    observer.next(rsp[importRef])
                 })
         })
     }

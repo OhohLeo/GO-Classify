@@ -1,7 +1,7 @@
-<div *ngFor="let type of importTypes">
-   <h3>{{type}}</h3>
+<div *ngFor="let ref of importRefs">
+   <h3>{{ref}}</h3>
    <table>
-   <tr *ngFor="let import of imports.get(type)">
+   <tr *ngFor="let import of imports.get(ref)">
        <th>{{import.display()}}</th>
 	   <th><i id="{{import.id}}" class="material-icons refresh" (click)="onRefresh(import)">refresh</i></th>
 	   <th><i class="material-icons" (click)="onDelete(import)">delete</i></th>

@@ -8,7 +8,7 @@ export class ExportBase {
 
     public isRunning: boolean
 
-    constructor(private type: string, public id: string) { }
+    constructor(private ref: string, public id: string) { }
 
     setId(id: string) {
         this.id = id;
@@ -18,11 +18,11 @@ export class ExportBase {
         return this.id
     }
 
-    getType(): string {
-        if (this.type === undefined)
-            throw new Error("attribute 'type' should be defined!")
+    getRef(): string {
+        if (this.ref === undefined)
+            throw new Error("attribute 'ref' should be defined!")
 
-        return this.type
+        return this.ref
     }
 
     getParams(): any {
@@ -34,10 +34,10 @@ export class ExportBase {
     }
 
     compare(i: ExportBase): boolean {
-        if (this.type === undefined)
-            throw new Error("attribute 'type' should be defined!")
+        if (this.ref === undefined)
+            throw new Error("attribute 'ref' should be defined!")
 
-        if (this.type != i.getType())
+        if (this.ref != i.getRef())
             return false
 
         return true
@@ -109,7 +109,7 @@ export class ExportsService {
 
     // Check if export does exist
     hasSameExport(search: ExportBase): boolean {
-        let exports = this.exports.get(search.getType())
+        let exports = this.exports.get(search.getRef())
         if (exports === undefined) {
             return false
         }
@@ -128,12 +128,12 @@ export class ExportsService {
         // Store exports by id
         this.exportsById.set(i.id, i)
 
-        // Store exports by type
-        if (this.exports.get(i.getType()) === undefined) {
-            this.exports.set(i.getType(), [])
+        // Store exports by ref
+        if (this.exports.get(i.getRef()) === undefined) {
+            this.exports.set(i.getRef(), [])
         }
 
-        this.exports.get(i.getType()).push(i)
+        this.exports.get(i.getRef()).push(i)
     }
 
     addExport(i: ExportBase) {
@@ -142,13 +142,13 @@ export class ExportsService {
         this.enableCache = false
 
         if (this.hasSameExport(i)) {
-            console.error("Already existing " + i.getType())
+            console.error("Already existing " + i.getRef())
             return
         }
 
         return this.apiService.post(
             "exports", {
-                "type": i.getType(),
+                "ref": i.getRef(),
                 "params": i.getParams(),
                 "collections": [this.apiService.getCollectionName()],
             })
@@ -177,8 +177,8 @@ export class ExportsService {
         // Delete export by id
         this.exportsById.delete(i.id)
 
-        // Delete export by type
-        let exportList = this.exports.get(i.getType())
+        // Delete export by ref
+        let exportList = this.exports.get(i.getRef())
         for (let idx in exportList) {
             let exportItem = exportList[idx]
             if (exportItem.id === i.getId()) {
@@ -187,9 +187,9 @@ export class ExportsService {
             }
         }
 
-        // Remove export types with no exports
+        // Remove export refs with no exports
         if (exportList.length == 0) {
-            this.exports.delete(i.getType())
+            this.exports.delete(i.getRef())
         }
     }
 
@@ -199,7 +199,7 @@ export class ExportsService {
         this.enableCache = false
 
         if (this.hasExport(i) === false) {
-            console.error("No existing " + i.getType())
+            console.error("No existing " + i.getRef())
             return
         }
 
@@ -231,7 +231,7 @@ export class ExportsService {
     actionExport(isStart: boolean, i: ExportBase) {
 
         if (this.hasExport(i) === false) {
-            console.error("No existing " + i.getType())
+            console.error("No existing " + i.getRef())
             return
         }
 
@@ -268,17 +268,17 @@ export class ExportsService {
                 this.exports = new Map<string, ExportBase[]>()
                 this.exportsById = new Map<string, ExportBase>()
 
-                for (let exportType in rsp) {
+                for (let exportRef in rsp) {
 
-                    let convert = this.convertToExport[exportType]
+                    let convert = this.convertToExport[exportRef]
                     if (convert === undefined) {
                         console.error(
-                            "Unknown export type '" + exportType + "'")
+                            "Unknown export ref '" + exportRef + "'")
                         continue
                     }
 
-                    for (let exportId in rsp[exportType]) {
-                        let i = convert(exportId, rsp[exportType][exportId])
+                    for (let exportId in rsp[exportRef]) {
+                        let i = convert(exportId, rsp[exportRef][exportId])
                         if (i === undefined)
                             continue
 
@@ -294,12 +294,12 @@ export class ExportsService {
     }
 
     // Ask for current export config list
-    getExportsConfig(exportType: string) {
+    getExportsConfig(exportRef: string) {
         return new Observable(observer => {
 
             // Export config list should not change a lot
             if (this.configs) {
-                observer.next(this.configs[exportType])
+                observer.next(this.configs[exportRef])
                 return
             }
 
@@ -311,7 +311,7 @@ export class ExportsService {
                     this.configs = rsp
 
                     // Return the export config list
-                    observer.next(rsp[exportType])
+                    observer.next(rsp[exportRef])
                 })
         })
     }

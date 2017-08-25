@@ -21,7 +21,7 @@ export enum CollectionStatus {
 }
 
 interface ImportsData {
-    [importType: string]: any
+    [importRef: string]: any
 }
 
 interface WebsitesData {

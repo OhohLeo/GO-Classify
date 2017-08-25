@@ -1,5 +1,5 @@
 <div class="row">
-    <div class="col s2"><i class="material-icons">add</i>New directory</div>
+    <div class="col s2"><i class="material-icons">add</i>New email</div>
     <form class="col s10" (ngSubmit)="onSubmit()" #createForm="ngForm">
 	  <div class="input-field col s5">
 	    <input name="host"
@@ -7,14 +7,35 @@
 			   id="host"
 			   [(ngModel)]="email.host" />
 	    <label for="host">Host</label>
-	</div>
-	<div class="col s2">
-	  <button type="submit"
-		      [disabled]="!createForm.form.valid"
-		      class="btn waves-effect waves-light">
-		New email
-		<i class="material-icons right">send</i>
+	  </div>
+	  <div class="input-field col s5">
+	    <input name="port"
+			   type="number"
+			   id="port"
+			   [(ngModel)]="email.port" />
+	    <label for="port">Port</label>
+	  </div>
+	  <div class="input-field col s5">
+	    <input name="login"
+			   type="string"
+			   id="login"
+			   [(ngModel)]="email.login" />
+	    <label for="login">Login</label>
+	  </div>
+	  <div class="input-field col s5">
+	    <input name="password"
+			   type="password"
+			   id="password"
+			   [(ngModel)]="email.password" />
+	    <label for="password">Password</label>
+	  </div>
+	  <div class="col s2">
+		<button type="submit"
+				[disabled]="!createForm.form.valid"
+				class="btn waves-effect waves-light">
+		  New email
+		  <i class="material-icons right">send</i>
 	    </button>
-	</div>
+	  </div>
     </form>
 </div>

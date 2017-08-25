@@ -1,7 +1,7 @@
-<div *ngFor="let type of exportTypes">
-   <h3>{{type}}</h3>
+<div *ngFor="let ref of exportRefs">
+   <h3>{{ref}}</h3>
    <table>
-   <tr *ngFor="let export of exports.get(type)">
+   <tr *ngFor="let export of exports.get(ref)">
        <th>{{export.display()}}</th>
        <th><i id="{{export.id}}"
 	      class="material-icons refresh"
