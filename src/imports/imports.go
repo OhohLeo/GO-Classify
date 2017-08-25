@@ -1,42 +1,45 @@
 package imports
 
 import (
-	"os"
+	"encoding/json"
 )
+
+const (
+	EMAIL Ref = iota
+	DIRECTORY
+)
+
+type Ref int
+
+func (t Ref) String() string {
+	return REF_IDX2STR[t]
+}
+
+var REF_IDX2STR = []string{
+	"email",
+	"directory",
+}
+
+var REF_STR2IDX = map[string]Ref{
+	REF_IDX2STR[EMAIL]:     EMAIL,
+	REF_IDX2STR[DIRECTORY]: DIRECTORY,
+}
 
 type Import interface {
 	Check(map[string][]string, []string) error
 	Start() (chan Data, error)
 	Stop()
-	GetType() string
+	GetRef() string
 	Eq(Import) bool
 }
 
 type Data interface {
-	GetType() string
+	GetRef() string
 	String() string
 	GetUniqKey() string
 }
 
-type File struct {
-	Type      string            `json:"type"`
-	Name      string            `json:"name"`
-	FullName  string            `json:"fullname"`
-	Extension string            `json:"extension"`
-	Path      string            `json:"path"`
-	FullPath  string            `json:"fullpath"`
-	Infos     map[string]string `json:"infos"`
-	FileInfo  os.FileInfo       `json:"-"`
-}
-
-func (f *File) GetType() string {
-	return "file"
-}
-
-func (f *File) String() string {
-	return f.Name
-}
-
-func (f *File) GetUniqKey() string {
-	return f.GetType() + ":" + f.FullPath
+type BuildImport struct {
+	CheckConfig func(config map[string][]string) error
+	Create      func(json.RawMessage, map[string][]string, []string) (Import, error)
 }

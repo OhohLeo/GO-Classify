@@ -7,61 +7,12 @@ import (
 	"github.com/ohohleo/classify/imports"
 	"github.com/ohohleo/classify/imports/directory"
 	"github.com/ohohleo/classify/imports/email"
-	"os"
 )
 
-type BuildImport struct {
-	CheckConfig func(config map[string][]string) error
-	Create      func(json.RawMessage, map[string][]string, []string) (imports.Import, error)
-}
-
 // Type of imports
-var newImports = map[string]BuildImport{
-	"directory": BuildImport{
-		CheckConfig: func(config map[string][]string) (err error) {
-
-			// For all specified directories
-			for _, directories := range config {
-
-				// All authorised path
-				for _, path := range directories {
-
-					// Check we have an existing directory
-					if _, err = os.Stat(path); os.IsNotExist(err) {
-						return
-					}
-				}
-			}
-
-			return
-		},
-		Create: func(input json.RawMessage, config map[string][]string, collections []string) (i imports.Import, err error) {
-			var directory directory.Directory
-			err = json.Unmarshal(input, &directory)
-			if err != nil {
-				return
-			}
-
-			err = directory.Check(config, collections)
-			if err != nil {
-				return
-			}
-
-			i = &directory
-			return
-		},
-	},
-	"email": BuildImport{
-		Create: func(input json.RawMessage, config map[string][]string, collections []string) (i imports.Import, err error) {
-			var email email.Email
-			err = json.Unmarshal(input, &email)
-			if err != nil {
-				return
-			}
-			i = &email
-			return
-		},
-	},
+var newImports = map[string]imports.BuildImport{
+	"directory": directory.ToBuild(),
+	"email":     email.ToBuild(),
 }
 
 type Import struct {
@@ -135,7 +86,7 @@ func (c *Classify) GetImportsByIds(ids []string) (imports map[string]Import, err
 }
 
 // Add new import process
-func (c *Classify) AddImport(importType string, params json.RawMessage, collections map[string]Collection) (i Import, err error) {
+func (c *Classify) AddImport(importRef string, params json.RawMessage, collections map[string]Collection) (i Import, err error) {
 
 	// Nécessite l'existence d'au moins une collection
 	if len(collections) < 1 {
@@ -144,20 +95,20 @@ func (c *Classify) AddImport(importType string, params json.RawMessage, collecti
 	}
 
 	// Field required
-	if importType == "" {
+	if importRef == "" {
 		err = errors.New("type field is mandatory")
 		return
 	}
 
 	// Check that the type exists
-	buildImport, ok := newImports[importType]
+	buildImport, ok := newImports[importRef]
 	if ok == false {
-		err = errors.New("import type '" + importType + "' not handled")
+		err = errors.New("import type '" + importRef + "' not handled")
 		return
 	}
 
 	// Get import configuration
-	config, _ := c.config.Imports[importType]
+	config, _ := c.config.Imports[importRef]
 
 	// Get collections list
 	idx := 0
@@ -179,7 +130,7 @@ func (c *Classify) AddImport(importType string, params json.RawMessage, collecti
 	for _, i = range c.imports {
 
 		// Returns similar import found
-		if i.engine.GetType() == importType && i.engine.Eq(importEngine) {
+		if i.engine.GetRef() == importRef && i.engine.Eq(importEngine) {
 			alreadyExists = true
 			break
 		}
@@ -260,7 +211,7 @@ func (c *Classify) GetImports(ids map[string]Import, collections map[string]Coll
 			continue
 		}
 
-		t := i.engine.GetType()
+		t := i.engine.GetRef()
 
 		if res[t] == nil {
 			res[t] = make(map[string]imports.Import)

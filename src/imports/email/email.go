@@ -1,6 +1,7 @@
 package email
 
 import (
+	"encoding/json"
 	"fmt"
 	"github.com/emersion/go-imap/client"
 	"github.com/ohohleo/classify/imports"
@@ -21,7 +22,18 @@ type Email struct {
 	isRunning bool
 }
 
-func (e *Email) GetType() string {
+func ToBuild() imports.BuildImport {
+	return imports.BuildImport{
+		Create: func(input json.RawMessage, config map[string][]string, collections []string) (i imports.Import, err error) {
+			var email Email
+			err = json.Unmarshal(input, &email)
+			i = &email
+			return
+		},
+	}
+}
+
+func (e *Email) GetRef() string {
 	return "email"
 }
 
@@ -60,6 +72,12 @@ func (e *Email) Start() (chan imports.Data, error) {
 }
 
 func (e *Email) Stop() {
+
+	// No need to close unitialised connection
+	if e.cnx == nil {
+		return
+	}
+
 	e.cnx.Logout()
 }
 
@@ -67,8 +85,7 @@ func (e *Email) Eq(new imports.Import) bool {
 	newEmail, _ := new.(*Email)
 	return e.Host == newEmail.Host &&
 		e.Port == newEmail.Port &&
-		e.Login == newEmail.Login &&
-		e.Password == newEmail.Password
+		e.Login == newEmail.Login
 }
 
 // func main() {

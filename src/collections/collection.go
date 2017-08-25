@@ -10,26 +10,26 @@ import (
 )
 
 const (
-	MOVIES Type = iota
+	MOVIES Ref = iota
 )
 
-type Type int
+type Ref int
 
-func (t Type) String() string {
-	return TYPE_IDX2STR[t]
+func (t Ref) String() string {
+	return REF_IDX2STR[t]
 }
 
-var TYPE_IDX2STR = []string{
+var REF_IDX2STR = []string{
 	"movies",
 }
 
-var TYPE_STR2IDX = map[string]Type{
-	TYPE_IDX2STR[MOVIES]: MOVIES,
+var REF_STR2IDX = map[string]Ref{
+	REF_IDX2STR[MOVIES]: MOVIES,
 }
 
 type Collection struct {
 	name     string
-	typ      Type
+	ref      Ref
 	buffer   *Buffer
 	items    *Items
 	config   *Config
@@ -45,10 +45,10 @@ type Event struct {
 	Item   Data
 }
 
-func (c *Collection) Init(name string, typ Type) chan Event {
+func (c *Collection) Init(name string, ref Ref) chan Event {
 
 	c.SetName(name)
-	c.typ = typ
+	c.ref = ref
 
 	// Set default Buffer size at 2
 	c.config = NewConfig(2)
@@ -65,9 +65,9 @@ func (c *Collection) Init(name string, typ Type) chan Event {
 	return c.events
 }
 
-// GetType returns the type of the collection (mandatory)
-func (c *Collection) GetType() Type {
-	return c.typ
+// GetRef returns the type of the collection (mandatory)
+func (c *Collection) GetRef() Ref {
+	return c.ref
 }
 
 // SetName set the name of the collection
@@ -125,7 +125,7 @@ func (c *Collection) Search(src string, item *BufferItem) {
 	}
 
 	// // TODO Research for best matching
-	// item.Type = item.Websites["IMDB"][0].GetType()
+	// item.Ref = item.Websites["IMDB"][0].GetRef()
 	// item.IsMatching = 10.2
 	// item.BestMatch = item.Websites["IMDB"][0]
 

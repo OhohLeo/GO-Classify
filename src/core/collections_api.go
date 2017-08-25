@@ -10,7 +10,7 @@ import (
 
 type ApiCollection struct {
 	Name     string   `json:"name"`
-	Type     string   `json:"type"`
+	Ref      string   `json:"ref"`
 	Websites []string `json:"websites"`
 }
 
@@ -30,22 +30,22 @@ func (c *Classify) ApiPostCollection(w rest.ResponseWriter, r *rest.Request) {
 		return
 	}
 
-	if body.Type == "" {
-		rest.Error(w, "expected collection type",
+	if body.Ref == "" {
+		rest.Error(w, "expected collection ref",
 			http.StatusBadRequest)
 		return
 	}
 
 	// Check the collection type
-	typ, ok := collections.TYPE_STR2IDX[body.Type]
+	ref, ok := collections.REF_STR2IDX[body.Ref]
 	if ok == false {
-		rest.Error(w, "invalid collection type",
+		rest.Error(w, "invalid collection ref",
 			http.StatusBadRequest)
 		return
 	}
 
 	// Create new collection
-	collection, err := c.AddCollection(body.Name, typ, body.Websites)
+	collection, err := c.AddCollection(body.Name, ref, body.Websites)
 	if err != nil {
 		rest.Error(w, err.Error(), http.StatusBadRequest)
 		return
@@ -73,11 +73,11 @@ func (c *Classify) ApiGetCollections(w rest.ResponseWriter, r *rest.Request) {
 
 	for name, c := range c.collections {
 
-		collectionType := c.GetType()
+		collectionRef := c.GetRef()
 
 		collections[i] = ApiCollection{
 			Name: name,
-			Type: collectionType.String(),
+			Ref:  collectionRef.String(),
 		}
 
 		i++
@@ -117,7 +117,7 @@ func (c *Classify) ApiPatchCollection(w rest.ResponseWriter, r *rest.Request) {
 	}
 
 	isModified, err := c.ModifyCollection(r.PathParam("name"),
-		body.Name, body.Type)
+		body.Name, body.Ref)
 	if err != nil {
 		rest.Error(w, err.Error(), http.StatusBadRequest)
 		return
@@ -372,7 +372,7 @@ type Websocket interface {
 
 type GetReferences struct {
 	Websites []string `json:"websites"`
-	Types    []string `json:"types"`
+	Refs     []string `json:"refs"`
 }
 
 // GetReferences returns the website & type of collections available
@@ -381,6 +381,6 @@ func (c *Classify) ApiGetReferences(w rest.ResponseWriter, r *rest.Request) {
 
 	w.WriteJson(GetReferences{
 		Websites: c.GetWebsites(),
-		Types:    c.GetCollectionTypes(),
+		Refs:     c.GetCollectionRefs(),
 	})
 }

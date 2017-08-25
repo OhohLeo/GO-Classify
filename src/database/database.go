@@ -1,13 +1,45 @@
 package database
 
 import (
+	"encoding/json"
 	"fmt"
 	log "github.com/Sirupsen/logrus"
 	"github.com/jmoiron/sqlx"
 	_ "github.com/mattn/go-sqlite3"
-	"sort"
-	"strings"
 )
+
+type GenStruct struct {
+	Id     uint64 `db:"id"`
+	Name   string `db:"name"`
+	Ref    uint64 `db:"ref"`
+	Params []byte `db:"params"`
+}
+
+func (stored *GenStruct) GetParams(params interface{}) error {
+	return json.Unmarshal(stored.Params, params)
+}
+
+var genAttributes = map[string]*Attribute{
+	"id": &Attribute{
+		Type:         INTEGER,
+		IsPrimaryKey: true,
+	},
+	"name": &Attribute{
+		Type:     TEXT,
+		IsUnique: true,
+	},
+	"ref": &Attribute{
+		Type: INTEGER,
+	},
+	"params": &Attribute{
+		Type: TEXT,
+	},
+}
+
+type Database struct {
+	db     *sqlx.DB
+	tables map[string]*Table
+}
 
 type Config struct {
 	Enable bool   `json:"enable"`
@@ -15,33 +47,88 @@ type Config struct {
 	Source string `json:"source"`
 }
 
-func (c *Config) Connect() (*sqlx.DB, error) {
-	db, err := sqlx.Connect(c.Driver, c.Source)
-	if err != nil {
-		return nil, err
+func New(config Config) (d *Database, err error) {
+
+	// Check if database is enable
+	if config.Enable == false {
+		return
 	}
 
-	return db, nil
+	d = new(Database)
+
+	// Establish database connection
+	d.db, err = sqlx.Connect(config.Driver, config.Source)
+	if err != nil {
+		return
+	}
+
+	return
 }
 
-type RequireDB interface {
-	GetDBTables() []*Table
+func (d *Database) AddTable(table string, parameters []string) error {
+
+	// Check if table name already exists
+	if _, ok := d.tables[table]; ok {
+		return fmt.Errorf("already existing DB table '%s'", table)
+	}
+
+	if len(parameters) == 0 {
+		return fmt.Errorf("no DB parameters found for table '%s'", table)
+	}
+
+	// Initialize tables if necessary
+	if d.tables == nil {
+		d.tables = make(map[string]*Table)
+	}
+
+	// Initialize attributes
+	attributes := make(map[string]*Attribute)
+	for _, name := range parameters {
+
+		attribute, ok := genAttributes[name]
+		if ok == false {
+			return fmt.Errorf("no DB generic attribute found for table '%s/%s'",
+				table, name)
+		}
+
+		attributes[name] = attribute
+	}
+
+	// Store table
+	d.tables[table] = &Table{
+		Name:       table,
+		Attributes: attributes,
+	}
+
+	return nil
 }
 
-func Create(db *sqlx.DB, rDB RequireDB) error {
+func (d *Database) GetTable(name string) (table *Table, err error) {
 
-	tx, err := db.Begin()
+	var ok bool
+	table, ok = d.tables[name]
+	if ok == false {
+		err = fmt.Errorf("no DB table '%s' found", table)
+		return
+	}
+
+	return
+}
+
+func (d *Database) Create() error {
+
+	tx, err := d.db.Begin()
 	if err != nil {
 		return err
 	}
 
-	for _, table := range rDB.GetDBTables() {
+	for name, table := range d.tables {
 		query, err := table.Create()
 		if err != nil {
 			return err
 		}
 
-		log.Info("DB:" + query)
+		log.Info("DB " + name + " : " + query)
 
 		_, err = tx.Exec(query)
 		if err != nil {
@@ -53,17 +140,56 @@ func Create(db *sqlx.DB, rDB RequireDB) error {
 	return tx.Commit()
 }
 
-func Insert(db *sqlx.DB, t *Table, toStore interface{}) error {
+func (d *Database) Delete(name string, toStore interface{}, condition string) error {
 
-	tx, err := db.Beginx()
+	table, err := d.GetTable(name)
 	if err != nil {
 		return err
 	}
 
-	query, err := t.Insert(false)
+	tx, err := d.db.Beginx()
 	if err != nil {
 		return err
 	}
+
+	query := table.Delete(condition)
+
+	log.Info("DB " + name + " " + query)
+
+	_, err = tx.NamedExec(query, toStore)
+	if err != nil {
+		tx.Rollback()
+		return err
+	}
+
+	return tx.Commit()
+}
+
+// func (SimpleDB *s) Store(db *sqlx.DB, t *Table, params interface{}) error {
+
+// 	// Convert to JSON
+// 	s.Params, err := json.Marshal(params)
+// 	if err != nil {
+// 		return err
+// 	}
+
+// 	// Store the collection
+// 	return Insert(db, &DB_LIST, s)
+// }
+
+func (d *Database) Insert(name string, toStore interface{}) error {
+
+	table, err := d.GetTable(name)
+	if err != nil {
+		return err
+	}
+
+	tx, err := d.db.Beginx()
+	if err != nil {
+		return err
+	}
+
+	query := table.Insert(false)
 
 	log.Info("DB:" + query)
 
@@ -76,17 +202,19 @@ func Insert(db *sqlx.DB, t *Table, toStore interface{}) error {
 	return tx.Commit()
 }
 
-func InsertRef(db *sqlx.DB, t *Table, refs []string) error {
+func (d *Database) InsertRef(name string, refs []string) error {
 
-	tx, err := db.Beginx()
+	table, err := d.GetTable(name)
 	if err != nil {
 		return err
 	}
 
-	query, err := t.Insert(true)
+	tx, err := d.db.Beginx()
 	if err != nil {
 		return err
 	}
+
+	query := table.Insert(true)
 
 	log.Info("DB:" + query)
 
@@ -103,121 +231,17 @@ func InsertRef(db *sqlx.DB, t *Table, refs []string) error {
 	return tx.Commit()
 }
 
-type AttributeType int
+func (d *Database) SelectAll(name string) (result []GenStruct, err error) {
 
-const (
-	TEXT AttributeType = iota
-	INTEGER
-)
-
-var attributeType2str = []string{
-	"TEXT",
-	"INTEGER",
-}
-
-type Attribute struct {
-	Type         AttributeType
-	IsNotNull    bool
-	IsPrimaryKey bool
-	IsUnique     bool
-}
-
-func (a *Attribute) Create() string {
-	res := attributeType2str[a.Type]
-
-	if a.IsNotNull {
-		res += " NOT NULL"
-	}
-
-	if a.IsPrimaryKey {
-		res += " PRIMARY KEY"
-	}
-
-	if a.IsUnique {
-		res += " UNIQUE"
-	}
-
-	return res
-}
-
-func (a *Attribute) String() string {
-	return attributeType2str[a.Type]
-}
-
-type Table struct {
-	Name       string
-	Attributes map[string]*Attribute
-	Unique     []string
-}
-
-func (t *Table) GetAttributes(ignore bool, prefix string) []string {
-
-	var attributes []string
-	idx := 0
-
-	hasPrefix := false
-	if prefix != "" {
-		hasPrefix = true
-	}
-
-	for name, _ := range t.Attributes {
-
-		if ignore && name == "id" {
-			continue
-		}
-
-		if hasPrefix {
-			name = prefix + name
-		}
-
-		attributes = append(attributes, name)
-		idx++
-	}
-
-	// Alphabetic sort
-	sort.Strings(attributes)
-
-	return attributes
-}
-
-func (t *Table) Create() (result string, err error) {
-
-	if t.Name == "" {
-		err = fmt.Errorf("table should not have empty name")
+	table, err := d.GetTable(name)
+	if err != nil {
 		return
 	}
 
-	result = "CREATE TABLE IF NOT EXISTS " + t.Name + " ("
+	query := table.SelectAll()
 
-	for _, name := range t.GetAttributes(false, "") {
-		result += name + " " + t.Attributes[name].Create() + ","
-	}
+	log.Info("DB:" + query)
 
-	// Handle unicity on multiples attributes
-	if len(t.Unique) > 0 {
-		result += " UNIQUE(" + strings.Join(t.Unique, ",") + ") ON CONFLICT REPLACE"
-
-		// Remove last if ends with coma
-	} else if last := len(result) - 1; last >= 0 && result[last] == ',' {
-
-		result = result[0:last]
-	}
-
-	result += ");"
-	return
-}
-
-func (t *Table) Insert(isRef bool) (result string, err error) {
-
-	result = "INSERT"
-
-	if isRef {
-		result += " OR IGNORE"
-	}
-
-	result += " INTO " + t.Name +
-		" (" + strings.Join(t.GetAttributes(true, ""), ",") + ")" +
-		" VALUES (" + strings.Join(t.GetAttributes(true, ":"), ",") + ")"
-
+	err = d.db.Select(&result, query)
 	return
 }

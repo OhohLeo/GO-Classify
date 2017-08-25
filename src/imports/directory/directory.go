@@ -2,6 +2,7 @@ package directory
 
 import (
 	"bufio"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"github.com/ohohleo/classify/imports"
@@ -20,7 +21,45 @@ type Directory struct {
 	needToStop  bool
 }
 
-func (r *Directory) GetType() string {
+func ToBuild() imports.BuildImport {
+
+	return imports.BuildImport{
+		CheckConfig: func(config map[string][]string) (err error) {
+
+			// For all specified directories
+			for _, directories := range config {
+
+				// All authorised path
+				for _, path := range directories {
+
+					// Check we have an existing directory
+					if _, err = os.Stat(path); os.IsNotExist(err) {
+						return
+					}
+				}
+			}
+
+			return
+		},
+		Create: func(input json.RawMessage, config map[string][]string, collections []string) (i imports.Import, err error) {
+			var directory Directory
+			err = json.Unmarshal(input, &directory)
+			if err != nil {
+				return
+			}
+
+			err = directory.Check(config, collections)
+			if err != nil {
+				return
+			}
+
+			i = &directory
+			return
+		},
+	}
+}
+
+func (r *Directory) GetRef() string {
 	return "directory"
 }
 
@@ -127,7 +166,6 @@ func (r *Directory) readDirectory(c chan imports.Data, path string, isRecursive 
 		extension := filepath.Ext(fullname)
 
 		file := &imports.File{
-			Type:      "file",
 			Name:      strings.TrimRight(fullname, extension),
 			FullName:  fullname,
 			Extension: extension,

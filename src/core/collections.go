@@ -3,18 +3,18 @@ package core
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/jmoiron/sqlx"
 	"github.com/ohohleo/classify/collections"
+	"github.com/ohohleo/classify/database"
 	"github.com/ohohleo/classify/imports"
 	"github.com/ohohleo/classify/websites"
 )
 
 // Collection common methods
 type Collection interface {
-	Init(string, collections.Type) chan collections.Event
+	Init(string, collections.Ref) chan collections.Event
 	SetName(string)
 	GetName() string
-	GetType() collections.Type
+	GetRef() collections.Ref
 	ModifyConfig(string, string, []string) error
 	ModifyConfigValue(string, string) error
 	GetConfig() *collections.Config
@@ -24,7 +24,8 @@ type Collection interface {
 	AddWebsite(website websites.Website)
 	DeleteWebsite(name string) error
 	OnInput(input imports.Data) *collections.BufferItem
-	Store2DB(db *sqlx.DB) error
+	Store2DB(db *database.Database) error
+	Delete2DB(db *database.Database) error
 }
 
 // Type of collections
@@ -50,7 +51,7 @@ func (c *Classify) GetCollectionsByNames(names []string) (map[string]Collection,
 	return collections, nil
 }
 
-func (c *Classify) AddCollection(name string, typ collections.Type, webNames []string) (collection Collection, err error) {
+func (c *Classify) AddCollection(name string, ref collections.Ref, webNames []string) (collection Collection, err error) {
 
 	var website websites.Website
 
@@ -68,7 +69,7 @@ func (c *Classify) AddCollection(name string, typ collections.Type, webNames []s
 	}
 
 	// Add stored collection
-	collection, err = c.addCollection(name, typ)
+	collection, err = c.addCollection(name, ref)
 	if err != nil {
 		return
 	}
@@ -82,7 +83,7 @@ func (c *Classify) AddCollection(name string, typ collections.Type, webNames []s
 }
 
 // Add a new collection
-func (c *Classify) addCollection(name string, typ collections.Type) (collection Collection, err error) {
+func (c *Classify) addCollection(name string, ref collections.Ref) (collection Collection, err error) {
 
 	// Check that the name of the collection is unique
 	if _, ok := c.collections[name]; ok {
@@ -91,7 +92,7 @@ func (c *Classify) addCollection(name string, typ collections.Type) (collection 
 	}
 
 	// Create the new collection
-	collection = newCollections[typ]()
+	collection = newCollections[ref]()
 
 	if c.collections == nil {
 		c.collections = make(map[string]Collection)
@@ -101,7 +102,7 @@ func (c *Classify) addCollection(name string, typ collections.Type) (collection 
 	c.collections[name] = collection
 
 	// Associate configuration
-	eventsChannel := collection.Init(name, typ)
+	eventsChannel := collection.Init(name, ref)
 
 	go func() {
 
@@ -120,10 +121,22 @@ func (c *Classify) addCollection(name string, typ collections.Type) (collection 
 // Remove an existing collection
 func (c *Classify) DeleteCollection(name string) (err error) {
 
+	collection, ok := c.collections[name]
+
 	// Check that the name of the collection is unique
-	if _, ok := c.collections[name]; ok == false {
+	if ok == false {
 		err = fmt.Errorf("collection '%s' not existing", name)
 		return
+	}
+
+	// Store collection if enable
+	if c.database != nil {
+		err = collection.Delete2DB(c.database)
+		if err != nil {
+			err = fmt.Errorf("delete collection '%s' from DB failed: %s",
+				name, err.Error())
+			return
+		}
 	}
 
 	delete(c.collections, name)
@@ -145,7 +158,7 @@ func (c *Classify) GetCollection(name string) (Collection, error) {
 
 // Modify an existing collection
 func (c *Classify) ModifyCollection(
-	name string, newName string, newTypeStr string) (isModified bool, err error) {
+	name string, newName string, newRefStr string) (isModified bool, err error) {
 
 	// Check that the name of the collection exists
 	collection, ok := c.collections[name]
@@ -156,19 +169,19 @@ func (c *Classify) ModifyCollection(
 
 	isModified = false
 
-	if newTypeStr != "" {
+	if newRefStr != "" {
 
 		// Check the collection type
-		newType, ok := collections.TYPE_STR2IDX[newTypeStr]
-		if ok == false || len(newCollections) <= int(newType) {
-			err = fmt.Errorf("invalid collection type '%s'", newTypeStr)
+		newRef, ok := collections.REF_STR2IDX[newRefStr]
+		if ok == false || len(newCollections) <= int(newRef) {
+			err = fmt.Errorf("invalid collection type '%s'", newRefStr)
 			return
 		}
 
-		if newType != collection.GetType() {
+		if newRef != collection.GetRef() {
 
 			// Check the collection type
-			newCollection := newCollections[newType]
+			newCollection := newCollections[newRef]
 
 			delete(c.collections, name)
 			collection = newCollection()
@@ -196,6 +209,6 @@ func (c *Classify) ModifyCollection(
 }
 
 // Returns the type of collection
-func (c *Classify) GetCollectionTypes() []string {
-	return collections.TYPE_IDX2STR
+func (c *Classify) GetCollectionRefs() []string {
+	return collections.REF_IDX2STR
 }

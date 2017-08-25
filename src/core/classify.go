@@ -2,7 +2,6 @@ package core
 
 import (
 	log "github.com/Sirupsen/logrus"
-	"github.com/jmoiron/sqlx"
 	"github.com/ohohleo/classify/collections"
 	"github.com/ohohleo/classify/database"
 	"github.com/ohohleo/classify/requests"
@@ -12,7 +11,7 @@ import (
 
 type Classify struct {
 	config      *Config
-	database    *sqlx.DB
+	database    *database.Database
 	requests    *requests.RequestsPool
 	Server      *Server
 	imports     map[string]Import
@@ -51,52 +50,8 @@ func Start(config *Config) (c *Classify, err error) {
 
 	log.SetLevel(log.DebugLevel)
 
-	// Activate database if enabled
-	if config.DataBase.Enable {
-
-		log.Info("Starting Database")
-
-		// Establish database connection
-		if c.database, err = config.DataBase.Connect(); err != nil {
-			return
-		}
-
-		// Create basic database tables
-		if err = database.Create(c.database, c); err != nil {
-			return
-		}
-
-		// Insert collection type references
-		if err = database.InsertRef(
-			c.database, &collections.DB_REFS,
-			collections.TYPE_IDX2STR); err != nil {
-			return
-		}
-
-		// Retreive all stored collections
-		var storedCollections []collections.DB
-		storedCollections, err = collections.GetDBCollections(c.database)
-		if err != nil {
-			return
-		}
-
-		for _, stored := range storedCollections {
-
-			// Get collection params
-			var params collections.Params
-			params, err = stored.GetParams()
-			if err != nil {
-				return
-			}
-
-			// Create new collection
-			_, err = c.AddCollection(
-				stored.Name, collections.Type(stored.Type), params.Websites)
-			if err != nil {
-				return
-			}
-		}
-
+	if err = c.StartDB(config); err != nil {
+		return
 	}
 
 	// TODO: Read all imports
@@ -126,17 +81,48 @@ func Start(config *Config) (c *Classify, err error) {
 	return
 }
 
-// Application stop
+// Stop application
 func (c *Classify) Stop() {
 	c.Server.Stop()
 }
 
-func (m *Classify) GetDBTables() []*database.Table {
+// StartDB init db and retreive all stored data
+func (c *Classify) StartDB(config *Config) (err error) {
 
-	return []*database.Table{
-		&collections.DB_LIST,
-		&collections.DB_REFS,
+	// Activate database if enabled
+	c.database, err = database.New(config.DataBase)
+	if c.database == nil {
+		log.Info("Database disable")
+		return
 	}
+
+	log.Info("Starting Database")
+
+	if err = collections.INIT_DB(c.database); err != nil {
+		return
+	}
+
+	// Création des tables
+	if err = c.database.Create(); err != nil {
+		return
+	}
+
+	// Insertion des références
+	if err = collections.INIT_REF_DB(c.database); err != nil {
+		return
+	}
+
+	// Retreive all stored collections
+	err = collections.RetreiveDBCollections(c.database,
+		func(name string, ref collections.Ref, params collections.Params) (err error) {
+			_, err = c.AddCollection(name, ref, params.Websites)
+			return
+		})
+	if err != nil {
+		return
+	}
+
+	return
 }
 
 const nameLetters = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
