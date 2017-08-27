@@ -11,7 +11,7 @@ declare var jQuery: any;
 
 export class ImportsComponent implements OnInit, OnDestroy {
 
-    public importTypes: Array<string> = []
+    public importRefs: Array<string> = []
     public imports: Map<string, ImportBase[]>
 
     private events
@@ -70,14 +70,14 @@ export class ImportsComponent implements OnInit, OnDestroy {
         this.importsService.getImports()
             .subscribe((imports: Map<string, ImportBase[]>) => {
 
-                let importTypes: Array<string> = [];
+                let importRefs: Array<string> = [];
 
                 imports.forEach((undefined, importType) => {
-                    importTypes.push(importType)
+                    importRefs.push(importType)
                 })
 
                 this.zone.run(() => {
-                    this.importTypes = importTypes
+                    this.importRefs = importRefs
                     this.imports = imports
                 })
             })

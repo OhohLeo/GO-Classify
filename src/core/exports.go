@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"github.com/ohohleo/classify/exports"
+	"strconv"
 )
 
 type BuildExport struct {
@@ -16,7 +17,7 @@ type BuildExport struct {
 var newExports = map[string]BuildExport{}
 
 type Export struct {
-	Id          string `json:"id"`
+	Id          uint64 `json:"id"`
 	engine      exports.Export
 	collections map[string]Collection
 }
@@ -68,9 +69,9 @@ func (c *Classify) CheckExportsConfig(configuration map[string]map[string][]stri
 }
 
 // Check exports ids and return the list of exports
-func (c *Classify) GetExportsByIds(ids []string) (exports map[string]Export, err error) {
+func (c *Classify) GetExportsByIds(ids []uint64) (exports map[uint64]Export, err error) {
 
-	exports = make(map[string]Export)
+	exports = make(map[uint64]Export)
 
 	for _, id := range ids {
 		i, ok := c.exports[id]
@@ -139,7 +140,7 @@ func (c *Classify) AddExport(exportType string, params json.RawMessage, collecti
 	// Otherwise create your export structure
 	if alreadyExists == false {
 
-		id := getRandomName()
+		id := getRandomId()
 		i = Export{
 			Id:          id,
 			engine:      exportEngine,
@@ -147,7 +148,7 @@ func (c *Classify) AddExport(exportType string, params json.RawMessage, collecti
 		}
 
 		if c.exports == nil {
-			c.exports = make(map[string]Export)
+			c.exports = make(map[uint64]Export)
 		}
 
 		// Store the new export
@@ -161,7 +162,7 @@ func (c *Classify) AddExport(exportType string, params json.RawMessage, collecti
 }
 
 // Remove export from the list
-func (c *Classify) DeleteExports(ids map[string]Export, collections map[string]Collection) (err error) {
+func (c *Classify) DeleteExports(ids map[uint64]Export, collections map[string]Collection) (err error) {
 
 	// At least one export id or one collection must be specified
 	if len(ids) == 0 && len(collections) == 0 {
@@ -196,9 +197,9 @@ func (c *Classify) DeleteExports(ids map[string]Export, collections map[string]C
 }
 
 // Get the whole list of exports by Type
-func (c *Classify) GetExports(ids map[string]Export, collections map[string]Collection) (res map[string]map[string]exports.Export, err error) {
+func (c *Classify) GetExports(ids map[uint64]Export, collections map[string]Collection) (res map[string]map[uint64]exports.Export, err error) {
 
-	res = make(map[string]map[string]exports.Export)
+	res = make(map[string]map[uint64]exports.Export)
 
 	// If no ids are specified : get all
 	if len(ids) == 0 {
@@ -214,7 +215,7 @@ func (c *Classify) GetExports(ids map[string]Export, collections map[string]Coll
 		t := i.engine.GetType()
 
 		if res[t] == nil {
-			res[t] = make(map[string]exports.Export)
+			res[t] = make(map[uint64]exports.Export)
 		}
 
 		res[t][name] = i.engine
@@ -223,7 +224,7 @@ func (c *Classify) GetExports(ids map[string]Export, collections map[string]Coll
 	return
 }
 
-func (c *Classify) SendExportEvent(id string, status bool) {
+func (c *Classify) SendExportEvent(id uint64, status bool) {
 
 	var statusStr string
 	if status {
@@ -232,11 +233,11 @@ func (c *Classify) SendExportEvent(id string, status bool) {
 		statusStr = "end"
 	}
 
-	c.SendEvent("export/status", statusStr, id, status)
+	c.SendEvent("export/status", statusStr, strconv.Itoa(int(id)), status)
 }
 
 // Stop the exporting process
-func (c *Classify) StopExports(ids map[string]Export, collections map[string]Collection) error {
+func (c *Classify) StopExports(ids map[uint64]Export, collections map[string]Collection) error {
 
 	// If no ids are specified : get all
 	if len(ids) == 0 {

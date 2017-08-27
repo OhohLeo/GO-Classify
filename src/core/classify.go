@@ -15,8 +15,8 @@ type Classify struct {
 	database    *database.Database
 	requests    *requests.RequestsPool
 	Server      *Server
-	imports     map[string]Import
-	exports     map[string]Export
+	imports     map[uint64]Import
+	exports     map[uint64]Export
 	collections map[string]Collection
 	websites    map[string]websites.Website
 }
@@ -139,17 +139,19 @@ func (c *Classify) StartDB(config *Config) (err error) {
 
 	// Retreive all stored imports
 	err = imports.RetreiveDBImports(c.database,
-		func(id string, ref imports.Ref, params []byte, names []string) (err error) {
+		func(id uint64, ref imports.Ref, params []byte, names []string) (err error) {
 
 			collections, err := c.GetCollectionsByNames(names)
 			if err != nil {
 				return
 			}
 
-			_, err = c.AddImport(ref.String(), params, collections)
+			i, err := c.AddImport(ref.String(), params, collections)
 			if err != nil {
 				return
 			}
+
+			i.Id = id
 
 			return
 		})
@@ -160,14 +162,6 @@ func (c *Classify) StartDB(config *Config) (err error) {
 	return
 }
 
-const nameLetters = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
-
-func getRandomName() string {
-
-	b := make([]byte, 16)
-	for i := range b {
-		b[i] = nameLetters[rand.Int63()%int64(len(nameLetters))]
-	}
-
-	return string(b)
+func getRandomId() uint64 {
+	return uint64(rand.Int63())
 }

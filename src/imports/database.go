@@ -31,7 +31,7 @@ func INIT_REF_DB(db *database.Database) error {
 	return db.InsertRef("imports_refs", REF_IDX2STR)
 }
 
-type OnImport func(id string, ref Ref, params []byte, collections []string) error
+type OnImport func(id uint64, ref Ref, params []byte, collections []string) error
 
 func RetreiveDBImports(db *database.Database, onImport OnImport) (err error) {
 
@@ -56,7 +56,7 @@ func RetreiveDBImports(db *database.Database, onImport OnImport) (err error) {
 			return
 		}
 
-		err = onImport(dbImport.Name, Ref(dbImport.Ref),
+		err = onImport(dbImport.Id, Ref(dbImport.Ref),
 			dbImport.Params, collections)
 	}
 

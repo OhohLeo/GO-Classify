@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"github.com/ant0ine/go-json-rest/rest"
 	"net/http"
+	"strconv"
 )
 
 // List all config exports
@@ -13,13 +14,25 @@ func (c *Classify) ApiGetExportsConfig(w rest.ResponseWriter, r *rest.Request) {
 }
 
 // getExportIdsAndCollections get from Url parameters exports and the collections
-func (c *Classify) getExportIdsAndCollections(r *rest.Request) (exports map[string]Export, collections map[string]Collection, err error) {
+func (c *Classify) getExportIdsAndCollections(r *rest.Request) (exports map[uint64]Export, collections map[string]Collection, err error) {
 
 	// From the url query list
 	values := r.URL.Query()
 
+	var ids []uint64
+	for _, idStr := range values["id"] {
+
+		var id int
+		id, err = strconv.Atoi(idStr)
+		if err != nil {
+			return
+		}
+
+		ids = append(ids, uint64(id))
+	}
+
 	// Check and get the export list
-	exports, err = c.GetExportsByIds(values["id"])
+	exports, err = c.GetExportsByIds(ids)
 	if err != nil {
 		return
 	}

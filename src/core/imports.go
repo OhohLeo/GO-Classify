@@ -18,7 +18,7 @@ var newImports = map[string]imports.BuildImport{
 }
 
 type Import struct {
-	Id          string `json:"id"`
+	Id          uint64 `json:"id"`
 	engine      imports.Import
 	collections map[string]Collection
 }
@@ -82,7 +82,7 @@ func (i *Import) Store2DB(db *database.Database) error {
 	}
 
 	// Store current DB id
-	i.Id = strconv.Itoa(int(lastId))
+	i.Id = lastId
 
 	return nil
 }
@@ -94,15 +94,9 @@ func (i *Import) Unlink2DB(db *database.Database, collection Collection) error {
 		return nil
 	}
 
-	// Get Id
-	id, err := strconv.Atoi(i.Id)
-	if err != nil {
-		return err
-	}
-
 	return db.Delete("imports_mappings",
 		map[string]interface{}{
-			"imports_id":     id,
+			"imports_id":     i.Id,
 			"collections_id": collection.GetId()}, "id = :id")
 }
 
@@ -113,13 +107,8 @@ func (i *Import) Delete2DB(db *database.Database) error {
 		return nil
 	}
 
-	id, err := strconv.Atoi(i.Id)
-	if err != nil {
-		return err
-	}
-
 	return db.Delete("imports", &database.GenStruct{
-		Id:  uint64(id),
+		Id:  i.Id,
 		Ref: uint64(i.engine.GetRef()),
 	}, "id = :id AND ref = :ref")
 }
@@ -148,9 +137,9 @@ func (c *Classify) CheckImportsConfig(configuration map[string]map[string][]stri
 }
 
 // Check imports ids and return the list of imports
-func (c *Classify) GetImportsByIds(ids []string) (imports map[string]Import, err error) {
+func (c *Classify) GetImportsByIds(ids []uint64) (imports map[uint64]Import, err error) {
 
-	imports = make(map[string]Import)
+	imports = make(map[uint64]Import)
 
 	for _, id := range ids {
 		i, ok := c.imports[id]
@@ -220,7 +209,7 @@ func (c *Classify) AddImport(importRef string, params json.RawMessage, collectio
 	// Otherwise create your import structure
 	if alreadyExists == false {
 
-		id := getRandomName()
+		id := getRandomId()
 		i = Import{
 			Id:          id,
 			engine:      importEngine,
@@ -228,7 +217,7 @@ func (c *Classify) AddImport(importRef string, params json.RawMessage, collectio
 		}
 
 		if c.imports == nil {
-			c.imports = make(map[string]Import)
+			c.imports = make(map[uint64]Import)
 		}
 
 		// Store the new import
@@ -242,7 +231,7 @@ func (c *Classify) AddImport(importRef string, params json.RawMessage, collectio
 }
 
 // Remove import from the list
-func (c *Classify) DeleteImports(ids map[string]Import, collections map[string]Collection) (err error) {
+func (c *Classify) DeleteImports(ids map[uint64]Import, collections map[string]Collection) (err error) {
 
 	// At least one import id or one collection must be specified
 	if len(ids) == 0 && len(collections) == 0 {
@@ -286,9 +275,9 @@ func (c *Classify) DeleteImports(ids map[string]Import, collections map[string]C
 }
 
 // Get the whole list of imports by Type
-func (c *Classify) GetImports(ids map[string]Import, collections map[string]Collection) (res map[string]map[string]imports.Import, err error) {
+func (c *Classify) GetImports(ids map[uint64]Import, collections map[string]Collection) (res map[string]map[uint64]imports.Import, err error) {
 
-	res = make(map[string]map[string]imports.Import)
+	res = make(map[string]map[uint64]imports.Import)
 
 	// If no ids are specified : get all
 	if len(ids) == 0 {
@@ -304,7 +293,7 @@ func (c *Classify) GetImports(ids map[string]Import, collections map[string]Coll
 		t := i.engine.GetRef()
 
 		if res[t.String()] == nil {
-			res[t.String()] = make(map[string]imports.Import)
+			res[t.String()] = make(map[uint64]imports.Import)
 		}
 
 		res[t.String()][name] = i.engine
@@ -313,7 +302,7 @@ func (c *Classify) GetImports(ids map[string]Import, collections map[string]Coll
 	return
 }
 
-func (c *Classify) SendImportEvent(id string, status bool) {
+func (c *Classify) SendImportEvent(id uint64, status bool) {
 
 	var statusStr string
 	if status {
@@ -322,11 +311,11 @@ func (c *Classify) SendImportEvent(id string, status bool) {
 		statusStr = "end"
 	}
 
-	c.SendEvent("import/status", statusStr, id, status)
+	c.SendEvent("import/status", statusStr, strconv.Itoa(int(id)), status)
 }
 
 // Launch the process of importation of specified imports
-func (c *Classify) StartImports(ids map[string]Import, collections map[string]Collection) error {
+func (c *Classify) StartImports(ids map[uint64]Import, collections map[string]Collection) error {
 
 	// If no ids are specified : get all
 	if len(ids) == 0 {
@@ -374,7 +363,7 @@ func (c *Classify) StartImports(ids map[string]Import, collections map[string]Co
 }
 
 // Stop the importing process
-func (c *Classify) StopImports(ids map[string]Import, collections map[string]Collection) error {
+func (c *Classify) StopImports(ids map[uint64]Import, collections map[string]Collection) error {
 
 	// If no ids are specified : get all
 	if len(ids) == 0 {

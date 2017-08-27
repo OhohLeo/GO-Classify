@@ -9,7 +9,7 @@ const (
 	DIRECTORY
 )
 
-type Ref int
+type Ref uint64
 
 func (t Ref) String() string {
 	return REF_IDX2STR[t]
