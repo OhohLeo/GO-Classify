@@ -35,22 +35,30 @@ type OnImport func(id string, ref Ref, params []byte, collections []string) erro
 
 func RetreiveDBImports(db *database.Database, onImport OnImport) (err error) {
 
-	// var dbImports []database.GenStruct
-	// dbImports, err = db.SelectAll("imports")
-	// if err != nil {
-	// 	return
-	// }
+	var dbImports []database.GenStruct
+	dbImports, err = db.SelectAll("imports")
+	if err != nil {
+		return
+	}
 
-	// for _, dbImport := range dbImports {
+	for _, dbImport := range dbImports {
 
-	// 	// TODO questionner
+		var collections []string
 
-	// 	// Add new stored import
-	// 	// err = onImport(dbImport.Name, Ref(dbImport.Ref), params, collections)
-	// 	// if err != nil {
-	// 	// 	return
-	// 	// }
-	// }
+		err = db.Select(&collections,
+			"SELECT collections.name FROM imports_mappings "+
+				"INNER JOIN collections "+
+				"WHERE collections.id = imports_mappings.collections_id "+
+				"AND imports_mappings.imports_id = ?",
+			dbImport.Id)
+
+		if err != nil {
+			return
+		}
+
+		err = onImport(dbImport.Name, Ref(dbImport.Ref),
+			dbImport.Params, collections)
+	}
 
 	return
 

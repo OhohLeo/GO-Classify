@@ -127,8 +127,30 @@ func (c *Classify) StartDB(config *Config) (err error) {
 		func(id uint64, name string, ref collections.Ref, params collections.Params) (err error) {
 			collection, err := c.AddCollection(name, ref, params.Websites)
 			if err != nil {
-				collection.SetId(id)
+				return
 			}
+
+			collection.SetId(id)
+			return
+		})
+	if err != nil {
+		return
+	}
+
+	// Retreive all stored imports
+	err = imports.RetreiveDBImports(c.database,
+		func(id string, ref imports.Ref, params []byte, names []string) (err error) {
+
+			collections, err := c.GetCollectionsByNames(names)
+			if err != nil {
+				return
+			}
+
+			_, err = c.AddImport(ref.String(), params, collections)
+			if err != nil {
+				return
+			}
+
 			return
 		})
 	if err != nil {

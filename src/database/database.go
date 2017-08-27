@@ -255,6 +255,14 @@ func (d *Database) InsertRef(name string, refs []string) error {
 	return tx.Commit()
 }
 
+func (d *Database) Select(result interface{}, query string, params ...interface{}) (err error) {
+
+	log.Info("DB " + query)
+
+	err = d.db.Select(result, query, params...)
+	return
+}
+
 func (d *Database) SelectAll(name string) (result []GenStruct, err error) {
 
 	table, err := d.GetTable(name)

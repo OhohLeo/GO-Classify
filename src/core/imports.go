@@ -188,7 +188,8 @@ func (c *Classify) AddImport(importRef string, params json.RawMessage, collectio
 	}
 
 	// Get import configuration
-	config, _ := c.config.Imports[importRef]
+	// config, _ := c.config.Imports[importRef]
+	var config map[string][]string
 
 	// Get collections list
 	idx := 0
