@@ -15,8 +15,8 @@ type Classify struct {
 	database    *database.Database
 	requests    *requests.RequestsPool
 	Server      *Server
-	imports     map[uint64]Import
-	exports     map[uint64]Export
+	imports     map[uint64]*Import
+	exports     map[uint64]*Export
 	collections map[string]Collection
 	websites    map[string]websites.Website
 }
@@ -152,7 +152,6 @@ func (c *Classify) StartDB(config *Config) (err error) {
 			}
 
 			i.Id = id
-
 			return
 		})
 	if err != nil {

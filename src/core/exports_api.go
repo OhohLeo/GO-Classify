@@ -14,7 +14,7 @@ func (c *Classify) ApiGetExportsConfig(w rest.ResponseWriter, r *rest.Request) {
 }
 
 // getExportIdsAndCollections get from Url parameters exports and the collections
-func (c *Classify) getExportIdsAndCollections(r *rest.Request) (exports map[uint64]Export, collections map[string]Collection, err error) {
+func (c *Classify) getExportIdsAndCollections(r *rest.Request) (exports map[uint64]*Export, collections map[string]Collection, err error) {
 
 	// From the url query list
 	values := r.URL.Query()

@@ -14,7 +14,7 @@ func (c *Classify) ApiGetImportsConfig(w rest.ResponseWriter, r *rest.Request) {
 }
 
 // getImportIdsAndCollections get from Url parameters imports and the collections
-func (c *Classify) getImportIdsAndCollections(r *rest.Request) (imports map[uint64]Import, collections map[string]Collection, err error) {
+func (c *Classify) getImportIdsAndCollections(r *rest.Request) (imports map[uint64]*Import, collections map[string]Collection, err error) {
 
 	// From the url query list
 	values := r.URL.Query()

@@ -69,9 +69,9 @@ func (c *Classify) CheckExportsConfig(configuration map[string]map[string][]stri
 }
 
 // Check exports ids and return the list of exports
-func (c *Classify) GetExportsByIds(ids []uint64) (exports map[uint64]Export, err error) {
+func (c *Classify) GetExportsByIds(ids []uint64) (exports map[uint64]*Export, err error) {
 
-	exports = make(map[uint64]Export)
+	exports = make(map[uint64]*Export)
 
 	for _, id := range ids {
 		i, ok := c.exports[id]
@@ -87,7 +87,7 @@ func (c *Classify) GetExportsByIds(ids []uint64) (exports map[uint64]Export, err
 }
 
 // Add new export process
-func (c *Classify) AddExport(exportType string, params json.RawMessage, collections map[string]Collection) (i Export, err error) {
+func (c *Classify) AddExport(exportType string, params json.RawMessage, collections map[string]Collection) (i *Export, err error) {
 
 	// Nécessite l'existence d'au moins une collection
 	if len(collections) < 1 {
@@ -141,14 +141,15 @@ func (c *Classify) AddExport(exportType string, params json.RawMessage, collecti
 	if alreadyExists == false {
 
 		id := getRandomId()
-		i = Export{
+
+		i = &Export{
 			Id:          id,
 			engine:      exportEngine,
 			collections: collections,
 		}
 
 		if c.exports == nil {
-			c.exports = make(map[uint64]Export)
+			c.exports = make(map[uint64]*Export)
 		}
 
 		// Store the new export
@@ -162,7 +163,7 @@ func (c *Classify) AddExport(exportType string, params json.RawMessage, collecti
 }
 
 // Remove export from the list
-func (c *Classify) DeleteExports(ids map[uint64]Export, collections map[string]Collection) (err error) {
+func (c *Classify) DeleteExports(ids map[uint64]*Export, collections map[string]Collection) (err error) {
 
 	// At least one export id or one collection must be specified
 	if len(ids) == 0 && len(collections) == 0 {
@@ -197,7 +198,7 @@ func (c *Classify) DeleteExports(ids map[uint64]Export, collections map[string]C
 }
 
 // Get the whole list of exports by Type
-func (c *Classify) GetExports(ids map[uint64]Export, collections map[string]Collection) (res map[string]map[uint64]exports.Export, err error) {
+func (c *Classify) GetExports(ids map[uint64]*Export, collections map[string]Collection) (res map[string]map[uint64]exports.Export, err error) {
 
 	res = make(map[string]map[uint64]exports.Export)
 
@@ -237,7 +238,7 @@ func (c *Classify) SendExportEvent(id uint64, status bool) {
 }
 
 // Stop the exporting process
-func (c *Classify) StopExports(ids map[uint64]Export, collections map[string]Collection) error {
+func (c *Classify) StopExports(ids map[uint64]*Export, collections map[string]Collection) error {
 
 	// If no ids are specified : get all
 	if len(ids) == 0 {
