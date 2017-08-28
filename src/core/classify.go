@@ -100,11 +100,11 @@ func (c *Classify) StartDB(config *Config) (err error) {
 	log.Info("Starting Database")
 
 	// Init database tables
-	if err = imports.INIT_DB(c.database); err != nil {
+	if err = collections.INIT_DB(c.database); err != nil {
 		return
 	}
 
-	if err = collections.INIT_DB(c.database); err != nil {
+	if err = imports.INIT_DB(c.database); err != nil {
 		return
 	}
 
@@ -114,11 +114,11 @@ func (c *Classify) StartDB(config *Config) (err error) {
 	}
 
 	// Insert all references
-	if err = imports.INIT_REF_DB(c.database); err != nil {
+	if err = collections.INIT_REF_DB(c.database); err != nil {
 		return
 	}
 
-	if err = collections.INIT_REF_DB(c.database); err != nil {
+	if err = imports.INIT_REF_DB(c.database); err != nil {
 		return
 	}
 
