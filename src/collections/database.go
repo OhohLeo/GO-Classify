@@ -1,7 +1,6 @@
 package collections
 
 import (
-	"encoding/json"
 	"github.com/ohohleo/classify/database"
 )
 
@@ -28,39 +27,6 @@ func INIT_REF_DB(db *database.Database) error {
 
 type Params struct {
 	Websites []string `json:"websites"`
-}
-
-func (c *Collection) Store2DB(db *database.Database) error {
-
-	// Store websites data
-	params := &Params{
-		Websites: c.GetWebsiteParams(),
-	}
-
-	// Convert to JSON
-	paramsStr, err := json.Marshal(params)
-	if err != nil {
-		return err
-	}
-
-	// Store the collection
-	lastId, err := db.Insert("collections", &database.GenStruct{
-		Name:   c.name,
-		Ref:    uint64(c.GetRef()),
-		Params: paramsStr,
-	})
-
-	c.SetId(lastId)
-
-	return err
-}
-
-func (c *Collection) Delete2DB(db *database.Database) error {
-
-	return db.Delete("collections", &database.GenStruct{
-		Name: c.name,
-		Ref:  uint64(c.GetRef()),
-	}, "name = :name AND ref = :ref")
 }
 
 type OnCollection func(id uint64, name string, ref Ref, params Params) error

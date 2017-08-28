@@ -6,9 +6,12 @@ import (
 	"time"
 )
 
+func BuildMovies() Build {
+	return func() Collection { return new(Movies) }
+}
+
 // Generic movie format
 type Movie struct {
-	ItemGeneric
 	Name        string    `json:"name"`
 	Url         string    `json:"url"`
 	Released    time.Time `json:"released"`
@@ -26,7 +29,6 @@ func NewMovieFromData(decoder *json.Decoder) (movie *Movie, err error) {
 }
 
 func (m *Movie) Init() {
-	m.Type = m.GetType()
 }
 
 func (m Movie) GetType() string {
@@ -34,7 +36,7 @@ func (m Movie) GetType() string {
 }
 
 func (m *Movie) GetId() string {
-	return m.Id
+	return "123"
 }
 
 func (m *Movie) Update(decoder *json.Decoder) (err error) {
@@ -43,7 +45,10 @@ func (m *Movie) Update(decoder *json.Decoder) (err error) {
 }
 
 type Movies struct {
-	Collection
+}
+
+func (m *Movies) GetRef() Ref {
+	return MOVIES
 }
 
 // CreateItem create new movie item
@@ -54,13 +59,13 @@ func (m *Movies) CreateItem() *Movie {
 func (m *Movies) Validate(id string, decoder *json.Decoder) error {
 
 	// Try to parse data received
-	movie, err := NewMovieFromData(decoder)
-	if err != nil {
-		return err
-	}
+	// movie, err := NewMovieFromData(decoder)
+	// if err != nil {
+	// 	return err
+	// }
 
 	// Force id
-	movie.ItemGeneric.Id = id
+	// movie.ItemGeneric.Id = id
 
 	return nil
 }

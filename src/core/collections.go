@@ -1,49 +1,24 @@
 package core
 
 import (
-	"encoding/json"
+	"errors"
 	"fmt"
 	"github.com/ohohleo/classify/collections"
-	"github.com/ohohleo/classify/database"
-	"github.com/ohohleo/classify/imports"
 	"github.com/ohohleo/classify/websites"
 )
 
-// type Collection struct {
-// 	Id     uint64 `json:"id"`
-// 	engine collections.Collection
-// }
-
 // Collection common methods
-type Collection interface {
-	Init(string, collections.Ref) chan collections.Event
-	SetId(uint64)
-	GetId() uint64
-	SetName(string)
-	GetName() string
-	GetRef() collections.Ref
-	ModifyConfig(string, string, []string) error
-	ModifyConfigValue(string, string) error
-	GetConfig() *collections.Config
-	ResetBuffer()
-	GetBuffer() []*collections.BufferItem
-	Validate(string, *json.Decoder) error
-	AddWebsite(website websites.Website)
-	DeleteWebsite(name string) error
-	OnInput(input imports.Data) *collections.BufferItem
-	Store2DB(db *database.Database) error
-	Delete2DB(db *database.Database) error
-}
 
 // Type of collections
-var newCollections = []func() Collection{
-	func() Collection { return new(collections.Movies) },
+var newCollections = map[string]collections.Build{
+	"movies": collections.BuildMovies(),
+	"simple": collections.BuildSimple(),
 }
 
 // Check collection names, returns the list of selected collections
-func (c *Classify) GetCollectionsByNames(names []string) (map[string]Collection, error) {
+func (c *Classify) GetCollectionsByNames(names []string) (map[string]*Collection, error) {
 
-	collections := make(map[string]Collection)
+	collections := make(map[string]*Collection)
 
 	for _, name := range names {
 
@@ -58,7 +33,7 @@ func (c *Classify) GetCollectionsByNames(names []string) (map[string]Collection,
 	return collections, nil
 }
 
-func (c *Classify) AddCollection(name string, ref collections.Ref, webNames []string) (collection Collection, err error) {
+func (c *Classify) AddCollection(name string, ref collections.Ref, webNames []string) (collection *Collection, err error) {
 
 	var website websites.Website
 
@@ -90,7 +65,7 @@ func (c *Classify) AddCollection(name string, ref collections.Ref, webNames []st
 }
 
 // Add a new collection
-func (c *Classify) addCollection(name string, ref collections.Ref) (collection Collection, err error) {
+func (c *Classify) addCollection(name string, ref collections.Ref) (collection *Collection, err error) {
 
 	// Check that the name of the collection is unique
 	if _, ok := c.collections[name]; ok {
@@ -98,18 +73,26 @@ func (c *Classify) addCollection(name string, ref collections.Ref) (collection C
 		return
 	}
 
+	buildCollection, ok := newCollections[ref.String()]
+	if ok == false {
+		err = errors.New("collection type '" + ref.String() + "' not handled")
+		return
+	}
+
 	// Create the new collection
-	collection = newCollections[ref]()
+	collection = &Collection{
+		engine: buildCollection(),
+	}
 
 	if c.collections == nil {
-		c.collections = make(map[string]Collection)
+		c.collections = make(map[string]*Collection)
 	}
 
 	// Store the collection
 	c.collections[name] = collection
 
 	// Associate configuration
-	eventsChannel := collection.Init(name, ref)
+	eventsChannel := collection.Init(name)
 
 	go func() {
 
@@ -151,7 +134,7 @@ func (c *Classify) DeleteCollection(name string) (err error) {
 }
 
 // Return an existing collection
-func (c *Classify) GetCollection(name string) (Collection, error) {
+func (c *Classify) GetCollection(name string) (*Collection, error) {
 
 	collection, ok := c.collections[name]
 
@@ -185,15 +168,15 @@ func (c *Classify) ModifyCollection(
 			return
 		}
 
-		if newRef != collection.GetRef() {
+		if newRef != collection.engine.GetRef() {
 
-			// Check the collection type
-			newCollection := newCollections[newRef]
+			// // Check the collection type
+			// newCollection := newCollections[newRef]
 
-			delete(c.collections, name)
-			collection = newCollection()
-			c.collections[name] = newCollection()
-			isModified = true
+			// delete(c.collections, name)
+			// collection = newCollection()
+			// c.collections[name] = newCollection()
+			// isModified = true
 		}
 	}
 
@@ -207,9 +190,9 @@ func (c *Classify) ModifyCollection(
 			return
 		}
 
-		delete(c.collections, name)
-		c.collections[newName] = collection
-		isModified = true
+		// delete(c.collections, name)
+		// c.collections[newName] = collection
+		// isModified = true
 	}
 
 	return

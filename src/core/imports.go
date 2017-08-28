@@ -20,7 +20,7 @@ var newImports = map[string]imports.BuildImport{
 type Import struct {
 	Id          uint64 `json:"id"`
 	engine      imports.Import
-	collections map[string]Collection
+	collections map[string]*Collection
 }
 
 func (i *Import) HasCollection(name string) (ok bool) {
@@ -29,7 +29,7 @@ func (i *Import) HasCollection(name string) (ok bool) {
 }
 
 // Return true if import has a specified collection or no collections are specified
-func (i *Import) HasCollections(collections map[string]Collection) bool {
+func (i *Import) HasCollections(collections map[string]*Collection) bool {
 
 	if len(collections) > 0 {
 
@@ -74,7 +74,7 @@ func (i *Import) Store2DB(db *database.Database) error {
 		_, err := db.Insert("imports_mappings",
 			map[string]interface{}{
 				"imports_id":     lastId,
-				"collections_id": collection.GetId(),
+				"collections_id": collection.Id,
 			})
 		if err != nil {
 			return err
@@ -87,7 +87,7 @@ func (i *Import) Store2DB(db *database.Database) error {
 	return nil
 }
 
-func (i *Import) Unlink2DB(db *database.Database, collection Collection) error {
+func (i *Import) Unlink2DB(db *database.Database, collection *Collection) error {
 
 	// Check if db is enabled
 	if db == nil {
@@ -97,7 +97,7 @@ func (i *Import) Unlink2DB(db *database.Database, collection Collection) error {
 	return db.Delete("imports_mappings",
 		map[string]interface{}{
 			"imports_id":     i.Id,
-			"collections_id": collection.GetId()},
+			"collections_id": collection.Id},
 		"imports_id = :imports_id AND collections_id = :collections_id")
 }
 
@@ -156,7 +156,7 @@ func (c *Classify) GetImportsByIds(ids []uint64) (imports map[uint64]*Import, er
 }
 
 // Add new import process
-func (c *Classify) AddImport(ref imports.Ref, params json.RawMessage, collections map[string]Collection) (i *Import, err error) {
+func (c *Classify) AddImport(ref imports.Ref, params json.RawMessage, collections map[string]*Collection) (i *Import, err error) {
 
 	// Nécessite l'existence d'au moins une collection
 	if len(collections) < 1 {
@@ -227,7 +227,7 @@ func (c *Classify) AddImport(ref imports.Ref, params json.RawMessage, collection
 }
 
 // Remove import from the list
-func (c *Classify) DeleteImports(ids map[uint64]*Import, collections map[string]Collection) (err error) {
+func (c *Classify) DeleteImports(ids map[uint64]*Import, collections map[string]*Collection) (err error) {
 
 	// At least one import id or one collection must be specified
 	if len(ids) == 0 && len(collections) == 0 {
@@ -271,7 +271,7 @@ func (c *Classify) DeleteImports(ids map[uint64]*Import, collections map[string]
 }
 
 // Get the whole list of imports by Type
-func (c *Classify) GetImports(ids map[uint64]*Import, collections map[string]Collection) (res map[string]map[uint64]imports.Import, err error) {
+func (c *Classify) GetImports(ids map[uint64]*Import, collections map[string]*Collection) (res map[string]map[uint64]imports.Import, err error) {
 
 	res = make(map[string]map[uint64]imports.Import)
 
@@ -311,7 +311,7 @@ func (c *Classify) SendImportEvent(id uint64, status bool) {
 }
 
 // Launch the process of importation of specified imports
-func (c *Classify) StartImports(ids map[uint64]*Import, collections map[string]Collection) error {
+func (c *Classify) StartImports(ids map[uint64]*Import, collections map[string]*Collection) error {
 
 	// If no ids are specified : get all
 	if len(ids) == 0 {
@@ -359,7 +359,7 @@ func (c *Classify) StartImports(ids map[uint64]*Import, collections map[string]C
 }
 
 // Stop the importing process
-func (c *Classify) StopImports(ids map[uint64]*Import, collections map[string]Collection) error {
+func (c *Classify) StopImports(ids map[uint64]*Import, collections map[string]*Collection) error {
 
 	// If no ids are specified : get all
 	if len(ids) == 0 {

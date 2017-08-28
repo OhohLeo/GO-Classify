@@ -1,4 +1,4 @@
-package collections
+package core
 
 import (
 	"fmt"
@@ -7,21 +7,21 @@ import (
 	"strings"
 )
 
-type Config struct {
+type CollectionConfig struct {
 	BufferSize int           `json:"bufferSize"`
 	Filters    CfgStringList `json:"filters"`
 	Separators CfgStringList `json:"separators"`
 	Banned     CfgStringList `json:"banned"`
 }
 
-func NewConfig(bufferSize int) *Config {
-	return &Config{
+func NewCollectionConfig(bufferSize int) *CollectionConfig {
+	return &CollectionConfig{
 		BufferSize: bufferSize,
 	}
 }
 
 // Returns the list of string with banned chain removed
-func (c *Config) clean(toClean string) (result []string, banned []string) {
+func (c *CollectionConfig) clean(toClean string) (result []string, banned []string) {
 
 	// Remove white space
 	toClean = strings.TrimSpace(toClean)
@@ -73,7 +73,7 @@ func (c *Config) clean(toClean string) (result []string, banned []string) {
 	return
 }
 
-func (c *Config) GetBannedList() []string {
+func (c *CollectionConfig) GetBannedList() []string {
 
 	if len(c.Separators) == 0 {
 		return c.Banned
@@ -151,7 +151,7 @@ func (c *Collection) ModifyConfigValue(name string, value string) error {
 	return nil
 }
 
-func (c *Collection) GetConfig() *Config {
+func (c *Collection) GetConfig() *CollectionConfig {
 	return c.config
 }
 

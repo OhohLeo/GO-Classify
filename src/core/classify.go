@@ -17,7 +17,7 @@ type Classify struct {
 	Server      *Server
 	imports     map[uint64]*Import
 	exports     map[uint64]*Export
-	collections map[string]Collection
+	collections map[string]*Collection
 	websites    map[string]websites.Website
 }
 
@@ -130,7 +130,8 @@ func (c *Classify) StartDB(config *Config) (err error) {
 				return
 			}
 
-			collection.SetId(id)
+			// Store database id
+			collection.Id = id
 			return
 		})
 	if err != nil {
@@ -151,6 +152,7 @@ func (c *Classify) StartDB(config *Config) (err error) {
 				return
 			}
 
+			// Store database id
 			i.Id = id
 			return
 		})

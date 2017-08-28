@@ -106,7 +106,7 @@ func (t *TMDB) Search(input string) chan websites.Data {
 					Released: release,
 				}
 
-				movie.ItemGeneric.Id = t.GetName() + "_" + strconv.Itoa(data.ID)
+				// movie.ItemGeneric.Id = t.GetName() + "_" + strconv.Itoa(data.ID)
 
 				movie.Init()
 

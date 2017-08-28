@@ -1,4 +1,4 @@
-package collections
+package core
 
 import (
 	"math/rand"

@@ -1,4 +1,4 @@
-package collections
+package core
 
 import (
 	"fmt"
@@ -26,7 +26,7 @@ func (b *Buffer) CleanedNames(bannedList []string, separators []string) {
 
 		if item.SetCleanedName(bannedList, separators) {
 
-			b.collection.SendEvent("buffer", "update", item)
+			b.collection.SendCollectionEvent("buffer", "update", item)
 
 			// Launch research on item
 			b.collection.Search("buffer", item)

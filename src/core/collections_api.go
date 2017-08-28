@@ -73,7 +73,7 @@ func (c *Classify) ApiGetCollections(w rest.ResponseWriter, r *rest.Request) {
 
 	for name, c := range c.collections {
 
-		collectionRef := c.GetRef()
+		collectionRef := c.engine.GetRef()
 
 		collections[i] = ApiCollection{
 			Name: name,
@@ -86,7 +86,7 @@ func (c *Classify) ApiGetCollections(w rest.ResponseWriter, r *rest.Request) {
 	w.WriteJson(&collections)
 }
 
-func (c *Classify) getCollectionByName(w rest.ResponseWriter, r *rest.Request) Collection {
+func (c *Classify) getCollectionByName(w rest.ResponseWriter, r *rest.Request) *Collection {
 
 	collection, err := c.GetCollection(r.PathParam("name"))
 	if err != nil {
@@ -249,7 +249,7 @@ func (c *Classify) ApiValidateCollectionSingleBuffer(w rest.ResponseWriter, r *r
 		return
 	}
 
-	err := collection.Validate(r.PathParam("id"), json.NewDecoder(r.Body))
+	err := collection.engine.Validate(r.PathParam("id"), json.NewDecoder(r.Body))
 	if err != nil {
 		rest.Error(w, err.Error(), http.StatusBadRequest)
 		return
