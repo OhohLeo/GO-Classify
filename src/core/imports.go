@@ -156,7 +156,7 @@ func (c *Classify) GetImportsByIds(ids []uint64) (imports map[uint64]*Import, er
 }
 
 // Add new import process
-func (c *Classify) AddImport(importRef string, params json.RawMessage, collections map[string]Collection) (i *Import, err error) {
+func (c *Classify) AddImport(ref imports.Ref, params json.RawMessage, collections map[string]Collection) (i *Import, err error) {
 
 	// Nécessite l'existence d'au moins une collection
 	if len(collections) < 1 {
@@ -164,16 +164,10 @@ func (c *Classify) AddImport(importRef string, params json.RawMessage, collectio
 		return
 	}
 
-	// Field required
-	if importRef == "" {
-		err = errors.New("type field is mandatory")
-		return
-	}
-
 	// Check that the type exists
-	buildImport, ok := newImports[importRef]
+	buildImport, ok := newImports[ref.String()]
 	if ok == false {
-		err = errors.New("import type '" + importRef + "' not handled")
+		err = errors.New("import type '" + ref.String() + "' not handled")
 		return
 	}
 
@@ -201,7 +195,7 @@ func (c *Classify) AddImport(importRef string, params json.RawMessage, collectio
 	for _, i = range c.imports {
 
 		// Returns similar import found
-		if i.engine.GetRef().String() == importRef && i.engine.Eq(importEngine) {
+		if i.engine.GetRef() == ref && i.engine.Eq(importEngine) {
 			alreadyExists = true
 			break
 		}

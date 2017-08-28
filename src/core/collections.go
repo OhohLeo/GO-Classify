@@ -9,6 +9,11 @@ import (
 	"github.com/ohohleo/classify/websites"
 )
 
+// type Collection struct {
+// 	Id     uint64 `json:"id"`
+// 	engine collections.Collection
+// }
+
 // Collection common methods
 type Collection interface {
 	Init(string, collections.Ref) chan collections.Event

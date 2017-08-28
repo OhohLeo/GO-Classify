@@ -2,7 +2,9 @@ package core
 
 import (
 	"encoding/json"
+	"fmt"
 	"github.com/ant0ine/go-json-rest/rest"
+	"github.com/ohohleo/classify/imports"
 	"net/http"
 	"strconv"
 )
@@ -71,7 +73,14 @@ func (c *Classify) ApiAddImport(w rest.ResponseWriter, r *rest.Request) {
 		return
 	}
 
-	i, err := c.AddImport(body.Ref, body.Params, collections)
+	// Field required
+	ref, ok := imports.REF_STR2IDX[body.Ref]
+	if ok == false {
+		rest.Error(w, fmt.Sprintf("invalid ref '%s'", body.Ref), http.StatusBadRequest)
+		return
+	}
+
+	i, err := c.AddImport(ref, body.Params, collections)
 	if err != nil {
 		rest.Error(w, err.Error(), http.StatusBadRequest)
 		return

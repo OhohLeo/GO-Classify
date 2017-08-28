@@ -2,7 +2,6 @@ package collections
 
 import (
 	"encoding/json"
-	"github.com/ohohleo/classify/database"
 	//"fmt"
 	"time"
 )
@@ -50,40 +49,6 @@ type Movies struct {
 // CreateItem create new movie item
 func (m *Movies) CreateItem() *Movie {
 	return new(Movie)
-}
-
-// InitTables give database movies table list
-func (m *Movies) GetDatabaseTables() []*database.Table {
-
-	return []*database.Table{
-		&database.Table{
-			Name: "movies",
-			Attributes: map[string]*database.Attribute{
-				"name": &database.Attribute{
-					Type: database.TEXT,
-				},
-				"url": &database.Attribute{
-					Type: database.TEXT,
-				},
-			},
-		},
-		&database.Table{
-			Name: "people",
-			Attributes: map[string]*database.Attribute{
-				"name": &database.Attribute{
-					Type: database.TEXT,
-				},
-			},
-		},
-		&database.Table{
-			Name: "genres",
-			Attributes: map[string]*database.Attribute{
-				"name": &database.Attribute{
-					Type: database.TEXT,
-				},
-			},
-		},
-	}
 }
 
 func (m *Movies) Validate(id string, decoder *json.Decoder) error {

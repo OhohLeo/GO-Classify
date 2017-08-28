@@ -185,7 +185,7 @@ func (d *Database) Delete(name string, toStore interface{}, condition string) er
 
 	query := table.Delete(condition)
 
-	log.Info("DB [" + name + "] " + query)
+	log.Info("DB [" + name + "] " + query + fmt.Sprintf(" [%+v]", toStore))
 
 	_, err = tx.NamedExec(query, toStore)
 	if err != nil {

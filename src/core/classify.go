@@ -146,7 +146,7 @@ func (c *Classify) StartDB(config *Config) (err error) {
 				return
 			}
 
-			i, err := c.AddImport(ref.String(), params, collections)
+			i, err := c.AddImport(ref, params, collections)
 			if err != nil {
 				return
 			}
