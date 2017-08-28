@@ -380,3 +380,25 @@ func (c *Classify) StopImports(ids map[uint64]*Import, collections map[string]*C
 
 	return nil
 }
+
+// Stop the importing process
+func (c *Classify) CmdImports(cmd string, ids map[uint64]*Import, collections map[string]*Collection) error {
+
+	// If no ids are specified : get all
+	// if len(ids) == 0 {
+	// 	ids = c.imports
+	// }
+
+	// for id, i := range ids {
+
+	// 	if i.HasCollections(collections) == false {
+	// 		continue
+	// 	}
+
+	// 	// if err := c.imports[id].engine.SendCmd(cmd); err != nil {
+	// 	// 	return err
+	// 	// }
+	// }
+
+	return nil
+}

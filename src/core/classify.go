@@ -44,6 +44,7 @@ func Start(config *Config) (c *Classify, err error) {
 
 	log.Info("Reading configuration ...")
 
+	// Check configurations
 	err = c.CheckImportsConfig(config.Imports)
 	if err != nil {
 		return
@@ -51,11 +52,10 @@ func Start(config *Config) (c *Classify, err error) {
 
 	log.SetLevel(log.DebugLevel)
 
+	// Retreive classify stored data
 	if err = c.StartDB(config); err != nil {
 		return
 	}
-
-	// TODO: Read all imports
 
 	log.Info("Starting Classify")
 
@@ -100,11 +100,11 @@ func (c *Classify) StartDB(config *Config) (err error) {
 	log.Info("Starting Database")
 
 	// Init database tables
-	if err = collections.INIT_DB(c.database); err != nil {
+	if err = imports.INIT_DB(c.database); err != nil {
 		return
 	}
 
-	if err = imports.INIT_DB(c.database); err != nil {
+	if err = collections.INIT_DB(c.database); err != nil {
 		return
 	}
 
@@ -114,11 +114,11 @@ func (c *Classify) StartDB(config *Config) (err error) {
 	}
 
 	// Insert all references
-	if err = collections.INIT_REF_DB(c.database); err != nil {
+	if err = imports.INIT_REF_DB(c.database); err != nil {
 		return
 	}
 
-	if err = imports.INIT_REF_DB(c.database); err != nil {
+	if err = collections.INIT_REF_DB(c.database); err != nil {
 		return
 	}
 

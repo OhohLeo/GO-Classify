@@ -168,3 +168,22 @@ func (c *Classify) ApiStopImport(w rest.ResponseWriter, r *rest.Request) {
 
 	w.WriteHeader(http.StatusNoContent)
 }
+
+// ApiCmdImport send specific commands to the import
+// PUT /imports/cmd/:cmd?id=IMPORT_ID&collection=COLLECTION_NAME
+func (c *Classify) ApiCmdImport(w rest.ResponseWriter, r *rest.Request) {
+
+	ids, collections, err := c.getImportIdsAndCollections(r)
+	if err != nil {
+		rest.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	err = c.CmdImports(r.PathParam("cmd"), ids, collections)
+	if err != nil {
+		rest.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	w.WriteHeader(http.StatusNoContent)
+}

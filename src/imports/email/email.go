@@ -3,6 +3,7 @@ package email
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/emersion/go-imap"
 	"github.com/emersion/go-imap/client"
 	"github.com/ohohleo/classify/imports"
 	"log"
@@ -12,14 +13,18 @@ type SearchCriteria struct {
 }
 
 type Email struct {
-	Host     string         `json:"host"`
-	Port     int            `json:"port"`
-	Login    string         `json:"login"`
-	Password string         `json:"password"`
-	Search   SearchCriteria `json:"search"`
+	Host     string `json:"host"`
+	Port     int    `json:"port"`
+	Login    string `json:"login"`
+	Password string `json:"password"`
 
-	cnx       *client.Client
-	isRunning bool
+	dataChannel chan imports.Data
+	cnx         *client.Client
+	isRunning   bool
+}
+
+type EmailParams struct {
+	Search SearchCriteria `json:"search"`
 }
 
 func ToBuild() imports.BuildImport {
@@ -67,6 +72,7 @@ func (e *Email) Start() (chan imports.Data, error) {
 
 	// Store connection
 	e.cnx = cnx
+	e.dataChannel = c
 
 	return c, nil
 }
@@ -79,6 +85,7 @@ func (e *Email) Stop() {
 	}
 
 	e.cnx.Logout()
+	e.cnx = nil
 }
 
 func (e *Email) Eq(new imports.Import) bool {
@@ -88,28 +95,49 @@ func (e *Email) Eq(new imports.Import) bool {
 		e.Login == newEmail.Login
 }
 
+// Permet la gestion des commandes asynchrones
+func (e *Email) SendCmd(cmdStr string) error {
+
+	if e.cnx == nil {
+		return fmt.Errorf("email uninitialised")
+	}
+
+	// List mailboxes
+	mailboxes := make(chan *imap.MailboxInfo, 10)
+
+	done := make(chan error, 1)
+	go func() {
+		done <- e.cnx.List("", "*", mailboxes)
+	}()
+
+	if err := <-done; err != nil {
+		log.Fatal(err)
+	}
+
+	log.Println("Mailboxes:")
+	for m := range mailboxes {
+		log.Println("* " + m.Name)
+	}
+
+	return nil
+}
+
+// Permet la gestion des commandes asynchrones
+func (e *Email) Search() error {
+
+	if e.cnx == nil {
+		return fmt.Errorf("email uninitialised")
+	}
+
+	return nil
+}
+
 // func main() {
 
 // 	log.Println("Connected")
 
 // 	// Don't forget to logout
 // 	defer
-
-// 	// List mailboxes
-// 	mailboxes := make(chan *imap.MailboxInfo, 10)
-// 	done := make(chan error, 1)
-// 	go func() {
-// 		done <- c.List("", "*", mailboxes)
-// 	}()
-
-// 	log.Println("Mailboxes:")
-// 	for m := range mailboxes {
-// 		log.Println("* " + m.Name)
-// 	}
-
-// 	if err := <-done; err != nil {
-// 		log.Fatal(err)
-// 	}
 
 // 	// Select INBOX
 // 	mbox, err := c.Select("INBOX", false)
