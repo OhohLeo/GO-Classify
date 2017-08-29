@@ -41,7 +41,7 @@ func ToBuild() imports.BuildImport {
 
 			return
 		},
-		Create: func(input json.RawMessage, config map[string][]string, collections []string) (i imports.Import, err error) {
+		Create: func(input json.RawMessage, config map[string][]string, collections []string) (i imports.Import, params interface{}, err error) {
 			var directory Directory
 			err = json.Unmarshal(input, &directory)
 			if err != nil {
@@ -72,17 +72,23 @@ func (r *Directory) Check(config map[string][]string, collections []string) erro
 
 	// Check if exiftool exists
 	cmd, err := exec.LookPath("exiftool")
-	if err != nil {
-		return err
+	if err == nil {
+
+		// Store exiftool command
+		r.exiftoolCmd = cmd
 	}
 
-	// Store exiftool command
-	r.exiftoolCmd = cmd
+	// No config file : accept all
+	if len(config) == 0 {
+		return nil
+	}
 
 	// Check that the directory is in the global directories
 	globalPaths, ok := config["*"]
 	if ok {
 		for _, path := range globalPaths {
+
+			fmt.Printf("PATH %s => %s\n", r.Path, path)
 			if r.Path == path {
 				return nil
 			}

@@ -5,13 +5,13 @@
 	<input name="name" type="text" [(ngModel)]="collection.name" required>
     </div>
     <div>
-	<label>Type</label>
-	<select name="ref"
-                [(ngModel)]="collection.ref"
-                class="browser-default"
-                required>
-            <option *ngFor="let ref of refs" [value]="ref">{{ref}}</option>
-        </select>
+	  <label>Type</label>
+	  <select name="ref"
+              [(ngModel)]="collection.ref"
+              class="browser-default"
+              required>
+        <option *ngFor="let ref of refs" [value]="ref">{{ref}}</option>
+      </select>
     </div>
     <div>
 	<label>Websites</label>

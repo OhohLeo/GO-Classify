@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs/Rx';
-import { ApiService, Event } from './../api.service';
+import { ApiService, Event}  from './../api.service';
 import { BufferService } from './../buffer/buffer.service';
 import { Response } from '@angular/http';
 
@@ -108,7 +108,7 @@ export class ImportsService {
         this.imports.get(i.getRef()).push(i)
     }
 
-    addImport(i: ImportBase) {
+    addImport(i: ImportBase, onParams: any, onSuccess: any) {
 
         // Disable cache
         this.enableCache = false
@@ -132,7 +132,11 @@ export class ImportsService {
 
                 let body = rsp.json()
 
-                if (body === undefined && body.id === undefined) {
+                if (body === undefined || body.id === undefined) {
+
+					if (onParams !== undefined && onParams(body))
+						return
+
                     throw new Error('Id not found when adding new import!');
                 }
 
@@ -141,6 +145,10 @@ export class ImportsService {
                 this.add(i)
 
                 this.update()
+
+				if (onSuccess !== undefined) {
+					onSuccess(i)
+				}
             })
     }
 

@@ -9,33 +9,64 @@ import (
 	"log"
 )
 
-type SearchCriteria struct {
-}
-
 type Email struct {
 	Host     string `json:"host"`
 	Port     int    `json:"port"`
 	Login    string `json:"login"`
 	Password string `json:"password"`
+	MailBox  string `json:"mailbox"`
 
 	dataChannel chan imports.Data
 	cnx         *client.Client
 	isRunning   bool
 }
 
-type EmailParams struct {
-	Search SearchCriteria `json:"search"`
+type SearchCriteria struct {
+}
+
+type EmailOutputParams struct {
+	MailBoxes []string `json:"mailboxes"`
 }
 
 func ToBuild() imports.BuildImport {
 	return imports.BuildImport{
-		Create: func(input json.RawMessage, config map[string][]string, collections []string) (i imports.Import, err error) {
-			var email Email
-			err = json.Unmarshal(input, &email)
-			i = &email
-			return
-		},
+		Create: Create,
 	}
+}
+
+func Create(input json.RawMessage, config map[string][]string, collections []string) (i imports.Import, params interface{}, err error) {
+
+	var email Email
+	err = json.Unmarshal(input, &email)
+
+	// if no mail box specified :
+	if email.MailBox == "" {
+
+		// Check connection
+		err = email.Connect()
+		if err != nil {
+			return
+		}
+
+		// Returns mailbox
+		var mailboxes []string
+		mailboxes, err = email.GetMailBoxes()
+		if err != nil {
+			return
+		}
+
+		params = &EmailOutputParams{
+			MailBoxes: mailboxes,
+		}
+
+		email.Stop()
+		err = fmt.Errorf("import 'email' needs more params")
+		return
+	}
+
+	i = &email
+
+	return
 }
 
 func (e *Email) GetRef() imports.Ref {
@@ -55,23 +86,6 @@ func (e *Email) Start() (chan imports.Data, error) {
 		return c, fmt.Errorf("import 'email' already started")
 	}
 
-	address := fmt.Sprintf("%s:%d", e.Host, e.Port)
-
-	log.Printf("Connecting to '%s'...\n", address)
-
-	// Connect to IMAP server
-	cnx, err := client.DialTLS(address, nil)
-	if err != nil {
-		return c, fmt.Errorf("import 'email' connection: %s", err.Error())
-	}
-
-	// Login
-	if err := cnx.Login(e.Login, e.Password); err != nil {
-		return c, fmt.Errorf("import 'email' login: %s", err.Error())
-	}
-
-	// Store connection
-	e.cnx = cnx
 	e.dataChannel = c
 
 	return c, nil
@@ -95,31 +109,58 @@ func (e *Email) Eq(new imports.Import) bool {
 		e.Login == newEmail.Login
 }
 
+func (e *Email) Connect() error {
+
+	address := fmt.Sprintf("%s:%d", e.Host, e.Port)
+
+	log.Printf("Connecting to '%s'...\n", address)
+
+	// Connect to IMAP server
+	cnx, err := client.DialTLS(address, nil)
+	if err != nil {
+		return fmt.Errorf("import 'email' connection: %s", err.Error())
+	}
+
+	// Login
+	if err := cnx.Login(e.Login, e.Password); err != nil {
+		return fmt.Errorf("import 'email' login: %s", err.Error())
+	}
+
+	log.Printf("'%s' Connected!\n", address)
+
+	// Store connection
+	e.cnx = cnx
+
+	return nil
+}
+
 // Permet la gestion des commandes asynchrones
-func (e *Email) SendCmd(cmdStr string) error {
+func (e *Email) GetMailBoxes() (mailboxes []string, err error) {
 
 	if e.cnx == nil {
-		return fmt.Errorf("email uninitialised")
+		err = fmt.Errorf("email uninitialised")
+		return
 	}
 
 	// List mailboxes
-	mailboxes := make(chan *imap.MailboxInfo, 10)
+	infos := make(chan *imap.MailboxInfo, 10)
 
 	done := make(chan error, 1)
 	go func() {
-		done <- e.cnx.List("", "*", mailboxes)
+		done <- e.cnx.List("", "*", infos)
 	}()
 
 	if err := <-done; err != nil {
 		log.Fatal(err)
 	}
 
-	log.Println("Mailboxes:")
-	for m := range mailboxes {
+	log.Println("infos:")
+	for m := range infos {
+		mailboxes = append(mailboxes, m.Name)
 		log.Println("* " + m.Name)
 	}
 
-	return nil
+	return
 }
 
 // Permet la gestion des commandes asynchrones

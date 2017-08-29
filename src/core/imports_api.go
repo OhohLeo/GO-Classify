@@ -80,8 +80,15 @@ func (c *Classify) ApiAddImport(w rest.ResponseWriter, r *rest.Request) {
 		return
 	}
 
-	i, err := c.AddImport(ref, body.Params, collections)
+	i, outParams, err := c.AddImport(ref, body.Params, collections)
 	if err != nil {
+
+		// Manque de paramètres
+		if outParams != nil {
+			w.WriteJson(outParams)
+			return
+		}
+
 		rest.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
@@ -162,25 +169,6 @@ func (c *Classify) ApiStopImport(w rest.ResponseWriter, r *rest.Request) {
 	}
 
 	if err := c.StopImports(ids, collections); err != nil {
-		rest.Error(w, err.Error(), http.StatusBadRequest)
-		return
-	}
-
-	w.WriteHeader(http.StatusNoContent)
-}
-
-// ApiCmdImport send specific commands to the import
-// PUT /imports/cmd/:cmd?id=IMPORT_ID&collection=COLLECTION_NAME
-func (c *Classify) ApiCmdImport(w rest.ResponseWriter, r *rest.Request) {
-
-	ids, collections, err := c.getImportIdsAndCollections(r)
-	if err != nil {
-		rest.Error(w, err.Error(), http.StatusBadRequest)
-		return
-	}
-
-	err = c.CmdImports(r.PathParam("cmd"), ids, collections)
-	if err != nil {
 		rest.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}

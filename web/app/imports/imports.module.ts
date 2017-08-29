@@ -6,8 +6,10 @@ import { FormsModule } from '@angular/forms'
 import { ImportsService } from './imports.service'
 
 import { ImportsComponent } from './imports.component'
-import { DirectoryComponent } from './directory.component'
+import { DirectoryCreateComponent } from './directory/create.component'
+import { DirectoryDisplayComponent } from './directory/display.component'
 import { EmailCreateComponent } from './email/create.component'
+import { EmailDisplayComponent } from './email/display.component'
 
 @NgModule({
     imports: [
@@ -16,7 +18,11 @@ import { EmailCreateComponent } from './email/create.component'
         FormsModule
     ],
     providers: [ImportsService],
-    declarations: [ImportsComponent, DirectoryComponent, EmailCreateComponent],
+    declarations: [ImportsComponent,
+				   DirectoryCreateComponent,
+				   DirectoryDisplayComponent,
+				   EmailCreateComponent,
+				   EmailDisplayComponent],
     exports: [ImportsComponent]
 })
 

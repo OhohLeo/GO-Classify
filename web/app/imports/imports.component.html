@@ -1,12 +1,29 @@
-<div *ngFor="let ref of importRefs">
-   <h3>{{ref}}</h3>
-   <table>
-   <tr *ngFor="let import of imports.get(ref)">
-       <th>{{import.display()}}</th>
-	   <th><i id="{{import.id}}" class="material-icons refresh" (click)="onRefresh(import)">refresh</i></th>
-	   <th><i class="material-icons" (click)="onDelete(import)">delete</i></th>
-   </tr>
-   </table>
+<div class="col s3">
+	<div class="collection">
+	  <a class="collection-item" (click)="onRef($event, 'all')">all</a>
+	  <a *ngFor="let ref of refs"
+		 class="collection-item" (click)="onRef($event, ref)">{{ref}}</a>
+	</div>
 </div>
-<directory></directory>
-<email-create></email-create>
+<div class="col s9" [ngSwitch]="currentRef">
+  <div *ngSwitchCase="'email'">
+	<email-create></email-create>
+  </div>
+  <div *ngSwitchCase="'directory'">
+	<directory-create></directory-create>
+  </div>
+  <div *ngIf="imports">
+	<table *ngFor="let ref of refs2Display">
+	  <tr *ngFor="let import of imports.get(ref)">
+		<th [ngSwitch]="ref">
+		  <email-display *ngSwitchCase="'email'"
+						 [email]="import"></email-display>
+		  <directory-display *ngSwitchCase="'directory'"
+							 [directory]="import"></directory-display>
+		</th>
+	  	<th><i id="{{import.id}}" class="material-icons refresh" (click)="onRefresh(import)">refresh</i></th>
+	  	<th><i class="material-icons" (click)="onDelete(import)">delete</i></th>
+	  </tr>
+	</table>
+  </div>
+</div>

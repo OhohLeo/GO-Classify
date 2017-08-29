@@ -156,7 +156,7 @@ func (c *Classify) GetImportsByIds(ids []uint64) (imports map[uint64]*Import, er
 }
 
 // Add new import process
-func (c *Classify) AddImport(ref imports.Ref, params json.RawMessage, collections map[string]*Collection) (i *Import, err error) {
+func (c *Classify) AddImport(ref imports.Ref, inParams json.RawMessage, collections map[string]*Collection) (i *Import, outParams interface{}, err error) {
 
 	// Nécessite l'existence d'au moins une collection
 	if len(collections) < 1 {
@@ -172,8 +172,10 @@ func (c *Classify) AddImport(ref imports.Ref, params json.RawMessage, collection
 	}
 
 	// Get import configuration
-	// config, _ := c.config.Imports[importRef]
 	var config map[string][]string
+	if c.config != nil {
+		config, ok = c.config.Imports[ref.String()]
+	}
 
 	// Get collections list
 	idx := 0
@@ -184,8 +186,10 @@ func (c *Classify) AddImport(ref imports.Ref, params json.RawMessage, collection
 	}
 
 	// Create new import
-	importEngine, err := buildImport.Create(params, config, collectionNames)
+	importEngine, moreParams, err := buildImport.Create(
+		inParams, config, collectionNames)
 	if err != nil {
+		outParams = moreParams
 		return
 	}
 
@@ -381,24 +385,6 @@ func (c *Classify) StopImports(ids map[uint64]*Import, collections map[string]*C
 	return nil
 }
 
-// Stop the importing process
-func (c *Classify) CmdImports(cmd string, ids map[uint64]*Import, collections map[string]*Collection) error {
-
-	// If no ids are specified : get all
-	// if len(ids) == 0 {
-	// 	ids = c.imports
-	// }
-
-	// for id, i := range ids {
-
-	// 	if i.HasCollections(collections) == false {
-	// 		continue
-	// 	}
-
-	// 	// if err := c.imports[id].engine.SendCmd(cmd); err != nil {
-	// 	// 	return err
-	// 	// }
-	// }
-
-	return nil
+func (c *Classify) GetImportRefs() []string {
+	return imports.REF_IDX2STR
 }

@@ -1,27 +1,18 @@
-<nav>
+<nav class="nav-extended">
     <div class="nav-wrapper">
-        <a class="brand-logo center" (click)="onChangeCollection()">{{title}}</a>
-        <a data-activates="mobile-demo" class="button-collapse">
-            <i class="material-icons">menu</i>
-        </a>
-        <a class="right" (click)="onNewCollection()">
-            <i class="material-icons medium">add</i>
-        </a>
-        <div *ngIf="collection">
-            <ul class="left hide-on-med-and-down">
-                <li><a (click)="onHome()">Home</a></li>
-                <li><a (click)="onImport()">Import</a></li>
-                <li><a (click)="onExport()">Export</a></li>
-                <li><a (click)="onConfig()">Config</a></li>
-            </ul>
-            <ul class="side-nav"
-                id="mobile-demo">
-                <li><a (click)="onHome()">Home</a></li>
-                <li><a (click)="onImport()">Import</a></li>
-                <li><a (click)="onExport()">Export</a></li>
-                <li><a (click)="onConfig()">Config</a></li>
-            </ul>
-        </div>
+      <a class="brand-logo" (click)="onChangeCollection()">{{title}}</a>
+	  <a class="right btn-floating btn-large waves-effect waves-light teal"
+		 (click)="onNewCollection()">
+		<i class="material-icons">add</i>
+	  </a>
+	</div>
+	<div class="nav-content">
+	  <ul class="tabs tabs-transparent">
+		<li class="tab"><a (click)="onHome()">Home</a></li>
+		<li class="tab"><a (click)="onImport()">Import</a></li>
+		<li class="tab"><a (click)="onExport()">Export</a></li>
+		<li class="tab"><a (click)="onConfig()">Config</a></li>
+	  </ul>
     </div>
 </nav>
 <div class="row">

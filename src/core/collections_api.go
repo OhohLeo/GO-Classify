@@ -371,8 +371,10 @@ type Websocket interface {
 }
 
 type GetReferences struct {
-	Websites []string `json:"websites"`
-	Refs     []string `json:"refs"`
+	Websites    []string `json:"websites"`
+	Collections []string `json:"collections"`
+	Imports     []string `json:"imports"`
+	Exports     []string `json:"exports"`
 }
 
 // GetReferences returns the website & type of collections available
@@ -380,7 +382,8 @@ type GetReferences struct {
 func (c *Classify) ApiGetReferences(w rest.ResponseWriter, r *rest.Request) {
 
 	w.WriteJson(GetReferences{
-		Websites: c.GetWebsites(),
-		Refs:     c.GetCollectionRefs(),
+		Websites:    c.GetWebsites(),
+		Collections: c.GetCollectionRefs(),
+		Imports:     c.GetImportRefs(),
 	})
 }

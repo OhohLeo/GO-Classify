@@ -1,0 +1,28 @@
+<form (ngSubmit)="onSubmit()" #createForm="ngForm">
+  <div class="row">
+	<div class="input-field col s6">
+	  <select name="path"
+		      [(ngModel)]="directory.path"
+		      class="browser-default"
+		      required>
+		<option *ngFor="let path of paths"
+				[ngValue]="path">{{path}}</option>
+	  </select>
+	</div>
+	<div class="input-field col s6">
+	  <input name="isRecursive"
+			 type="checkbox"
+			 id="isRecursive"
+			 [(ngModel)]="directory.isRecursive" />
+	  <label for="isRecursive">with sub-directories</label>
+	</div>
+  </div>
+  <div class="row">
+	<button type="submit"
+			[disabled]="!createForm.form.valid"
+			class="btn waves-effect waves-light">
+	  New directory
+	  <i class="material-icons right">send</i>
+	</button>
+  </div>
+</form>

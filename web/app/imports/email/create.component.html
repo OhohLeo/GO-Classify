@@ -1,41 +1,54 @@
-<div class="row">
-    <div class="col s2"><i class="material-icons">add</i>New email</div>
-    <form class="col s10" (ngSubmit)="onSubmit()" #createForm="ngForm">
-	  <div class="input-field col s5">
-	    <input name="host"
-			   type="string"
-			   id="host"
-			   [(ngModel)]="email.host" />
-	    <label for="host">Host</label>
-	  </div>
-	  <div class="input-field col s5">
-	    <input name="port"
-			   type="number"
-			   id="port"
-			   [(ngModel)]="email.port" />
-	    <label for="port">Port</label>
-	  </div>
-	  <div class="input-field col s5">
-	    <input name="login"
-			   type="string"
-			   id="login"
-			   [(ngModel)]="email.login" />
-	    <label for="login">Login</label>
-	  </div>
-	  <div class="input-field col s5">
-	    <input name="password"
-			   type="password"
-			   id="password"
-			   [(ngModel)]="email.password" />
-	    <label for="password">Password</label>
-	  </div>
-	  <div class="col s2">
-		<button type="submit"
-				[disabled]="!createForm.form.valid"
-				class="btn waves-effect waves-light">
-		  New email
-		  <i class="material-icons right">send</i>
-	    </button>
-	  </div>
-    </form>
-</div>
+<form (ngSubmit)="onSubmit()" #createForm="ngForm">
+  <div class="row">
+	<div class="input-field col s6">
+	  <input name="host"
+			 type="string"
+			 id="host"
+			 [(ngModel)]="email.host" />
+	  <label for="host">Host</label>
+	</div>
+	<div class="input-field col s6">
+	  <input name="port"
+			 type="number"
+			 id="port"
+			 [(ngModel)]="email.port" />
+	  <label for="port">Port</label>
+	</div>
+  </div>
+  <div class="row">
+	<div class="input-field col s6">
+	  <input name="login"
+			 type="string"
+			 id="login"
+			 [(ngModel)]="email.login" />
+	  <label for="login">Login</label>
+	</div>
+	<div class="input-field col s6">
+	  <input name="password"
+			 type="password"
+			 id="password"
+			 [(ngModel)]="email.password" />
+	  <label for="password">Password</label>
+	</div>
+  </div>
+  <div class="row" *ngIf="mailboxes.length > 0">
+	<label for="mailbox">Mailbox</label>
+	<select name="mailbox"
+            [(ngModel)]="email.mailbox"
+            class="browser-default"
+            required>
+	  <option disabled selected>Choose your mailbox</option>
+      <option *ngFor="let mailbox of mailboxes" [value]="mailbox">
+		{{mailbox}}
+	  </option>
+    </select>
+  </div>
+  <div class="row">
+  	<button type="submit"
+  			[disabled]="!createForm.form.valid"
+  			class="btn waves-effect waves-light">
+  	  New email
+  	  <i class="material-icons right">send</i>
+  	</button>
+  </div>
+</form>

@@ -41,5 +41,5 @@ type Data interface {
 
 type BuildImport struct {
 	CheckConfig func(config map[string][]string) error
-	Create      func(json.RawMessage, map[string][]string, []string) (Import, error)
+	Create      func(json.RawMessage, map[string][]string, []string) (Import, interface{}, error)
 }
