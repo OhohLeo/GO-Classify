@@ -10,7 +10,7 @@ import { Collection } from './collection';
 export class CreateCollectionComponent {
 
     public collection: Collection = new Collection('', '')
-    private refs: string[]
+    private collections: string[]
     private websites: string[]
 
     constructor(private apiSercice: ApiService) {
@@ -19,7 +19,7 @@ export class CreateCollectionComponent {
             .subscribe(
             references => {
                 this.websites = references["websites"]
-                this.refs = references["refs"]
+                this.collections = references["collections"]
             });
     }
 
@@ -28,7 +28,7 @@ export class CreateCollectionComponent {
         // Check that a collection with same name doesn't already
         // exist
 
-        this.collection.websites = [ website ];
+        this.collection.websites = [website];
 
         // Create new collection
         this.apiSercice.newCollection(this.collection)
