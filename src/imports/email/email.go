@@ -7,7 +7,11 @@ import (
 	"github.com/emersion/go-imap/client"
 	"github.com/ohohleo/classify/data"
 	"github.com/ohohleo/classify/imports"
+	"io"
+	"io/ioutil"
 	"log"
+	"mime"
+	"net/mail"
 	"time"
 )
 
@@ -55,13 +59,14 @@ func ToBuild() imports.BuildImport {
 	}
 }
 
-func Create(input json.RawMessage, config map[string][]string, collections []string) (i imports.Import, params interface{}, err error) {
+func Create(input json.RawMessage,
+	config map[string][]string,
+	collections []string) (i imports.Import, params interface{}, err error) {
 
 	var email Email
 	err = json.Unmarshal(input, &email)
 
-	fmt.Printf("%+v\n", email)
-
+	// MailBox is required
 	if email.MailBox == "" {
 
 		// Check connection
@@ -259,15 +264,60 @@ func (e *Email) Proceed(seqset *imap.SeqSet) error {
 	done := make(chan error)
 
 	go func() {
-		done <- e.cnx.Fetch(seqset, []string{imap.BodyMsgAttr}, messages)
+		done <- e.cnx.Fetch(seqset, []string{"BODY[]"}, messages)
 	}()
-
-	for msg := range messages {
-		fmt.Printf("%+v \n", msg.SeqNum)
-	}
 
 	if err := <-done; err != nil {
 		return err
+	}
+
+	for msg := range messages {
+
+		rsp := msg.GetBody("BODY[]")
+		if rsp == nil {
+			fmt.Println("Server didn't returned message body")
+			continue
+		}
+
+		m, err := mail.ReadMessage(rsp)
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		header := m.Header
+		// log.Printf("%+v\n", header)
+
+		date, err := header.Date()
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		log.Printf("Date: %s", date.String())
+		// log.Println("From:", header.Get("From"))
+		// log.Println("To:", header.Get("To"))
+		// log.Println("Subject:", header.Get("Subject"))
+
+		body, err := ioutil.ReadAll(m.Body)
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		dec := new(mime.WordDecoder)
+
+		dec.CharsetReader = func(charset string, input io.Reader) (io.Reader, error) {
+			fmt.Printf("CHARSET %s\n", charset)
+			return nil, fmt.Errorf("unhandled charset %q", charset)
+		}
+
+		h, _ := dec.Decode(string(body))
+		// if err != nil {
+		// 	panic(err)
+		// }
+
+		fmt.Println(h)
+
+		//log.Println(string(body))
+		break
 	}
 
 	close(e.dataChannel)
