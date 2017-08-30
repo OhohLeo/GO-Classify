@@ -35,14 +35,13 @@
 	<label for="mailbox">Mailbox</label>
 	<select name="mailbox"
             [(ngModel)]="email.mailbox"
-            class="browser-default"
-            required>
-	  <option disabled selected>Choose your mailbox</option>
+            class="browser-default">
       <option *ngFor="let mailbox of mailboxes" [value]="mailbox">
 		{{mailbox}}
 	  </option>
     </select>
   </div>
+  <email-search [search]="email.search"></email-search>
   <div class="row">
   	<button type="submit"
   			[disabled]="!createForm.form.valid"

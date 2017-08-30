@@ -1,28 +1,27 @@
 package websites
 
+import (
+	"github.com/ohohleo/classify/data"
+)
+
 const (
-	IMDB Type = iota
+	IMDB Ref = iota
 	TMDB
 )
 
-type Type int
+type Ref int
 
-func (t Type) String() string {
-	return TYPE_IDX2STR[t]
+func (t Ref) String() string {
+	return REF_IDX2STR[t]
 }
 
-var TYPE_IDX2STR = []string{
+var REF_IDX2STR = []string{
 	"IMDB",
 	"TMDB",
 }
 
 type Website interface {
-	GetName() string
+	GetRef() Ref
 	SetConfig(map[string]string) bool
-	Search(string) chan Data
-}
-
-type Data interface {
-	GetType() string
-	GetId() string
+	Search(string) chan data.Data
 }

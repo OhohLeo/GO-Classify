@@ -26,7 +26,7 @@ func (b *Buffer) CleanedNames(bannedList []string, separators []string) {
 
 		if item.SetCleanedName(bannedList, separators) {
 
-			b.collection.SendCollectionEvent("buffer", "update", item)
+			b.collection.SendCollectionEvent("buffer", "update", &item.Item)
 
 			// Launch research on item
 			b.collection.Search("buffer", item)

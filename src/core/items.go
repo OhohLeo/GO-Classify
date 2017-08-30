@@ -5,16 +5,16 @@ import (
 )
 
 type Items struct {
-	items map[string]Data
+	items map[string]*Item
 }
 
 func NewItems() *Items {
 	return &Items{
-		items: make(map[string]Data),
+		items: make(map[string]*Item),
 	}
 }
 
-func (i *Items) Add(id string, item Data) error {
+func (i *Items) Add(id string, item *Item) error {
 
 	if _, ok := i.items[id]; ok {
 		return fmt.Errorf("already existing item '" + id + "' in items")
@@ -38,9 +38,9 @@ func (i *Items) Remove(id string) error {
 	return nil
 }
 
-func (i *Items) GetCurrentList() (items []Data) {
+func (i *Items) GetCurrentList() (items []*Item) {
 
-	items = make([]Data, 0)
+	items = make([]*Item, 0)
 
 	for _, item := range i.items {
 		items = append(items, item)

@@ -2,7 +2,7 @@ package core
 
 import (
 	"fmt"
-	"github.com/ohohleo/classify/imports"
+	"github.com/ohohleo/classify/data"
 	"strings"
 	"time"
 )
@@ -16,18 +16,17 @@ const (
 )
 
 type BufferItem struct {
-	ItemGeneric
-	Status      int                       `json:"status"`
-	CleanedName string                    `json:"cleanedName"`
-	CreatedAt   time.Time                 `json:"createAt"`
-	Banned      []string                  `json:"banned"`
-	Separators  []string                  `json:"separators"`
-	Imports     map[string][]imports.Data `json:"imports"`
-	WebQuery    string                    `json:"webQuery"`
-	Websites    map[string][]Data         `json:"websites"`
-	MatchId     string                    `json:"matchId"`
-	IsMatching  float32                   `json:"probability"`
-	Data        Data                      `json:"data"`
+	Item
+	Status      int                    `json:"status"`
+	CleanedName string                 `json:"cleanedName"`
+	CreatedAt   time.Time              `json:"createAt"`
+	Banned      []string               `json:"banned"`
+	Separators  []string               `json:"separators"`
+	Imports     []data.Data            `json:"imports"`
+	WebQuery    string                 `json:"webQuery"`
+	Websites    map[string][]data.Data `json:"websites"`
+	MatchId     string                 `json:"matchId"`
+	IsMatching  float32                `json:"probability"`
 }
 
 func NewBufferItem() *BufferItem {
@@ -35,7 +34,7 @@ func NewBufferItem() *BufferItem {
 		CreatedAt: time.Now(),
 	}
 
-	item.ItemGeneric.Id = GetRandomId()
+	item.Item.Id = getRandomId()
 
 	// Status init
 	item.Status = CREATED
@@ -47,12 +46,12 @@ func (i *BufferItem) SetCleanedName(bannedList []string, separators []string) bo
 
 	previousName := i.CleanedName
 
-	i.CleanedName = i.Name
+	i.CleanedName = i.Item.engine.GetName()
 	i.Banned = make([]string, 0)
 	i.Separators = make([]string, 0)
 
 	// No real name set : nothing todo
-	if i.Name == "" {
+	if i.Item.engine.GetName() == "" {
 		return false
 	}
 
@@ -89,40 +88,23 @@ func (i *BufferItem) SetCleanedName(bannedList []string, separators []string) bo
 	return previousName != i.CleanedName
 }
 
-func (i *BufferItem) AddImportData(data imports.Data) {
-
-	if i.Imports == nil {
-		i.Imports = make(map[string][]imports.Data)
-	}
-
-	if i.Name == "" {
-		i.Name = data.String()
-	}
-
-	i.Imports[data.GetUniqKey()] = append(i.Imports[data.GetUniqKey()], data)
+func (i *BufferItem) AddImportData(d data.Data) {
+	i.Imports = append(i.Imports, d)
 }
 
-func (i *BufferItem) RemoveImportData(data imports.Data) {
+func (i *BufferItem) RemoveImportData(d data.Data) {
 }
 
-func (i *BufferItem) AddWebsiteData(name string, data Data) {
+func (i *BufferItem) AddWebsiteData(name string, d data.Data) {
 
 	if i.Websites == nil {
-		i.Websites = make(map[string][]Data)
+		i.Websites = make(map[string][]data.Data)
 	}
 
-	i.Websites[name] = append(i.Websites[name], data)
+	i.Websites[name] = append(i.Websites[name], d)
 }
 
-func (i *BufferItem) RemoveWebsiteData(data Data) {
-}
-
-func (i *BufferItem) GetType() string {
-	return "buffer"
-}
-
-func (i *BufferItem) GetId() string {
-	return i.Id
+func (i *BufferItem) RemoveWebsiteData(d data.Data) {
 }
 
 func (i *BufferItem) String() string {

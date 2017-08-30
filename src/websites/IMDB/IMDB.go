@@ -2,7 +2,7 @@ package IMDB
 
 import (
 	"fmt"
-	"github.com/ohohleo/classify/collections"
+	"github.com/ohohleo/classify/data"
 	"github.com/ohohleo/classify/requests"
 	"github.com/ohohleo/classify/websites"
 	"strings"
@@ -82,8 +82,8 @@ type Title struct {
 	Year  int    `json:"year,omitempty"`
 }
 
-func (i *IMDB) GetName() string {
-	return "IMDB"
+func (i *IMDB) GetRef() websites.Ref {
+	return websites.IMDB
 }
 
 // Launch a search request through the IMDB Api
@@ -168,9 +168,9 @@ func (i *IMDB) checkResponse(rsp Response) (*Data, bool) {
 }
 
 // Generic method used to search matching movies
-func (i *IMDB) Search(input string) chan websites.Data {
+func (i *IMDB) Search(input string) chan data.Data {
 
-	c := make(chan websites.Data)
+	c := make(chan data.Data)
 
 	go func() {
 
@@ -183,22 +183,20 @@ func (i *IMDB) Search(input string) chan websites.Data {
 
 		// Search all the movies
 		for _, title := range results.Titles {
-			data, ok := <-i.getResource(title.Id)
+			d, ok := <-i.getResource(title.Id)
 			if ok {
 
 				// TODO: duration & released
 
-				movie := &collections.Movie{
+				movie := &data.Movie{
 					Name:        title.Title,
 					Url:         title.Url,
-					Image:       data.Image,
-					Description: data.Description,
-					Directors:   data.Directors,
-					Cast:        data.Cast,
-					Genres:      data.Genres,
+					Image:       d.Image,
+					Description: d.Description,
+					Directors:   d.Directors,
+					Cast:        d.Cast,
+					Genres:      d.Genres,
 				}
-
-				movie.Init()
 
 				c <- movie
 			}

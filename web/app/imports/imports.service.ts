@@ -137,7 +137,7 @@ export class ImportsService {
 					if (onParams !== undefined && onParams(body))
 						return
 
-                    throw new Error('Id not found when adding new import!');
+                    throw new Error('Id not found when adding new import!')
                 }
 
                 i.setId(body.id)

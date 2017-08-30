@@ -2,7 +2,7 @@ package TMDB
 
 import (
 	"fmt"
-	"github.com/ohohleo/classify/collections"
+	"github.com/ohohleo/classify/data"
 	"github.com/ohohleo/classify/websites"
 	api "github.com/ryanbradynd05/go-tmdb"
 	"strconv"
@@ -40,14 +40,14 @@ func (t *TMDB) SetConfig(config map[string]string) bool {
 	return true
 }
 
-func (t *TMDB) GetName() string {
-	return "TMDB"
+func (t *TMDB) GetRef() websites.Ref {
+	return websites.TMDB
 }
 
-// Launch a search request through the IMDB Api
-func (t *TMDB) Search(input string) chan websites.Data {
+// Launch a search request through the3 IMDB Api
+func (t *TMDB) Search(input string) chan data.Data {
 
-	c := make(chan websites.Data)
+	c := make(chan data.Data)
 
 	go func() {
 
@@ -94,21 +94,19 @@ func (t *TMDB) Search(input string) chan websites.Data {
 			currentPage = results.Page
 			totalPages = results.TotalPages
 
-			for _, data := range results.Results {
+			for _, d := range results.Results {
 
-				fmt.Printf("movie: %+v\n", data)
+				fmt.Printf("movie: %+v\n", d)
 
-				release, _ := time.Parse("2006-01-02", data.ReleaseDate)
+				release, _ := time.Parse("2006-01-02", d.ReleaseDate)
 
-				movie := &collections.Movie{
-					Name:     data.OriginalTitle,
-					Image:    t.posterPath + data.PosterPath,
+				movie := &data.Movie{
+					Name:     d.OriginalTitle,
+					Image:    t.posterPath + d.PosterPath,
 					Released: release,
 				}
 
-				// movie.ItemGeneric.Id = t.GetName() + "_" + strconv.Itoa(data.ID)
-
-				movie.Init()
+				// movie.ItemGeneric.Id = t.GetName() + "_" + strconv.Itoa(d.ID)
 
 				c <- movie
 			}

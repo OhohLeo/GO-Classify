@@ -1,4 +1,4 @@
-import { CfgStringList } from '../config/stringlist.component'
+import { CfgStringList } from '../tools/stringlist.component'
 
 export class Item {
 

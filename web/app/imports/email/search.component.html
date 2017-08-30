@@ -1,0 +1,38 @@
+<label>Search</label>
+<div class="row">
+  <div class="input-field col s6">
+	<input name="since"
+		   type="datetime-local"
+		   id="since"
+		   (change)="onSince($event.target.value)" />
+	<label for="since">Since</label>
+  </div>
+  <div class="input-field col s6">
+	<input name="before"
+		   type="datetime-local"
+		   id="before"
+		   (change)="onBefore($event.target.value)" />
+	<label for="before">Before</label>
+  </div>
+</div>
+<div class="row">
+  <div class="input-field col s6">
+	<input name="larger"
+		   type="number"
+		   id="larger"
+		   [(ngModel)]="search.larger" />
+	<label for="larger">Larger</label>
+  </div>
+  <div class="input-field col s6">
+	<input name="smaller"
+		   type="number"
+		   id="smaller"
+		   [(ngModel)]="search.smaller" />
+	<label for="smaller">Smaller</label>
+  </div>
+</div>
+<div class="row">
+  <stringlist [name]="'text'"
+			  [value]="search.text"
+			  (change)="onText($event)"></stringlist>
+</div>

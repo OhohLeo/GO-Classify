@@ -5,23 +5,44 @@ import (
 	"fmt"
 	"github.com/emersion/go-imap"
 	"github.com/emersion/go-imap/client"
+	"github.com/ohohleo/classify/data"
 	"github.com/ohohleo/classify/imports"
 	"log"
+	"time"
 )
+
+const (
+	SEARCH Request = iota
+	ALL
+)
+
+type Request int
 
 type Email struct {
 	Host     string `json:"host"`
 	Port     int    `json:"port"`
 	Login    string `json:"login"`
 	Password string `json:"password"`
-	MailBox  string `json:"mailbox"`
 
-	dataChannel chan imports.Data
+	Request      Request `json:"request"`
+	MailBox      string  `json:"mailbox"`
+	OnlyAttached bool    `json:"onlyAttached"`
+	Search       Search  `json:"search"`
+
+	dataChannel chan data.Data
 	cnx         *client.Client
-	isRunning   bool
 }
 
-type SearchCriteria struct {
+type Search struct {
+	Since   time.Time `json:"since"`
+	Before  time.Time `json:"before"`
+	Larger  uint32    `json:"larger"`
+	Smaller uint32    `json:"smaller"`
+	Text    []string  `json:"text"`
+}
+
+func (s *Search) IsValid() bool {
+	return true
 }
 
 type EmailOutputParams struct {
@@ -39,7 +60,8 @@ func Create(input json.RawMessage, config map[string][]string, collections []str
 	var email Email
 	err = json.Unmarshal(input, &email)
 
-	// if no mail box specified :
+	fmt.Printf("%+v\n", email)
+
 	if email.MailBox == "" {
 
 		// Check connection
@@ -64,6 +86,15 @@ func Create(input json.RawMessage, config map[string][]string, collections []str
 		return
 	}
 
+	switch email.Request {
+	case SEARCH:
+		if email.Search.IsValid() == false {
+			err = fmt.Errorf("import 'email' invalid search params")
+			return
+		}
+	case ALL:
+	}
+
 	i = &email
 
 	return
@@ -77,29 +108,43 @@ func (e *Email) Check(config map[string][]string, collections []string) error {
 	return nil
 }
 
-func (e *Email) Start() (chan imports.Data, error) {
-
-	c := make(chan imports.Data)
+func (e *Email) Start() (c chan data.Data, err error) {
 
 	// Check if the analysis is not already going on
-	if e.isRunning {
-		return c, fmt.Errorf("import 'email' already started")
+	if e.cnx != nil {
+		err = fmt.Errorf("import 'email' already started")
+		return
 	}
+
+	// Establish connection
+	if err = e.Connect(); err != nil {
+		return
+	}
+
+	switch e.Request {
+	case SEARCH:
+		go e.GetSearch()
+	case ALL:
+		go e.GetAllMessages()
+	}
+
+	c = make(chan data.Data)
 
 	e.dataChannel = c
 
-	return c, nil
+	return
 }
 
-func (e *Email) Stop() {
+func (e *Email) Stop() error {
 
 	// No need to close unitialised connection
 	if e.cnx == nil {
-		return
+		return fmt.Errorf("import 'email' already stopped")
 	}
 
 	e.cnx.Logout()
 	e.cnx = nil
+	return nil
 }
 
 func (e *Email) Eq(new imports.Import) bool {
@@ -144,88 +189,88 @@ func (e *Email) GetMailBoxes() (mailboxes []string, err error) {
 
 	// List mailboxes
 	infos := make(chan *imap.MailboxInfo, 10)
+	done := make(chan error)
 
-	done := make(chan error, 1)
 	go func() {
 		done <- e.cnx.List("", "*", infos)
 	}()
 
-	if err := <-done; err != nil {
-		log.Fatal(err)
+	if err = <-done; err != nil {
+		e.Stop()
+		return
 	}
 
-	log.Println("infos:")
 	for m := range infos {
 		mailboxes = append(mailboxes, m.Name)
-		log.Println("* " + m.Name)
 	}
 
 	return
 }
 
-// Permet la gestion des commandes asynchrones
-func (e *Email) Search() error {
+func (e *Email) GetAllMessages() error {
 
-	if e.cnx == nil {
-		return fmt.Errorf("email uninitialised")
+	mailbox, err := e.cnx.Select(e.MailBox, false)
+	if err != nil {
+		return err
 	}
 
-	return nil
+	// Get all messages
+	from := uint32(1)
+	to := mailbox.Messages
+
+	seqset := new(imap.SeqSet)
+	seqset.AddRange(from, to)
+
+	return e.Proceed(seqset)
 }
 
-// func main() {
+func (e *Email) GetSearch() error {
 
-// 	log.Println("Connected")
+	_, err := e.cnx.Select(e.MailBox, false)
+	if err != nil {
+		return err
+	}
 
-// 	// Don't forget to logout
-// 	defer
+	criteria := &imap.SearchCriteria{
+		Since:   e.Search.Since,
+		Before:  e.Search.Before,
+		Larger:  e.Search.Larger,
+		Smaller: e.Search.Smaller,
+		Text:    e.Search.Text,
+	}
 
-// 	// Select INBOX
-// 	mbox, err := c.Select("INBOX", false)
-// 	if err != nil {
-// 		log.Fatal(err)
-// 	}
-// 	log.Println("Flags for INBOX:", mbox.Flags)
+	// Launch research
+	seqNums, err := e.cnx.Search(criteria)
+	if err != nil {
+		fmt.Printf("ERROR: %+v\n", err)
+		e.Stop()
+		return err
+	}
 
-// 	// Search
-// 	criteria := &imap.SearchCriteria{
-// 		Larger: 1000,
-// 		Body:   []string{"salaire"},
-// 	}
+	seqset := new(imap.SeqSet)
+	seqset.AddNum(seqNums...)
 
-// 	seqNums, err := c.Search(criteria)
-// 	if err != nil {
-// 		log.Fatal(err)
-// 	}
-// 	log.Printf("SeqNums:%+v\n", seqNums)
+	return e.Proceed(seqset)
+}
 
-// 	// // Get the last 4 messages
-// 	// from := uint32(1)
-// 	// to := mbox.Messages
-// 	// if mbox.Messages > 3 {
-// 	// 	// We're using unsigned integers here, only substract if the result is > 0
-// 	// 	from = mbox.Messages - 3
-// 	// }
+func (e *Email) Proceed(seqset *imap.SeqSet) error {
 
-// 	seqset := new(imap.SeqSet)
-// 	seqset.AddNum(seqNums...)
+	messages := make(chan *imap.Message, 10)
+	done := make(chan error)
 
-// 	messages := make(chan *imap.Message, len(seqNums))
+	go func() {
+		done <- e.cnx.Fetch(seqset, []string{imap.BodyMsgAttr}, messages)
+	}()
 
-// 	done = make(chan error, 1)
+	for msg := range messages {
+		fmt.Printf("%+v \n", msg.SeqNum)
+	}
 
-// 	go func() {
-// 		done <- c.Fetch(seqset, []string{imap.EnvelopeMsgAttr}, messages)
-// 	}()
+	if err := <-done; err != nil {
+		return err
+	}
 
-// 	log.Println("Messages:")
-// 	for msg := range messages {
-// 		log.Println("* " + msg.Envelope.Subject)
-// 	}
-
-// 	if err := <-done; err != nil {
-// 		log.Fatal(err)
-// 	}
-
-// 	log.Println("Done!")
-// }
+	close(e.dataChannel)
+	e.Stop()
+	return nil
+}

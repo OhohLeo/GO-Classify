@@ -3,7 +3,7 @@ import { Observable } from 'rxjs/Rx';
 import { ApiService, Event } from './../api.service';
 import { BufferService } from './../buffer/buffer.service';
 import { Response } from '@angular/http';
-import { CfgStringList, StringListEvent } from './stringlist.component';
+import { CfgStringList, StringListEvent } from '../tools/stringlist.component';
 
 export class ConfigBase {
     private cache: boolean

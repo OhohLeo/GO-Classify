@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"github.com/ohohleo/classify/data"
 	"github.com/ohohleo/classify/imports"
 	"io/ioutil"
 	"os"
@@ -114,9 +115,9 @@ func (r *Directory) Check(config map[string][]string, collections []string) erro
 }
 
 // Return a channel of files in the directory
-func (r *Directory) Start() (chan imports.Data, error) {
+func (r *Directory) Start() (chan data.Data, error) {
 
-	c := make(chan imports.Data)
+	c := make(chan data.Data)
 
 	// Check if the analysis is not already going on
 	if r.isRunning {
@@ -141,11 +142,12 @@ func (r *Directory) Start() (chan imports.Data, error) {
 	return c, nil
 }
 
-func (r *Directory) Stop() {
+func (r *Directory) Stop() error {
 	r.needToStop = true
+	return nil
 }
 
-func (r *Directory) readDirectory(c chan imports.Data, path string, isRecursive bool) {
+func (r *Directory) readDirectory(c chan data.Data, path string, isRecursive bool) {
 
 	// Read directory
 	files, _ := ioutil.ReadDir(path)
@@ -171,7 +173,7 @@ func (r *Directory) readDirectory(c chan imports.Data, path string, isRecursive 
 		fullname := f.Name()
 		extension := filepath.Ext(fullname)
 
-		file := &imports.File{
+		file := &data.File{
 			Name:      strings.TrimRight(fullname, extension),
 			FullName:  fullname,
 			Extension: extension,
@@ -196,7 +198,7 @@ func (r *Directory) Eq(new imports.Import) bool {
 		r.IsRecursive == newDirectory.IsRecursive
 }
 
-func (r *Directory) Analyse(cmdStr string, file *imports.File) {
+func (r *Directory) Analyse(cmdStr string, file *data.File) {
 
 	fullpath := file.FullPath
 

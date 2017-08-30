@@ -2,6 +2,7 @@ package imports
 
 import (
 	"encoding/json"
+	"github.com/ohohleo/classify/data"
 )
 
 const (
@@ -27,16 +28,10 @@ var REF_STR2IDX = map[string]Ref{
 
 type Import interface {
 	Check(map[string][]string, []string) error
-	Start() (chan Data, error)
-	Stop()
+	Start() (chan data.Data, error)
+	Stop() error
 	GetRef() Ref
 	Eq(Import) bool
-}
-
-type Data interface {
-	GetRef() string
-	String() string
-	GetUniqKey() string
 }
 
 type BuildImport struct {

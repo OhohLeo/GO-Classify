@@ -125,9 +125,11 @@ export class StringListComponent implements AfterViewChecked {
 
         this.chip = jQuery('div#' + this.name)
 
+		console.log(this.value)
+
         // Initialisation des valeurs
         this.chip.material_chip({
-            data: (this.value != undefined) ?
+            data: (this.value instanceof CfgStringList) ?
                 this.value.getTags() : [],
             placeholder: 'Enter a tag',
             secondaryPlaceholder: '+Tag',

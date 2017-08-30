@@ -5,6 +5,7 @@ import { FormsModule } from '@angular/forms'
 import { FileModule } from '../imports/file/file.module'
 import { MoviesModule } from '../collections/movies/movies.module'
 import { ConfigModule } from '../config/config.module'
+import { ToolsModule } from '../tools/tools.module'
 
 import { ItemComponent } from './item.component'
 
@@ -15,7 +16,8 @@ import { ItemComponent } from './item.component'
         FormsModule,
         ConfigModule,
         FileModule,
-        MoviesModule
+        MoviesModule,
+		ToolsModule
     ],
     providers: [],
     declarations: [ItemComponent],

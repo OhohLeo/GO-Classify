@@ -8,8 +8,8 @@ import (
 )
 
 var newWebsites = map[string]websites.Website{
-	websites.TYPE_IDX2STR[websites.IMDB]: IMDB.New(),
-	websites.TYPE_IDX2STR[websites.TMDB]: TMDB.New(),
+	websites.REF_IDX2STR[websites.IMDB]: IMDB.New(),
+	websites.REF_IDX2STR[websites.TMDB]: TMDB.New(),
 }
 
 // AddWebsite add new website
@@ -62,5 +62,5 @@ func (c *Classify) DeleteWebsite(name string) error {
 
 // Returns the list of websites available
 func (c *Classify) GetWebsites() []string {
-	return websites.TYPE_IDX2STR
+	return websites.REF_IDX2STR
 }

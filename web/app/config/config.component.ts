@@ -1,6 +1,6 @@
 import { Component, NgZone, Input, OnInit, OnDestroy } from '@angular/core';
 import { ConfigService, ConfigBase } from './config.service';
-import { StringListEvent } from './stringlist.component';
+import { StringListEvent } from '../tools/stringlist.component';
 
 @Component({
     selector: 'config',

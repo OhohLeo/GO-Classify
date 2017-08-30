@@ -3,19 +3,20 @@ import { CommonModule } from '@angular/common'
 import { BrowserModule } from '@angular/platform-browser'
 import { FormsModule } from '@angular/forms'
 
+import { ToolsModule } from '../tools/tools.module'
 import { ConfigComponent } from './config.component'
 import { ConfigService } from './config.service'
-import { StringListComponent } from './stringlist.component'
 
 @NgModule({
     imports: [
         CommonModule,
         BrowserModule,
-        FormsModule
+        FormsModule,
+		ToolsModule
     ],
-    declarations: [ConfigComponent, StringListComponent],
+    declarations: [ConfigComponent],
     providers: [ConfigService],
-    exports: [ConfigComponent, StringListComponent]
+    exports: [ConfigComponent]
 })
 
-export class ConfigModule { }
+export class ConfigModule {}

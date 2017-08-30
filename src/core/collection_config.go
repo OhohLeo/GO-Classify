@@ -8,6 +8,7 @@ import (
 )
 
 type CollectionConfig struct {
+	HasBuffer  bool          `json:"hasBuffer"`
 	BufferSize int           `json:"bufferSize"`
 	Filters    CfgStringList `json:"filters"`
 	Separators CfgStringList `json:"separators"`

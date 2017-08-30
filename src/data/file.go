@@ -1,4 +1,4 @@
-package imports
+package data
 
 import (
 	"os"
@@ -15,14 +15,10 @@ type File struct {
 	FileInfo  os.FileInfo       `json:"-"`
 }
 
-func (f *File) GetRef() string {
-	return "file"
+func (f *File) GetRef() Ref {
+	return FILE
 }
 
-func (f *File) String() string {
+func (f *File) GetName() string {
 	return f.Name
-}
-
-func (f *File) GetUniqKey() string {
-	return f.GetRef() + ":" + f.FullPath
 }

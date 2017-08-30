@@ -5,9 +5,9 @@ import (
 	"errors"
 	"fmt"
 	"github.com/ohohleo/classify/collections"
+	"github.com/ohohleo/classify/data"
 	"github.com/ohohleo/classify/database"
 	"github.com/ohohleo/classify/exports"
-	"github.com/ohohleo/classify/imports"
 	"github.com/ohohleo/classify/websites"
 	"log"
 )
@@ -28,7 +28,7 @@ type CollectionEvent struct {
 	Source string
 	Status string
 	Id     string
-	Item   Data
+	Item   *Item
 }
 
 type CollectionParams struct {
@@ -61,7 +61,7 @@ func (c *Collection) AddWebsite(website websites.Website) {
 		c.websites = make(map[string]websites.Website)
 	}
 
-	c.websites[website.GetName()] = website
+	c.websites[website.GetRef().String()] = website
 }
 
 // DeleteWebsite delete specified website
@@ -128,7 +128,7 @@ func (c *Collection) Search(src string, item *BufferItem) {
 	if len(c.websites) > 0 {
 		c.SearchWeb(item)
 
-		item.MatchId = item.Websites["TMDB"][0].GetId()
+		// item.MatchId = item.Websites["TMDB"][0].GetId()
 	}
 
 	// // TODO Research for best matching
@@ -136,7 +136,7 @@ func (c *Collection) Search(src string, item *BufferItem) {
 	// item.IsMatching = 10.2
 	// item.BestMatch = item.Websites["IMDB"][0]
 
-	c.SendCollectionEvent(src, "update", item)
+	c.SendCollectionEvent(src, "update", &item.Item)
 }
 
 // SearchWeb launch resarch through specified websites
@@ -152,9 +152,9 @@ func (c *Collection) SearchWeb(item *BufferItem) {
 		channel := website.Search(keywords)
 
 		for {
-			data, ok := <-channel
+			d, ok := <-channel
 			if ok {
-				item.AddWebsiteData(website.GetName(), data)
+				item.AddWebsiteData(website.GetRef().String(), d)
 				continue
 			}
 
@@ -164,7 +164,7 @@ func (c *Collection) SearchWeb(item *BufferItem) {
 }
 
 // OnInput handle new data to classify
-func (c *Collection) OnInput(input imports.Data) *BufferItem {
+func (c *Collection) OnInput(input data.Data) *BufferItem {
 
 	// Create a new item
 	item := NewBufferItem()
@@ -178,12 +178,12 @@ func (c *Collection) OnInput(input imports.Data) *BufferItem {
 	item.SetCleanedName(c.config.Banned, c.config.Separators)
 
 	// Store the import to the buffer collection
-	c.buffer.Add(item.GetId(), item)
+	c.buffer.Add(item.Item.engine.GetName(), item)
 
 	return item
 }
 
-func (c *Collection) SendCollectionEvent(src string, status string, item Data) {
+func (c *Collection) SendCollectionEvent(src string, status string, item *Item) {
 
 	if c.events == nil {
 		return
@@ -192,7 +192,7 @@ func (c *Collection) SendCollectionEvent(src string, status string, item Data) {
 	c.events <- CollectionEvent{
 		Source: src,
 		Status: status,
-		Id:     item.GetId(),
+		Id:     item.engine.GetName(),
 		Item:   item,
 	}
 }
@@ -210,10 +210,10 @@ func (c *Collection) ResetBuffer() {
 	c.buffer = NewBuffer(c, c.config.BufferSize)
 }
 
-func (c *Collection) GetBufferItems() []Data {
+func (c *Collection) GetBufferItems() []*Item {
 
 	if c.items == nil {
-		return []Data{}
+		return []*Item{}
 	}
 
 	return c.items.GetCurrentList()
@@ -223,7 +223,7 @@ func (c *Collection) ResetBufferItems() {
 	c.items = NewItems()
 }
 
-func (c *Collection) Validate(id string, data Data) (item *BufferItem, err error) {
+func (c *Collection) Validate(id string, d data.Data) (item *BufferItem, err error) {
 
 	if c.buffer == nil {
 		err = fmt.Errorf("buffer not initialized")
@@ -237,12 +237,12 @@ func (c *Collection) Validate(id string, data Data) (item *BufferItem, err error
 	}
 
 	// Store in definitive items
-	err = c.items.Add(id, data)
+	err = c.items.Add(id, &item.Item)
 	if err != nil {
 		return
 	}
 
-	c.SendCollectionEvent("items", "add", data)
+	c.SendCollectionEvent("items", "add", &item.Item)
 
 	// TODO: export list
 
