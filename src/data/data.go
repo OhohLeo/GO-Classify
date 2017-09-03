@@ -6,6 +6,8 @@ const (
 	SIMPLE Ref = iota
 	FILE
 	MOVIE
+	EMAIL
+	ATTACHMENT
 )
 
 type Ref uint64
@@ -18,12 +20,16 @@ var REF_IDX2STR = []string{
 	"simple",
 	"file",
 	"movie",
+	"email",
+	"attachment",
 }
 
 var REF_STR2IDX = map[string]Ref{
-	REF_IDX2STR[SIMPLE]: SIMPLE,
-	REF_IDX2STR[FILE]:   FILE,
-	REF_IDX2STR[MOVIE]:  MOVIE,
+	REF_IDX2STR[SIMPLE]:     SIMPLE,
+	REF_IDX2STR[FILE]:       FILE,
+	REF_IDX2STR[MOVIE]:      MOVIE,
+	REF_IDX2STR[EMAIL]:      EMAIL,
+	REF_IDX2STR[ATTACHMENT]: ATTACHMENT,
 }
 
 type Data interface {

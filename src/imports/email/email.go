@@ -11,7 +11,9 @@ import (
 	"io/ioutil"
 	"log"
 	"mime"
+	"mime/multipart"
 	"net/mail"
+	"strings"
 	"time"
 )
 
@@ -281,43 +283,64 @@ func (e *Email) Proceed(seqset *imap.SeqSet) error {
 
 		m, err := mail.ReadMessage(rsp)
 		if err != nil {
-			log.Fatal(err)
+			return err
 		}
 
 		header := m.Header
-		// log.Printf("%+v\n", header)
 
 		date, err := header.Date()
 		if err != nil {
-			log.Fatal(err)
+			return err
 		}
 
-		log.Printf("Date: %s", date.String())
-		// log.Println("From:", header.Get("From"))
-		// log.Println("To:", header.Get("To"))
-		// log.Println("Subject:", header.Get("Subject"))
+		email := &data.Email{
+			Subject:     header.Get("Subject"),
+			From:        header.Get("From"),
+			Date:        date,
+			ContentType: header.Get("Content-Type"),
+		}
 
-		body, err := ioutil.ReadAll(m.Body)
+		log.Println("To:", header.Get("To"))
+
+		mediaType, params, err := mime.ParseMediaType(
+			m.Header.Get("Content-Type"))
 		if err != nil {
-			log.Fatal(err)
+			return err
 		}
 
-		dec := new(mime.WordDecoder)
+		if strings.HasPrefix(mediaType, "multipart/") {
 
-		dec.CharsetReader = func(charset string, input io.Reader) (io.Reader, error) {
-			fmt.Printf("CHARSET %s\n", charset)
-			return nil, fmt.Errorf("unhandled charset %q", charset)
+			mr := multipart.NewReader(m.Body, params["boundary"])
+
+			email.Attachments = make([]*data.Attachment, 0)
+
+			for {
+				p, err := mr.NextPart()
+				if err == io.EOF {
+					break
+				}
+				if err != nil {
+					return err
+				}
+
+				slurp, err := ioutil.ReadAll(p)
+				if err != nil {
+					return err
+				}
+
+				attachment := &data.Attachment{
+					Name:               p.FileName(),
+					ContentDisposition: p.FormName(),
+					Date:               date,
+					Data:               slurp,
+				}
+
+				email.Attachments = append(email.Attachments, attachment)
+				e.dataChannel <- attachment
+			}
 		}
 
-		h, _ := dec.Decode(string(body))
-		// if err != nil {
-		// 	panic(err)
-		// }
-
-		fmt.Println(h)
-
-		//log.Println(string(body))
-		break
+		e.dataChannel <- email
 	}
 
 	close(e.dataChannel)

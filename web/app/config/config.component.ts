@@ -29,6 +29,14 @@ export class ConfigComponent {
     }
 
     onChange(event) {
+
+        if (event.target.name === "enableStore") {
+            event.target.value = this.config.enableStore
+        }
+        else if (event.target.name === "enableBuffer") {
+            event.target.value = this.config.enableBuffer
+        }
+
         this.configService.onChange(this.collection, event)
     }
 }

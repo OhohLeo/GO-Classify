@@ -70,7 +70,7 @@ export class ItemObserver {
 }
 
 @Injectable()
-export class HomeService {
+export class CollectionService {
 
     enableCache: boolean
     itemsByCollection: { [collectionName: string]: CollectionItem; } = {}
@@ -148,7 +148,7 @@ export class HomeService {
         this.enableCache = false
     }
 
-    // Ask for current home list
+    // Ask for current collection list
     getItems(collection: string) {
 
         if (this.itemsByCollection[collection] === undefined) {

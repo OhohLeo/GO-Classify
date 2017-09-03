@@ -42,9 +42,6 @@ func (c *Collection) Init(name string) chan CollectionEvent {
 	// Set default Buffer size at 2
 	c.config = NewCollectionConfig(2)
 
-	// Init the items buffer
-	c.ResetBuffer()
-
 	// Init the items storage
 	c.items = NewItems()
 
@@ -52,6 +49,23 @@ func (c *Collection) Init(name string) chan CollectionEvent {
 	c.events = make(chan CollectionEvent)
 
 	return c.events
+}
+
+func (c *Collection) ActivateBuffer() {
+
+	// Init the items buffer
+	c.ResetBuffer()
+}
+
+func (c *Collection) DisableBuffer() error {
+
+	if c.buffer == nil {
+		return fmt.Errorf("collection '%s' buffer already disabled")
+	}
+
+	c.buffer.RemoveAll()
+	c.buffer = nil
+	return nil
 }
 
 // AddWebsite add new website
@@ -74,6 +88,14 @@ func (c *Collection) DeleteWebsite(name string) error {
 	}
 
 	return errors.New("no website name '" + name + "' found")
+}
+
+func (c *Collection) ActivateStore() {
+
+}
+
+func (c *Collection) DisableStore() error {
+	return nil
 }
 
 func (c *Collection) Store2DB(db *database.Database) error {
@@ -164,23 +186,39 @@ func (c *Collection) SearchWeb(item *BufferItem) {
 }
 
 // OnInput handle new data to classify
-func (c *Collection) OnInput(input data.Data) *BufferItem {
+func (c *Collection) OnInput(input data.Data) (*BufferItem, error) {
 
 	// Create a new item
 	item := NewBufferItem()
 
-	log.Printf("OnInput %s\n", item)
+	log.Printf("OnInput %+v\n", input)
 
-	// Add the import to the item
-	item.AddImportData(input)
+	if c.buffer != nil {
 
-	// Get Cleaned name
-	item.SetCleanedName(c.config.Banned, c.config.Separators)
+		// Add the import to the item
+		item.AddImportData(input)
 
-	// Store the import to the buffer collection
-	c.buffer.Add(item.Item.engine.GetName(), item)
+		// Get Cleaned name
+		item.SetCleanedName(c.config.Banned, c.config.Separators)
 
-	return item
+		// Store item to the buffer collection
+		c.buffer.Add(item.Item.engine.GetName(), item)
+
+	} else {
+
+		item.Item.Id = getRandomId()
+		item.Item.SetData(input)
+
+		// Otherwise directly store item to the items collection
+		err := c.items.Add(item.Item.engine.GetName(), &item.Item)
+		if err != nil {
+			return nil, err
+		}
+
+		c.SendCollectionEvent("items", "add", &item.Item)
+	}
+
+	return item, nil
 }
 
 func (c *Collection) SendCollectionEvent(src string, status string, item *Item) {
@@ -219,7 +257,7 @@ func (c *Collection) GetBufferItems() []*Item {
 	return c.items.GetCurrentList()
 }
 
-func (c *Collection) ResetBufferItems() {
+func (c *Collection) ResetItems() {
 	c.items = NewItems()
 }
 
@@ -247,6 +285,11 @@ func (c *Collection) Validate(id string, d data.Data) (item *BufferItem, err err
 	// TODO: export list
 
 	return
+}
+
+func (c *Collection) GetItems() []*Item {
+
+	return c.items.GetCurrentList()
 }
 
 func (c *Collection) SetExports(exports []exports.Export) {

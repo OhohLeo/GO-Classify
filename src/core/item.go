@@ -6,6 +6,9 @@ import (
 
 type Item struct {
 	Id     uint64 `json:"id"`
-	Ref    data.Ref
 	engine data.Data
+}
+
+func (i *Item) SetData(input data.Data) {
+	i.engine = input
 }

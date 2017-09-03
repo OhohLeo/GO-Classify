@@ -1,15 +1,55 @@
 <div *ngIf="config">
-    <label>buffer size:</label><input type="number" name="bufferSize"
-				      value="{{config.bufferSize}}"
-				      (change)="onChange($event)"
-				      min="1" step="1">
-    <label>filters:</label><stringlist [name]="'filters'"
-				       [value]="config.filters"
-				       (change)="onChange($event)"></stringlist>
-    <label>separators:</label><stringlist [name]="'separators'"
-					  [value]="config.separators"
-					  (change)="onChange($event)"></stringlist>
-    <label>banned:</label><stringlist [name]="'banned'"
-				      [value]="config.banned"
-				      (change)="onChange($event)"></stringlist>
+    <div class="row">
+	<label>Enable store:</label>
+	<div class="switch">
+	    <label>
+		Off
+		<input type="checkbox"
+		       name="enableStore"
+		       [(ngModel)]="config.enableStore"
+		       (change)="onChange($event)"/>
+		<span class="lever"></span>
+		On
+	    </label>
+	</div>
+    </div>
+    <div class="row">
+	<label>Enable buffer:</label>
+	<div class="switch">
+	    <label>
+		Off
+		<input type="checkbox"
+		       name="enableBuffer"
+		       [(ngModel)]="config.enableBuffer"
+		       (change)="onChange($event)"/>
+		<span class="lever"></span>
+		On
+	    </label>
+	</div>
+    </div>
+    <div *ngIf="config.enableBuffer" class="row">
+	<label>buffer size:</label>
+	<input type="number" name="bufferSize"
+	       value="{{config.bufferSize}}"
+	       (change)="onChange($event)"
+	       min="1" step="1">
+    </div>
+    <div class="row">
+	<label>filters:</label>
+	<stringlist [name]="'filters'"
+		    [value]="config.filters"
+		    (change)="onChange($event)"></stringlist>
+    </div>
+    <div class="row">
+	<label>separators:</label>
+	<stringlist [name]="'separators'"
+		    [value]="config.separators"
+		    (change)="onChange($event)"></stringlist>
+    </div>
+    <div class="row">
+	<label>banned:</label>
+	<stringlist [name]="'banned'"
+		    [value]="config.banned"
+		    (change)="onChange($event)"></stringlist>
+    </div>
 </div>

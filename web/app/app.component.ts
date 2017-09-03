@@ -3,14 +3,13 @@ import { Component, NgZone, OnInit, ViewChild } from '@angular/core';
 import { ApiService, CollectionStatus, Event } from './api.service';
 import { ImportsService } from './imports/imports.service';
 import { BufferService } from './buffer/buffer.service';
-import { HomeService } from './home/home.service';
+import { CollectionService } from './collections/collection.service';
 import { ConfigService, ConfigBase } from './config/config.service';
 
 import { Collection } from './collections/collection';
 
 import { CollectionsComponent } from './collections/collections.component'
 import { BufferComponent } from './buffer/buffer.component'
-import { HomeComponent } from './home/home.component'
 import { ItemComponent } from './item/item.component'
 import { Item } from './item/item'
 
@@ -18,7 +17,7 @@ declare var jQuery: any;
 
 enum AppStatus {
     NONE = 0,
-    HOME,
+    COLLECTION,
     IMPORT,
     EXPORT,
     CONFIG,
@@ -33,7 +32,6 @@ enum AppStatus {
 export class AppComponent implements OnInit {
     @ViewChild(CollectionsComponent) collections: CollectionsComponent
     @ViewChild(BufferComponent) buffer: BufferComponent
-    @ViewChild(HomeComponent) home: HomeComponent
 
     public appStatus = AppStatus
     public status = AppStatus.NONE
@@ -56,7 +54,7 @@ export class AppComponent implements OnInit {
         private importsService: ImportsService,
         private configService: ConfigService,
         private bufferService: BufferService,
-        private homeService: HomeService) { }
+        private collectionService: CollectionService) { }
 
     ngOnInit() {
 
@@ -111,7 +109,7 @@ export class AppComponent implements OnInit {
                     case CollectionStatus.CREATED:
                     case CollectionStatus.MODIFIED:
                     case CollectionStatus.SELECTED:
-                        this.onHome()
+                        this.onCollection()
                         break;
                     case CollectionStatus.DELETED:
                         this.status = AppStatus.NONE
@@ -120,8 +118,8 @@ export class AppComponent implements OnInit {
             })
     }
 
-    onHome() {
-        this.onNewState(AppStatus.HOME)
+    onCollection() {
+        this.onNewState(AppStatus.COLLECTION)
     }
 
     onImport() {
@@ -205,7 +203,7 @@ export class AppComponent implements OnInit {
             this.bufferService.addEvent(collection, e, item)
         }
         else if (destination === "items") {
-            this.homeService.addEvent(collection, e, item)
+            this.collectionService.addEvent(collection, e, item)
         }
 
     }

@@ -8,15 +8,22 @@ import { CfgStringList, StringListEvent } from '../tools/stringlist.component';
 export class ConfigBase {
     private cache: boolean
 
+    public enableStore: boolean
+    public enableBuffer: boolean
     public bufferSize: number
     public filters = new CfgStringList()
     public separators = new CfgStringList()
     public banned = new CfgStringList()
 
     init(config) {
-
         Object.keys(config).forEach((key) => {
             switch (key) {
+                case "enableStore":
+                    this.enableStore = config[key] ? true : false
+                    break
+                case "enableBuffer":
+                    this.enableBuffer = config[key] ? true : false
+                    break
                 case "bufferSize":
                     this.bufferSize = config[key]
                     break
@@ -34,24 +41,6 @@ export class ConfigBase {
             }
         })
     }
-
-    hasChanged(name: string, rcv: any): boolean {
-        switch (name) {
-            case "bufferSize":
-                return (this.bufferSize != rcv)
-            case "filters":
-                return this.filters.hasChanged(rcv)
-            case "separators":
-                return this.separators.hasChanged(rcv)
-            case "banned":
-                return this.banned.hasChanged(rcv)
-            default:
-                console.error("Unhandled configuration '" + name + "'")
-        }
-
-        return false;
-    }
-
 
     hasCache(): boolean {
         return this.cache
@@ -156,6 +145,8 @@ export class ConfigService {
 
     public onChange(collection: string, event) {
 
+        console.log("onChange", event)
+
         let name, action, value
 
         if (event instanceof StringListEvent) {
@@ -170,8 +161,6 @@ export class ConfigService {
                 default:
                     value = event.target.value
             }
-
-            console.log(event.target.type, value)
         }
 
         console.log("CHANGE", name, action, value);

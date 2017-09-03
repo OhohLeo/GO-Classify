@@ -9,7 +9,6 @@ import { ConfigModule } from './config/config.module';
 import { ImportsModule } from './imports/imports.module';
 import { ExportsModule } from './exports/exports.module';
 import { BufferModule } from './buffer/buffer.module';
-import { HomeModule } from './home/home.module';
 import { ItemModule } from './item/item.module';
 import { ToolsModule } from './tools/tools.module';
 
@@ -26,11 +25,10 @@ import { AppComponent } from './app.component';
         CollectionsModule,
         ImportsModule,
         ExportsModule,
-        HomeModule,
         BufferModule,
         ConfigModule,
         ItemModule,
-		ToolsModule
+        ToolsModule
     ],
     providers: [ApiService],
     declarations: [AppComponent],

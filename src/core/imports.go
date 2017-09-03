@@ -8,6 +8,7 @@ import (
 	"github.com/ohohleo/classify/imports"
 	"github.com/ohohleo/classify/imports/directory"
 	"github.com/ohohleo/classify/imports/email"
+	"log"
 	"strconv"
 )
 
@@ -345,7 +346,10 @@ func (c *Classify) StartImports(ids map[uint64]*Import, collections map[string]*
 
 					// For each collections linked with the importation
 					for _, collection := range i.collections {
-						collection.OnInput(input)
+						_, err := collection.OnInput(input)
+						if err != nil {
+							log.Printf("OnInput() failed: %s\n", err.Error())
+						}
 					}
 
 					continue

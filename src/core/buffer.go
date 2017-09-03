@@ -108,6 +108,13 @@ func (b *Buffer) Remove(name string) bool {
 	return true
 }
 
+func (b *Buffer) RemoveAll() {
+
+	for name, _ := range b.items {
+		delete(b.items, name)
+	}
+}
+
 func (b *Buffer) Validate(name string) *BufferItem {
 
 	item, ok := b.items[name]

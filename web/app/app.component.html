@@ -9,7 +9,7 @@
 	<div class="nav-content">
 	  <ul class="tabs tabs-transparent">
 		<li class="tab"><a (click)="onImport()">Import</a></li>
-		<li class="tab"><a (click)="onHome()">Collection</a></li>
+		<li class="tab"><a (click)="onCollection()">Collection</a></li>
 		<li class="tab"><a (click)="onExport()">Export</a></li>
 		<li class="tab"><a (click)="onConfig()">Config</a></li>
 	  </ul>
@@ -20,8 +20,9 @@
 </div>
 <div class="row">
     <div [ngSwitch]="status" class="center">
-        <div *ngSwitchCase="appStatus.HOME">
-	    <home [collection]="title"></home>
+        <div *ngSwitchCase="appStatus.COLLECTION">
+	    <collection-display [collection]="title">
+	    </collection-display>
 	</div>
         <div *ngSwitchCase="appStatus.IMPORT">
             <imports></imports>
@@ -36,7 +37,7 @@
 	    <item *ngIf="item"
 		  [collection]="collection.name"
 		  [item]="item"
-		  (close)="onHome()">
+		  (close)="onCollection()">
 	    </item>
 	</div>
         <div *ngSwitchCase="appStatus.NONE"></div>

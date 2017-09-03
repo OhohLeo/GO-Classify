@@ -8,11 +8,12 @@ import (
 )
 
 type CollectionConfig struct {
-	HasBuffer  bool          `json:"hasBuffer"`
-	BufferSize int           `json:"bufferSize"`
-	Filters    CfgStringList `json:"filters"`
-	Separators CfgStringList `json:"separators"`
-	Banned     CfgStringList `json:"banned"`
+	EnableStore  bool          `json:"enableStore"`
+	EnableBuffer bool          `json:"enableBuffer"`
+	BufferSize   int           `json:"bufferSize"`
+	Filters      CfgStringList `json:"filters"`
+	Separators   CfgStringList `json:"separators"`
+	Banned       CfgStringList `json:"banned"`
 }
 
 func NewCollectionConfig(bufferSize int) *CollectionConfig {
@@ -132,7 +133,41 @@ func (c *Collection) ModifyConfig(name string, action string, list []string) (er
 
 func (c *Collection) ModifyConfigValue(name string, value string) error {
 
-	if name == "bufferSize" {
+	switch name {
+
+	case "enableStore":
+		previousStoreState := c.config.EnableStore
+
+		c.config.EnableStore = (value == "true")
+		if previousStoreState == c.config.EnableStore {
+			return nil
+		}
+
+		if c.config.EnableStore {
+			c.ActivateStore()
+		} else {
+			return c.DisableStore()
+		}
+
+	case "enableBuffer":
+		previousBufferState := c.config.EnableBuffer
+
+		c.config.EnableBuffer = (value == "true")
+		if previousBufferState == c.config.EnableBuffer {
+			return nil
+		}
+
+		if c.config.EnableBuffer {
+			c.ActivateBuffer()
+		} else {
+			return c.DisableBuffer()
+		}
+
+	case "bufferSize":
+
+		if c.config.EnableBuffer == false {
+			return fmt.Errorf("Should enable buffer first")
+		}
 
 		// Integer is expected
 		bufferSize, err := strconv.Atoi(value)
@@ -145,7 +180,8 @@ func (c *Collection) ModifyConfigValue(name string, value string) error {
 
 		// Update buffer size
 		c.buffer.SetSize(bufferSize)
-	} else {
+
+	default:
 		return fmt.Errorf("Invalid config parameters '%s'", name)
 	}
 

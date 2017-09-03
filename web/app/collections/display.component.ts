@@ -1,16 +1,14 @@
-import { Component, NgZone, Input, OnInit, OnDestroy } from '@angular/core';
-import { HomeService, ItemEvent } from './home.service';
-import { Event } from '../api.service';
+import { Component, NgZone, Input, OnInit, OnDestroy } from '@angular/core'
+import { CollectionService, ItemEvent } from './collection.service'
+import { Event } from '../api.service'
 import { Item } from '../item/item'
 
-declare var jQuery: any;
-
 @Component({
-    selector: 'home',
-    templateUrl: './home.component.html'
+    selector: 'collection-display',
+    templateUrl: './display.component.html'
 })
 
-export class HomeComponent implements OnInit, OnDestroy {
+export class DisplayCollectionComponent implements OnInit, OnDestroy {
 
     @Input() collection: string
 
@@ -18,15 +16,15 @@ export class HomeComponent implements OnInit, OnDestroy {
     private events: any
 
     constructor(private zone: NgZone,
-        private homeService: HomeService) { }
+        private collectionService: CollectionService) { }
 
     ngOnInit() {
 
         this.getItems()
 
         // Subscribe to item modification
-        this.events = this.homeService.subscribeEvents(
-            this.collection + "/home")
+        this.events = this.collectionService.subscribeEvents(
+            this.collection + "/items")
             .subscribe((event: ItemEvent) => {
 
                 // Check if it is the expected collection
@@ -103,7 +101,7 @@ export class HomeComponent implements OnInit, OnDestroy {
 
 
     getItems() {
-        this.homeService.getItems(this.collection)
+        this.collectionService.getItems(this.collection)
             .subscribe((items: Item[]) => {
                 console.log("UPDATE", items)
                 this.zone.run(() => {
