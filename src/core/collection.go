@@ -9,7 +9,6 @@ import (
 	"github.com/ohohleo/classify/database"
 	"github.com/ohohleo/classify/exports"
 	"github.com/ohohleo/classify/websites"
-	"log"
 )
 
 type Collection struct {
@@ -91,7 +90,6 @@ func (c *Collection) DeleteWebsite(name string) error {
 }
 
 func (c *Collection) ActivateStore() {
-
 }
 
 func (c *Collection) DisableStore() error {
@@ -191,7 +189,7 @@ func (c *Collection) OnInput(input data.Data) (*BufferItem, error) {
 	// Create a new item
 	item := NewBufferItem()
 
-	log.Printf("OnInput %+v\n", input)
+	// log.Printf("OnInput %+v\n", input)
 
 	if c.buffer != nil {
 
@@ -202,7 +200,7 @@ func (c *Collection) OnInput(input data.Data) (*BufferItem, error) {
 		item.SetCleanedName(c.config.Banned, c.config.Separators)
 
 		// Store item to the buffer collection
-		c.buffer.Add(item.Item.engine.GetName(), item)
+		c.buffer.Add(item.Item.Engine.GetName(), item)
 
 	} else {
 
@@ -210,7 +208,7 @@ func (c *Collection) OnInput(input data.Data) (*BufferItem, error) {
 		item.Item.SetData(input)
 
 		// Otherwise directly store item to the items collection
-		err := c.items.Add(item.Item.engine.GetName(), &item.Item)
+		err := c.items.Add(item.Item.Engine.GetName(), &item.Item)
 		if err != nil {
 			return nil, err
 		}
@@ -230,7 +228,7 @@ func (c *Collection) SendCollectionEvent(src string, status string, item *Item) 
 	c.events <- CollectionEvent{
 		Source: src,
 		Status: status,
-		Id:     item.engine.GetName(),
+		Id:     item.Engine.GetName(),
 		Item:   item,
 	}
 }

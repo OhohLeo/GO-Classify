@@ -46,12 +46,12 @@ func (i *BufferItem) SetCleanedName(bannedList []string, separators []string) bo
 
 	previousName := i.CleanedName
 
-	i.CleanedName = i.Item.engine.GetName()
+	i.CleanedName = i.Item.Engine.GetName()
 	i.Banned = make([]string, 0)
 	i.Separators = make([]string, 0)
 
 	// No real name set : nothing todo
-	if i.Item.engine.GetName() == "" {
+	if i.Item.Engine.GetName() == "" {
 		return false
 	}
 

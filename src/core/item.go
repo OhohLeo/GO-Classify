@@ -5,10 +5,12 @@ import (
 )
 
 type Item struct {
-	Id     uint64 `json:"id"`
-	engine data.Data
+	Id     uint64    `json:"id"`
+	Ref    string    `json:"ref"`
+	Engine data.Data `json:"data"`
 }
 
 func (i *Item) SetData(input data.Data) {
-	i.engine = input
+	i.Ref = input.GetRef().String()
+	i.Engine = input
 }

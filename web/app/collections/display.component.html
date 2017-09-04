@@ -1,5 +1,6 @@
-<div *ngFor="let item of items">
-    <item [collection]="collection"
-	  [item]="item">
-    </item>
+<div [ngSwitch]="collection.ref">
+  <collection-simple *ngSwitchCase="'simple'"
+					 [collection]="collection"
+					 [items]="items">
+  </collection-simple>
 </div>
