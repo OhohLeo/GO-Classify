@@ -1,25 +1,24 @@
 import { Component, Input, Output, EventEmitter, NgZone, OnInit, OnDestroy } from '@angular/core'
 
-import { BufferService } from '../buffer/buffer.service'
+import { BufferService } from './buffer.service'
 import { Event } from '../api.service'
 import { ConfigService, ConfigBase } from '../config/config.service';
 import { ApiService } from '../api.service';
-import { Item } from './item'
+import { BufferItem } from './item'
 
 declare var jQuery: any
 
 @Component({
-    selector: 'item',
+    selector: 'buffer-item',
     templateUrl: './item.component.html',
 })
 
-export class ItemComponent implements OnInit, OnDestroy {
+export class BufferItemComponent implements OnInit, OnDestroy {
 
     @Input() collection: string
-    @Input() item: Item
+    @Input() bufferItem: BufferItem
     @Output() close: EventEmitter<any> = new EventEmitter()
 
-    private isBuffer: boolean = false
     private needNameDetails: boolean = false
     private match: any
     private bufferIdx: number
@@ -32,7 +31,7 @@ export class ItemComponent implements OnInit, OnDestroy {
     }
 
     ngOnInit() {
-        this.onUpdate(this.item)
+        this.onUpdate(this.bufferItem)
     }
 
     ngOnDestroy() {
@@ -47,15 +46,15 @@ export class ItemComponent implements OnInit, OnDestroy {
 
     onPrevious() {
         console.log("previous")
-        this.displayItem(false)
+        this.displayBufferItem(false)
     }
 
     onNext() {
         console.log("next")
-        this.displayItem(true)
+        this.displayBufferItem(true)
     }
 
-    displayItem(isNext: boolean) {
+    displayBufferItem(isNext: boolean) {
 
         if (this.bufferIdx < 0) {
             console.error("invalid current item idx", this.bufferIdx)
@@ -76,18 +75,18 @@ export class ItemComponent implements OnInit, OnDestroy {
         if (idx < 0)
             idx += collectionBuffer.items.length
 
-        let item = collectionBuffer.getItem(
+        let bufferItem = collectionBuffer.getBufferItem(
             idx % collectionBuffer.items.length)
-        if (item === undefined) {
-            console.error("invalid item with idx", idx)
+        if (bufferItem === undefined) {
+            console.error("invalid bufferItem with idx", idx)
             return
         }
 
-        this.onUpdate(item)
+        this.onUpdate(bufferItem)
     }
 
     onValidate() {
-        this.bufferService.validateItem(this.collection, this.item)
+        this.bufferService.validateBufferItem(this.collection, this.bufferItem)
             .subscribe((ok: boolean) => {
                 if (ok) {
                     this.onNext()
@@ -95,15 +94,14 @@ export class ItemComponent implements OnInit, OnDestroy {
             })
     }
 
-    onUpdate(item: Item) {
+    onUpdate(bufferItem: BufferItem) {
         this.zone.run(() => {
-            this.isBuffer = item.isBuffer()
-            this.item = item
-            this.bufferIdx = this.bufferService.hasCollectionItem(
-                this.collection, item.id)
+            this.bufferItem = bufferItem
+            this.bufferIdx = this.bufferService.hasCollectionBufferItem(
+                this.collection, bufferItem.id)
         })
 
-        this.onSelect(item.matchId)
+        this.onSelect(bufferItem.matchId)
     }
 
     onChange(event) {
@@ -136,7 +134,7 @@ export class ItemComponent implements OnInit, OnDestroy {
     onSelect(id: string) {
 
         // Select best match item
-        this.item.setMatch(id)
+        this.bufferItem.setMatch(id)
 
         // Reset other selection
         for (let id in this.selectColor) {
@@ -144,7 +142,7 @@ export class ItemComponent implements OnInit, OnDestroy {
         }
 
         this.zone.run(() => {
-            this.match = this.item.getMatch()
+            this.match = this.bufferItem.getMatch()
             this.selectColor[id] = "red"
         })
     }

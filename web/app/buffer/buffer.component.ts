@@ -6,8 +6,8 @@ import {
 import { Response } from '@angular/http';
 import { BufferService, BufferEvent } from './buffer.service'
 import { Event } from '../api.service'
-import { ItemComponent } from '../item/item.component'
-import { Item } from '../item/item'
+import { BufferItemComponent } from './item.component'
+import { BufferItem } from './item'
 
 declare var jQuery: any
 
@@ -19,14 +19,14 @@ declare var jQuery: any
 export class BufferComponent implements OnInit, OnDestroy {
 
     @Input() collection: string
-    @Output() onItemSelected = new EventEmitter();
+    @Output() onBufferItemSelected = new EventEmitter();
 
     private action: any
     private events: any
-    private buffers: Item[] = []
+    private buffers: BufferItem[] = []
 
     constructor(private zone: NgZone,
-        private bufferService: BufferService) {
+				private bufferService: BufferService) {
     }
 
     ngOnInit() {
@@ -44,8 +44,8 @@ export class BufferComponent implements OnInit, OnDestroy {
     start() {
 
         // Get actual buffer items
-        this.bufferService.getItems(this.collection)
-            .subscribe((buffers: Item[]) => {
+        this.bufferService.getBufferItems(this.collection)
+            .subscribe((buffers: BufferItem[]) => {
 
                 if (buffers.length <= 0)
                     return
@@ -98,7 +98,7 @@ export class BufferComponent implements OnInit, OnDestroy {
         return -1
     }
 
-    add(buffer: Item) {
+    add(buffer: BufferItem) {
 
         let id = buffer.id
 
@@ -114,7 +114,7 @@ export class BufferComponent implements OnInit, OnDestroy {
         })
     }
 
-    remove(buffer: Item) {
+    remove(buffer: BufferItem) {
 
         let id = buffer.id
 
@@ -131,7 +131,7 @@ export class BufferComponent implements OnInit, OnDestroy {
         })
     }
 
-    update(buffer: Item) {
+    update(buffer: BufferItem) {
         let id = buffer.id
 
         // Check if buffer does exist
@@ -146,14 +146,14 @@ export class BufferComponent implements OnInit, OnDestroy {
         })
     }
 
-    onItem(item: Item) {
-        this.onItemSelected.emit(item)
+    onBufferItem(item: BufferItem) {
+        this.onBufferItemSelected.emit(item)
         this.action.modal('close')
     }
 
-    validate(item: Item) {
+    validate(item: BufferItem) {
 
-        this.bufferService.validateItem(this.collection, item)
+        this.bufferService.validateBufferItem(this.collection, item)
             .subscribe((ok: boolean) => {
 
                 if (ok == false) {

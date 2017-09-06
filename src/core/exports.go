@@ -4,7 +4,9 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"github.com/ohohleo/classify/database"
 	"github.com/ohohleo/classify/exports"
+	"github.com/ohohleo/classify/exports/file"
 	"strconv"
 )
 
@@ -14,7 +16,9 @@ type BuildExport struct {
 }
 
 // Type of exports
-var newExports = map[string]BuildExport{}
+var newExports = map[string]exports.BuildExport{
+	"file": file.ToBuild(),
+}
 
 type Export struct {
 	Id          uint64 `json:"id"`
@@ -45,16 +49,84 @@ func (i *Export) HasCollections(collections map[string]*Collection) bool {
 	return true
 }
 
+func (e *Export) Store2DB(db *database.Database) error {
+
+	// Check if db is enabled
+	if db == nil {
+		return nil
+	}
+
+	// Convert export to JSON
+	paramsStr, err := json.Marshal(e.engine)
+	if err != nil {
+		return err
+	}
+
+	// Store the exports
+	lastId, err := db.Insert("exports", &database.GenStruct{
+		Ref:    uint64(e.engine.GetRef()),
+		Params: paramsStr,
+	})
+	if err != nil {
+		return err
+	}
+
+	// Store the exports
+	for _, collection := range e.collections {
+
+		_, err := db.Insert("exports_mappings",
+			map[string]interface{}{
+				"exports_id":     lastId,
+				"collections_id": collection.Id,
+			})
+		if err != nil {
+			return err
+		}
+	}
+
+	// Store current DB id
+	e.Id = lastId
+
+	return nil
+}
+
+func (e *Export) Unlink2DB(db *database.Database, collection *Collection) error {
+
+	// Check if db is enabled
+	if db == nil {
+		return nil
+	}
+
+	return db.Delete("exports_mappings",
+		map[string]interface{}{
+			"exports_id":     e.Id,
+			"collections_id": collection.Id},
+		"exports_id = :exports_id AND collections_id = :collections_id")
+}
+
+func (e *Export) Delete2DB(db *database.Database) error {
+
+	// Check if db is enabled
+	if db == nil {
+		return nil
+	}
+
+	return db.Delete("exports", &database.GenStruct{
+		Id:  e.Id,
+		Ref: uint64(e.engine.GetRef()),
+	}, "id = :id AND ref = :ref")
+}
+
 // Check exports configuration
 func (c *Classify) CheckExportsConfig(configuration map[string]map[string][]string) (err error) {
 
 	// For all export configuration
-	for exportType, config := range configuration {
+	for exportRef, config := range configuration {
 
-		// Check that the export type does exists
-		buildExport, ok := newExports[exportType]
+		// Check that the export ref does exists
+		buildExport, ok := newExports[exportRef]
 		if ok == false {
-			err = errors.New("export type '" + exportType + "' not handled")
+			err = errors.New("export ref '" + exportRef + "' not handled")
 			return
 		}
 
@@ -87,7 +159,7 @@ func (c *Classify) GetExportsByIds(ids []uint64) (exports map[uint64]*Export, er
 }
 
 // Add new export process
-func (c *Classify) AddExport(exportType string, params json.RawMessage, collections map[string]*Collection) (i *Export, err error) {
+func (c *Classify) AddExport(ref exports.Ref, params json.RawMessage, collections map[string]*Collection) (e *Export, err error) {
 
 	// Nécessite l'existence d'au moins une collection
 	if len(collections) < 1 {
@@ -95,21 +167,18 @@ func (c *Classify) AddExport(exportType string, params json.RawMessage, collecti
 		return
 	}
 
-	// Field required
-	if exportType == "" {
-		err = errors.New("type field is mandatory")
-		return
-	}
-
-	// Check that the type exists
-	buildExport, ok := newExports[exportType]
+	// Check that the ref exists
+	buildExport, ok := newExports[ref.String()]
 	if ok == false {
-		err = errors.New("export type '" + exportType + "' not handled")
+		err = errors.New("export ref '" + ref.String() + "' not handled")
 		return
 	}
 
 	// Get export configuration
-	config, _ := c.config.Exports[exportType]
+	var config map[string][]string
+	if c.config != nil {
+		config, _ = c.config.Exports[ref.String()]
+	}
 
 	// Get collections list
 	idx := 0
@@ -128,10 +197,10 @@ func (c *Classify) AddExport(exportType string, params json.RawMessage, collecti
 	alreadyExists := false
 
 	// Check if similar export already exists
-	for _, i = range c.exports {
+	for _, e = range c.exports {
 
 		// Returns similar export found
-		if i.engine.GetType() == exportType && i.engine.Eq(exportEngine) {
+		if e.engine.GetRef() == ref && e.engine.Eq(exportEngine) {
 			alreadyExists = true
 			break
 		}
@@ -142,7 +211,7 @@ func (c *Classify) AddExport(exportType string, params json.RawMessage, collecti
 
 		id := getRandomId()
 
-		i = &Export{
+		e = &Export{
 			Id:          id,
 			engine:      exportEngine,
 			collections: collections,
@@ -153,12 +222,12 @@ func (c *Classify) AddExport(exportType string, params json.RawMessage, collecti
 		}
 
 		// Store the new export
-		c.exports[id] = i
+		c.exports[id] = e
 
 		return
 	}
 
-	i.collections = collections
+	e.collections = collections
 	return
 }
 
@@ -180,15 +249,19 @@ func (c *Classify) DeleteExports(ids map[uint64]*Export, collections map[string]
 		ids = c.exports
 	}
 
-	for id, i := range ids {
+	for id, e := range ids {
 
 		// Unlink the collection with the specified export
 		for name, _ := range collections {
-			delete(i.collections, name)
+			delete(e.collections, name)
 		}
 
 		// If no collection are linked with specified export
-		if len(i.collections) < 1 {
+		if len(e.collections) < 1 {
+
+			if err = e.Delete2DB(c.database); err != nil {
+				return
+			}
 
 			// Remove the export
 			delete(c.exports, id)
@@ -197,7 +270,7 @@ func (c *Classify) DeleteExports(ids map[uint64]*Export, collections map[string]
 	return
 }
 
-// Get the whole list of exports by Type
+// Get the whole list of exports by Ref
 func (c *Classify) GetExports(ids map[uint64]*Export, collections map[string]*Collection) (res map[string]map[uint64]exports.Export, err error) {
 
 	res = make(map[string]map[uint64]exports.Export)
@@ -207,19 +280,19 @@ func (c *Classify) GetExports(ids map[uint64]*Export, collections map[string]*Co
 		ids = c.exports
 	}
 
-	for name, i := range ids {
+	for name, e := range ids {
 
-		if i.HasCollections(collections) == false {
+		if e.HasCollections(collections) == false {
 			continue
 		}
 
-		t := i.engine.GetType()
+		ref := e.engine.GetRef()
 
-		if res[t] == nil {
-			res[t] = make(map[uint64]exports.Export)
+		if res[ref.String()] == nil {
+			res[ref.String()] = make(map[uint64]exports.Export)
 		}
 
-		res[t][name] = i.engine
+		res[ref.String()][name] = e.engine
 	}
 
 	return
@@ -245,9 +318,9 @@ func (c *Classify) StopExports(ids map[uint64]*Export, collections map[string]*C
 		ids = c.exports
 	}
 
-	for id, i := range ids {
+	for id, e := range ids {
 
-		if i.HasCollections(collections) == false {
+		if e.HasCollections(collections) == false {
 			continue
 		}
 
@@ -258,4 +331,8 @@ func (c *Classify) StopExports(ids map[uint64]*Export, collections map[string]*C
 	}
 
 	return nil
+}
+
+func (c *Classify) GetExportRefs() []string {
+	return exports.REF_IDX2STR
 }

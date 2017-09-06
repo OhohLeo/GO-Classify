@@ -2,7 +2,9 @@ package core
 
 import (
 	"encoding/json"
+	"fmt"
 	"github.com/ant0ine/go-json-rest/rest"
+	"github.com/ohohleo/classify/exports"
 	"net/http"
 	"strconv"
 )
@@ -47,7 +49,7 @@ func (c *Classify) getExportIdsAndCollections(r *rest.Request) (exports map[uint
 }
 
 type ApiAddExportsBody struct {
-	Type        string          `json:"type"`
+	Ref         string          `json:"ref"`
 	Collections []string        `json:"collections"`
 	Params      json.RawMessage `json:"params"`
 }
@@ -71,13 +73,26 @@ func (c *Classify) ApiAddExport(w rest.ResponseWriter, r *rest.Request) {
 		return
 	}
 
-	i, err := c.AddExport(body.Type, body.Params, collections)
+	// Field required
+	ref, ok := exports.REF_STR2IDX[body.Ref]
+	if ok == false {
+		rest.Error(w, fmt.Sprintf("invalid ref '%s'", body.Ref), http.StatusBadRequest)
+		return
+	}
+
+	e, err := c.AddExport(ref, body.Params, collections)
 	if err != nil {
 		rest.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 
-	w.WriteJson(i)
+	// Handle DB storage
+	if err := e.Store2DB(c.database); err != nil {
+		rest.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	w.WriteJson(e)
 }
 
 // List all the exports selected by id or by collections

@@ -9,7 +9,6 @@ import { ConfigModule } from './config/config.module';
 import { ImportsModule } from './imports/imports.module';
 import { ExportsModule } from './exports/exports.module';
 import { BufferModule } from './buffer/buffer.module';
-import { ItemModule } from './item/item.module';
 import { ToolsModule } from './tools/tools.module';
 
 import { ApiService } from './api.service';
@@ -27,7 +26,6 @@ import { AppComponent } from './app.component';
         ExportsModule,
         BufferModule,
         ConfigModule,
-        ItemModule,
         ToolsModule
     ],
     providers: [ApiService],

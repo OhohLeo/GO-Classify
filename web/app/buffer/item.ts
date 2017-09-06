@@ -1,6 +1,6 @@
 import { CfgStringList } from '../tools/stringlist.component'
 
-export class Item {
+export class BufferItem {
 
     public id: string
     public name: string
@@ -14,7 +14,7 @@ export class Item {
 
     public probability: number
     public matchId: string
-    public match: Item
+    public match: BufferItem
 
     private imports: any[] = []
 
@@ -67,10 +67,6 @@ export class Item {
                 })
             }
         }
-    }
-
-    public isBuffer(): boolean {
-        return (this.cleanedName !== undefined)
     }
 
     public getName(): string {

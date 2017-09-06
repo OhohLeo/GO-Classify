@@ -33,12 +33,12 @@
         <div *ngSwitchCase="appStatus.CONFIG">
 	    <config [collection]="title"></config>
 	</div>
-	<div *ngSwitchCase="appStatus.ITEM">
-	    <item *ngIf="item"
+	<div *ngSwitchCase="appStatus.BUFFER_ITEM">
+	    <buffer-item *ngIf="bufferItem"
 		  [collection]="collection.name"
-		  [item]="item"
+		  [bufferItem]="bufferItem"
 		  (close)="onCollection()">
-	    </item>
+	    </buffer-item>
 	</div>
         <div *ngSwitchCase="appStatus.NONE"></div>
     </div>

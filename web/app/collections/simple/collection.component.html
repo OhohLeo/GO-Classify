@@ -1,1 +1,4 @@
-<p>SIMPLE COLLECTION</p>
+<div *ngFor="let ref of refs">
+  <p>{{ref}}</p>
+  <simple-items [items]="itemsByRef.get(ref)"></simple-items>
+</div>

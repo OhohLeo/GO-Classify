@@ -1,12 +1,10 @@
 package core
 
 import (
-	log "github.com/Sirupsen/logrus"
-	"github.com/ohohleo/classify/collections"
 	"github.com/ohohleo/classify/database"
-	"github.com/ohohleo/classify/imports"
 	"github.com/ohohleo/classify/requests"
 	"github.com/ohohleo/classify/websites"
+	"log"
 	"math/rand"
 )
 
@@ -42,7 +40,7 @@ func Start(config *Config) (c *Classify, err error) {
 
 	c = new(Classify)
 
-	log.Info("Reading configuration ...")
+	log.Println("Reading configuration ...")
 
 	// Check configurations
 	err = c.CheckImportsConfig(config.Imports)
@@ -50,14 +48,12 @@ func Start(config *Config) (c *Classify, err error) {
 		return
 	}
 
-	log.SetLevel(log.DebugLevel)
-
 	// Retreive classify stored data
 	if err = c.StartDB(config); err != nil {
 		return
 	}
 
-	log.Info("Starting Classify")
+	log.Println("Starting Classify")
 
 	// HTTP requests
 	c.requests = requests.New(2, true)
@@ -85,82 +81,6 @@ func Start(config *Config) (c *Classify, err error) {
 // Stop application
 func (c *Classify) Stop() {
 	c.Server.Stop()
-}
-
-// StartDB init db and retreive all stored data
-func (c *Classify) StartDB(config *Config) (err error) {
-
-	// Activate database if enabled
-	c.database, err = database.New(config.DataBase)
-	if c.database == nil {
-		log.Info("Database disable")
-		return
-	}
-
-	log.Info("Starting Database")
-
-	// Init database tables
-	if err = collections.INIT_DB(c.database); err != nil {
-		return
-	}
-
-	if err = imports.INIT_DB(c.database); err != nil {
-		return
-	}
-
-	// Create tables
-	if err = c.database.Create(); err != nil {
-		return
-	}
-
-	// Insert all references
-	if err = collections.INIT_REF_DB(c.database); err != nil {
-		return
-	}
-
-	if err = imports.INIT_REF_DB(c.database); err != nil {
-		return
-	}
-
-	// Retreive all stored collections
-	err = collections.RetreiveDBCollections(c.database,
-		func(id uint64, name string, ref collections.Ref, params collections.Params) (err error) {
-			collection, err := c.AddCollection(name, ref, params.Websites)
-			if err != nil {
-				return
-			}
-
-			// Store database id
-			collection.Id = id
-			return
-		})
-	if err != nil {
-		return
-	}
-
-	// Retreive all stored imports
-	err = imports.RetreiveDBImports(c.database,
-		func(id uint64, ref imports.Ref, params []byte, names []string) (err error) {
-
-			collections, err := c.GetCollectionsByNames(names)
-			if err != nil {
-				return
-			}
-
-			i, _, err := c.AddImport(ref, params, collections)
-			if err != nil {
-				return
-			}
-
-			// Store database id
-			i.Id = id
-			return
-		})
-	if err != nil {
-		return
-	}
-
-	return
 }
 
 func getRandomId() uint64 {

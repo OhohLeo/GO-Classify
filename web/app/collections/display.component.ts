@@ -1,7 +1,7 @@
 import { Component, NgZone, Input, OnInit, OnDestroy } from '@angular/core'
 import { CollectionService, ItemEvent } from './collection.service'
 import { Event } from '../api.service'
-import { Item } from '../item/item'
+import { Item } from './item'
 import { Collection } from './collection'
 
 @Component({

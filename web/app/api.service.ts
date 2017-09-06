@@ -17,23 +17,7 @@ export enum CollectionStatus {
     CREATED,
     SELECTED,
     MODIFIED,
-    DELETED
-}
-
-interface ImportsData {
-    [importRef: string]: any
-}
-
-interface WebsitesData {
-    [websiteName: string]: any[]
-}
-
-export interface ItemInterface {
-    id: string
-    createdAt: string
-    collections: string[]
-    imports: ImportsData
-    websites: WebsitesData
+    DELETED,
 }
 
 export interface Event {
@@ -61,8 +45,7 @@ export class ApiService {
 
     public collectionSelected: Collection
 
-    constructor(private http: Http) {
-    }
+    constructor(private http: Http) {}
 
     headers() {
         return new RequestOptions({

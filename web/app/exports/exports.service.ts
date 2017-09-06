@@ -44,36 +44,6 @@ export class ExportBase {
     }
 }
 
-export class Directory extends ExportBase {
-
-    constructor(public id: string,
-        public path: string,
-        public isRecursive: boolean) {
-
-        super("directory", id);
-
-        if (isRecursive === undefined) {
-            this.isRecursive = false
-        }
-    }
-
-    getParams(): any {
-        return {
-            "path": this.path,
-            "is_recursive": this.isRecursive ? true : false
-        }
-    }
-
-    display(): string {
-        return this.path.concat(this.isRecursive == true ? "/**" : "")
-    }
-
-    compare(i: Directory): boolean {
-        return super.compare(i)
-            && this.path === i.path
-            && this.isRecursive == i.isRecursive
-    }
-}
 @Injectable()
 export class ExportsService {
 

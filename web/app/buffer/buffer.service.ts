@@ -2,25 +2,25 @@ import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs/Rx';
 import { ApiService, Event } from './../api.service';
 import { Response } from '@angular/http';
-import { Item } from '../item/item'
+import { BufferItem } from './item'
 
 export class BufferEvent {
 
     constructor(public collection: string,
         public status: string,
-        public buffer: Item) { }
+        public buffer: BufferItem) { }
 }
 
 export class CollectionBuffer {
 
     public currentIndex: number = 0
-    public items: Item[] = []
+    public items: BufferItem[] = []
 
     isEmpty(): boolean {
         return (this.items.length === 0)
     }
 
-    hasItem(idx: number): boolean {
+    hasBufferItem(idx: number): boolean {
 
         if (idx >= 0 && idx < this.items.length)
             return true
@@ -28,13 +28,13 @@ export class CollectionBuffer {
         return false
     }
 
-    addItem(item: Item) {
+    addBufferItem(item: BufferItem) {
         this.items.push(item)
     }
 
-    removeItem(idx: number) {
+    removeBufferItem(idx: number) {
 
-        if (this.hasItem(idx)) {
+        if (this.hasBufferItem(idx)) {
             this.items.splice(idx, 1)
             return
         }
@@ -42,9 +42,9 @@ export class CollectionBuffer {
         console.error("Invalid item id", idx)
     }
 
-    getItem(idx: number): Item {
+    getBufferItem(idx: number): BufferItem {
 
-        if (this.hasItem(idx)) {
+        if (this.hasBufferItem(idx)) {
             return this.items[idx]
         }
 
@@ -76,16 +76,16 @@ export class BufferService {
     enableCache: boolean
 
     buffersByCollection: { [collectionName: string]: CollectionBuffer; } = {}
-    buffersById: { [key: string]: Item; } = {}
+    buffersById: { [key: string]: BufferItem; } = {}
 
     private eventObservers: { [key: string]: BufferObserver } = {}
 
     private onEvent = {
-        "create": (collection: string, item: Item) => {
-            this.addItem(collection, item)
+        "create": (collection: string, item: BufferItem) => {
+            this.addBufferItem(collection, item)
         },
-        "update": (collection: string, item: Item) => {
-            this.updateItem(collection, item)
+        "update": (collection: string, item: BufferItem) => {
+            this.updateBufferItem(collection, item)
         }
     }
 
@@ -103,12 +103,12 @@ export class BufferService {
     }
 
     // Check if item does exist
-    hasItem(search: Item): boolean {
+    hasBufferItem(search: BufferItem): boolean {
         return this.buffersById[search.id] != undefined
     }
 
     // Check if item does exist in specified collection
-    hasCollectionItem(collection: string, id: string): number {
+    hasCollectionBufferItem(collection: string, id: string): number {
 
         let collectionBuffer = this.getCollection(collection)
         if (collectionBuffer === undefined)
@@ -117,13 +117,13 @@ export class BufferService {
         return collectionBuffer.getIdx(id)
     }
 
-    getCollectionItem(collection: string, idx: number): Item {
+    getCollectionBufferItem(collection: string, idx: number): BufferItem {
 
         let collectionBuffer = this.getCollection(collection)
         if (collectionBuffer === undefined)
             return undefined
 
-        return collectionBuffer.getItem(idx)
+        return collectionBuffer.getBufferItem(idx)
     }
 
     disableCache() {
@@ -131,7 +131,7 @@ export class BufferService {
     }
 
     // Add buffer item in specified collection
-    addItem(collection: string, item: Item) {
+    addBufferItem(collection: string, item: BufferItem) {
 
         // Do not store already existing item
         if (this.buffersById[item.id] !== undefined)
@@ -145,11 +145,11 @@ export class BufferService {
             this.buffersByCollection[collection] = new CollectionBuffer()
         }
 
-        this.buffersByCollection[collection].addItem(item)
+        this.buffersByCollection[collection].addBufferItem(item)
     }
 
     // Remove buffer item from specified collection
-    removeItem(collection: string, item: Item) {
+    removeBufferItem(collection: string, item: BufferItem) {
 
         let collectionBuffer = this.getCollection(collection)
         if (collectionBuffer === undefined)
@@ -159,13 +159,13 @@ export class BufferService {
         if (itemIdx < 0)
             return
 
-        collectionBuffer.removeItem(itemIdx)
+        collectionBuffer.removeBufferItem(itemIdx)
         delete this.buffersById[item.id]
 
         this.enableCache = false
     }
 
-    getItems(collection: string) {
+    getBufferItems(collection: string) {
 
         if (this.buffersByCollection[collection] === undefined) {
             this.buffersByCollection[collection] = new CollectionBuffer()
@@ -184,10 +184,10 @@ export class BufferService {
 
             // Ask for the current list
             this.apiService.get("collections/" + collection + "/buffers")
-                .subscribe((rsp: Item[]) => {
+                .subscribe((rsp: BufferItem[]) => {
 
                     for (let buffer of rsp) {
-                        this.addItem(collection, new Item(buffer))
+                        this.addBufferItem(collection, new BufferItem(buffer))
                     }
 
                     this.enableCache = true
@@ -197,16 +197,16 @@ export class BufferService {
         })
     }
 
-    updateItem(collection: string, item: Item) {
+    updateBufferItem(collection: string, item: BufferItem) {
 
-        if (this.hasItem(item) == false) {
-            this.addItem(collection, item)
+        if (this.hasBufferItem(item) == false) {
+            this.addBufferItem(collection, item)
             return
         }
 
-        let itemIdx = this.hasCollectionItem(collection, item.id)
+        let itemIdx = this.hasCollectionBufferItem(collection, item.id)
         if (itemIdx < 0) {
-            console.error("Item '" + item.id
+            console.error("BufferItem '" + item.id
                 + "' not found in specified collection '"
                 + collection + '"', item)
             return
@@ -218,7 +218,7 @@ export class BufferService {
     }
 
     // Validate item from specified collection
-    validateItem(collection: string, item: Item) {
+    validateBufferItem(collection: string, item: BufferItem) {
 
         return new Observable<boolean>(observer => {
 
@@ -233,7 +233,7 @@ export class BufferService {
                     let ok = (rsp.status == 204)
                     if (ok) {
                         // Remove item from buffer
-                        this.removeItem(collection, item)
+                        this.removeBufferItem(collection, item)
                     }
 
                     observer.next(ok)
@@ -243,7 +243,7 @@ export class BufferService {
     }
 
     // Cancel item from specified collection
-    cancelItem(collection: string, item: Item) {
+    cancelBufferItem(collection: string, item: BufferItem) {
 
         return new Observable<boolean>(observer => {
 
@@ -254,7 +254,7 @@ export class BufferService {
 
                     let ok = (rsp.status == 204)
                     if (ok)
-                        this.removeItem(collection, item)
+                        this.removeBufferItem(collection, item)
 
                     observer.next(ok)
                 })
@@ -280,7 +280,7 @@ export class BufferService {
         return observable
     }
 
-    addEvent(collection: string, event: Event, item: Item) {
+    addEvent(collection: string, event: Event, item: BufferItem) {
 
         let onEventCb = this.onEvent[event.status]
         if (onEventCb == undefined) {

@@ -1,0 +1,72 @@
+<div class="row">
+  <div class="col s4 offset-s1">
+	<div (click)="getNameDetails()">
+	  <div class="input-field">
+		<i class="material-icons prefix">accessibility</i>
+		<input value="{{bufferItem.getName()}}"
+			   id="filename"
+			   type="text"
+			   class="validate">
+		<label class="active" for="webQuery">Name</label>
+	  </div>
+	</div>
+	<div *ngIf="needNameDetails">
+	  <label>banned:</label>
+	  <stringlist [name]="'banned'"
+			      [value]="bufferItem.banned"
+			      (change)="onChange($event)"></stringlist>
+	  <label>separators:</label>
+	  <stringlist [name]="'separators'"
+			      [value]="bufferItem.separators"
+			      (change)="onChange($event)"></stringlist>
+	</div>
+	<div *ngFor="let import of bufferItem.getImports()">
+	  <detail-file *ngIf="import.type === 'file'"
+			       [file]="import">
+	  </detail-file>
+	</div>
+  </div>
+  <div *ngIf="match" class="col s6">
+	<simple-movie *ngIf="match.type === 'movie'"
+				  [movie]="match">
+	</simple-movie>
+  </div>
+</div>
+<div class="row">
+  <div class="col s1">
+	<button (click)="onPrevious()">Previous</button>
+  </div>
+  <div class="col s10 center">
+	<button (click)="onValidate()">Validate</button>
+  </div>
+  <div class="col s1">
+	<button (click)="onNext()">Next</button>
+  </div>
+</div>
+
+<div class="row">
+  <div class="col s10 offset-s1">
+	<div *ngIf="bufferItem.webQuery" class="row">
+	  <div class="input-field">
+		<i class="material-icons prefix"
+		   (click)="onSearch(search.value)">search</i>
+		<input value="{{bufferItem.webQuery}}"
+			   id="webQuery"
+			   type="text"
+			   class="validate" #search>
+		<label class="active" for="webQuery">Web Query</label>
+	  </div>
+	  <div *ngFor="let website of bufferItem.getWebsites()">
+		<div class="row"
+			 [style.background-color]="selectColor[website.id]"
+			 (mouseover)="onOver(website.id)"
+			 (mouseleave)="onLeave(website.id)"
+			 (click)="onSelect(website.id)">
+		  <simple-movie *ngIf="website.type === 'movie'"
+						[movie]="website">
+		  </simple-movie>
+		</div>
+	  </div>
+	</div>
+  </div>
+</div>

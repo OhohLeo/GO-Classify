@@ -1,8 +1,7 @@
 import { Component, NgZone, OnInit, OnDestroy, Renderer } from '@angular/core'
 import { NgSwitch } from '@angular/common'
-import { ApiService } from './../api.service'
+import { ApiService, Event } from './../api.service'
 import { ImportsService, ImportBase } from './imports.service'
-import { Event } from '../api.service'
 import { Convert2Email } from './email/email';
 import { Convert2Directory } from './directory/directory';
 

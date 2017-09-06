@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs/Rx';
 import { ApiService } from './../api.service';
-import { Item } from '../item/item'
+import { Item } from './item'
 import { Event } from '../api.service'
 
 export class ItemEvent {

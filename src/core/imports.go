@@ -175,7 +175,7 @@ func (c *Classify) AddImport(ref imports.Ref, inParams json.RawMessage, collecti
 	// Get import configuration
 	var config map[string][]string
 	if c.config != nil {
-		config, ok = c.config.Imports[ref.String()]
+		config, _ = c.config.Imports[ref.String()]
 	}
 
 	// Get collections list
@@ -291,13 +291,13 @@ func (c *Classify) GetImports(ids map[uint64]*Import, collections map[string]*Co
 			continue
 		}
 
-		t := i.engine.GetRef()
+		ref := i.engine.GetRef()
 
-		if res[t.String()] == nil {
-			res[t.String()] = make(map[uint64]imports.Import)
+		if res[ref.String()] == nil {
+			res[ref.String()] = make(map[uint64]imports.Import)
 		}
 
-		res[t.String()][name] = i.engine
+		res[ref.String()][name] = i.engine
 	}
 
 	return

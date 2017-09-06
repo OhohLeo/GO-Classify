@@ -6,6 +6,8 @@ import { FormsModule } from '@angular/forms'
 import { ExportsService } from './exports.service'
 
 import { ExportsComponent } from './exports.component'
+import { FileCreateComponent } from './file/create.component'
+import { FileDisplayComponent } from './file/display.component'
 
 @NgModule({
     imports: [
@@ -14,7 +16,9 @@ import { ExportsComponent } from './exports.component'
         FormsModule
     ],
     providers: [ExportsService],
-    declarations: [ExportsComponent],
+    declarations: [ExportsComponent,
+				   FileCreateComponent,
+				   FileDisplayComponent],
     exports: [ExportsComponent]
 })
 

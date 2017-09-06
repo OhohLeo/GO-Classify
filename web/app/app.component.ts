@@ -10,8 +10,9 @@ import { Collection } from './collections/collection';
 
 import { CollectionsComponent } from './collections/collections.component'
 import { BufferComponent } from './buffer/buffer.component'
-import { ItemComponent } from './item/item.component'
-import { Item } from './item/item'
+import { BufferItemComponent } from './buffer/item.component'
+import { BufferItem } from './buffer/item'
+import { Item } from './collections/item'
 
 declare var jQuery: any;
 
@@ -21,7 +22,7 @@ enum AppStatus {
     IMPORT,
     EXPORT,
     CONFIG,
-    ITEM,
+    BUFFER_ITEM,
 }
 
 @Component({
@@ -46,8 +47,8 @@ export class AppComponent implements OnInit {
     private importsLoop: any
     private importsRunningNb: number
 
-    @ViewChild(ItemComponent) itemComponent: ItemComponent
-    public item: Item
+    @ViewChild(BufferItemComponent) bufferItemComponent: BufferItemComponent
+    public bufferItem: BufferItem
 
     constructor(private zone: NgZone,
         private apiService: ApiService,
@@ -134,10 +135,10 @@ export class AppComponent implements OnInit {
         this.onNewState(AppStatus.CONFIG)
     }
 
-    onItem(item: Item) {
+    onBufferItem(bufferItem: BufferItem) {
         this.zone.run(() => {
-            this.item = item
-            this.onNewState(AppStatus.ITEM)
+            this.bufferItem = bufferItem
+            this.onNewState(AppStatus.BUFFER_ITEM)
         })
     }
 
@@ -191,21 +192,24 @@ export class AppComponent implements OnInit {
             destination = names[2];
         }
 
-        let item = new Item(e.data)
-
-        if (this.item != undefined && this.item.id == item.id) {
-            this.itemComponent.onUpdate(item)
-            this.item = item
-        }
-
         // Send notifications to the imports list
-        if (destination === "buffer") {
-            this.bufferService.addEvent(collection, e, item)
-        }
-        else if (destination === "items") {
-            this.collectionService.addEvent(collection, e, item)
-        }
+        switch (destination)
+		{
+		case "buffer":
 
+			let bufferItem = new BufferItem(e.data)
+
+			if (this.bufferItem != undefined && this.bufferItem.id == bufferItem.id) {
+				this.bufferItemComponent.onUpdate(bufferItem)
+				this.bufferItem = bufferItem
+			}
+
+            this.bufferService.addEvent(collection, e, bufferItem)
+			break;
+        case "items":
+			this.collectionService.addEvent(collection, e, new Item(e))
+			break;
+        }
     }
 
     onError(title: string, msg: string) {

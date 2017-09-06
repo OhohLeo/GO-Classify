@@ -382,8 +382,9 @@ type GetReferences struct {
 func (c *Classify) ApiGetReferences(w rest.ResponseWriter, r *rest.Request) {
 
 	w.WriteJson(GetReferences{
-		Websites:    c.GetWebsites(),
 		Collections: c.GetCollectionRefs(),
 		Imports:     c.GetImportRefs(),
+		Exports:     c.GetExportRefs(),
+		Websites:    c.GetWebsites(),
 	})
 }

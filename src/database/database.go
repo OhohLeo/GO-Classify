@@ -3,9 +3,9 @@ package database
 import (
 	"encoding/json"
 	"fmt"
-	log "github.com/Sirupsen/logrus"
 	"github.com/jmoiron/sqlx"
 	_ "github.com/mattn/go-sqlite3"
+	"log"
 	"regexp"
 )
 
@@ -159,7 +159,7 @@ func (d *Database) Create() error {
 			return err
 		}
 
-		log.Info("DB [" + name + "] " + query)
+		log.Println("DB [" + name + "] " + query)
 
 		_, err = tx.Exec(query)
 		if err != nil {
@@ -185,7 +185,7 @@ func (d *Database) Delete(name string, toStore interface{}, condition string) er
 
 	query := table.Delete(condition)
 
-	log.Info("DB [" + name + "] " + query + fmt.Sprintf(" [%+v]", toStore))
+	log.Println("DB [" + name + "] " + query + fmt.Sprintf(" [%+v]", toStore))
 
 	_, err = tx.NamedExec(query, toStore)
 	if err != nil {
@@ -210,7 +210,7 @@ func (d *Database) Insert(name string, toStore interface{}) (uint64, error) {
 
 	query := table.Insert(false)
 
-	log.Info("DB [" + name + "] " + query)
+	log.Println("DB [" + name + "] " + query)
 
 	row, err := tx.NamedExec(query, toStore)
 	if err != nil {
@@ -240,7 +240,7 @@ func (d *Database) InsertRef(name string, refs []string) error {
 
 	query := table.Insert(true)
 
-	log.Info("DB [" + name + "] " + query)
+	log.Println("DB [" + name + "] " + query)
 
 	for _, ref := range refs {
 
@@ -257,7 +257,7 @@ func (d *Database) InsertRef(name string, refs []string) error {
 
 func (d *Database) Select(result interface{}, query string, params ...interface{}) (err error) {
 
-	log.Info("DB " + query)
+	log.Println("DB " + query)
 
 	err = d.db.Select(result, query, params...)
 	return
@@ -272,7 +272,7 @@ func (d *Database) SelectAll(name string) (result []GenStruct, err error) {
 
 	query := table.SelectAll()
 
-	log.Info("DB [" + name + "] " + query)
+	log.Println("DB [" + name + "] " + query)
 
 	err = d.db.Select(&result, query)
 	return

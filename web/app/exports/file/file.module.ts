@@ -3,8 +3,8 @@ import { CommonModule } from '@angular/common'
 import { BrowserModule } from '@angular/platform-browser'
 import { FormsModule } from '@angular/forms'
 
-import { SimpleCollectionComponent } from './collection.component'
-import { SimpleItemsComponent } from './items.component'
+import { FileCreateComponent } from './create.component'
+import { FileDisplayComponent } from './display.component'
 
 @NgModule({
     imports: [
@@ -12,13 +12,9 @@ import { SimpleItemsComponent } from './items.component'
         BrowserModule,
         FormsModule
     ],
-    declarations: [
-        SimpleCollectionComponent,
-		SimpleItemsComponent
-    ],
-    exports: [
-        SimpleCollectionComponent
-    ]
+    declarations: [FileCreateComponent,
+				   FileDisplayComponent],
+    exports: [FileCreateComponent]
 })
 
-export class SimpleModule {}
+export class FileModule { }
