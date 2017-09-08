@@ -100,6 +100,7 @@ func (c *Classify) CreateServer(config ServerConfig) (server *Server, err error)
 		rest.Post("/exports", c.ApiAddExport),
 		rest.Get("/exports", c.ApiGetExports),
 		rest.Delete("/exports", c.ApiDeleteExport),
+		rest.Put("/exports/force", c.ApiForceExport),
 		rest.Put("/exports/stop", c.ApiStopExport),
 		rest.Get("/exports/config", c.ApiGetExportsConfig),
 

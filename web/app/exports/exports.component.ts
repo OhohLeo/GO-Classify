@@ -2,6 +2,7 @@ import { Component, NgZone, OnInit, OnDestroy, Renderer } from '@angular/core'
 import { NgSwitch } from '@angular/common'
 import { ExportsService, ExportBase } from './exports.service'
 import { ApiService, Event } from '../api.service'
+import { Convert2File } from './file/file';
 
 declare var jQuery: any;
 
@@ -34,6 +35,10 @@ export class ExportsComponent implements OnInit, OnDestroy {
         exportsService.setUpdateList(() => {
             this.update()
         })
+
+		// Subscribe to convert received data
+		exportsService.addConvertToExport("file", Convert2File)
+
 
         this.events = exportsService.subscribeEvents("status")
             .subscribe((e: Event) => {
@@ -107,7 +112,7 @@ export class ExportsComponent implements OnInit, OnDestroy {
         if (item.isRunning) {
             this.exportsService.stopExport(item)
         } else {
-            this.exportsService.startExport(item)
+            this.exportsService.forceExport(item)
         }
     }
 

@@ -217,6 +217,8 @@ func (c *Classify) AddExport(ref exports.Ref, params json.RawMessage, collection
 			collections: collections,
 		}
 
+		fmt.Printf("NEW EXPORT %+v\n", e)
+
 		if c.exports == nil {
 			c.exports = make(map[uint64]*Export)
 		}
@@ -308,6 +310,38 @@ func (c *Classify) SendExportEvent(id uint64, status bool) {
 	}
 
 	c.SendEvent("export/status", statusStr, strconv.Itoa(int(id)), status)
+}
+
+// Force the exportation process on the collections specified
+func (c *Classify) ForceExports(ids map[uint64]*Export, collections map[string]*Collection) error {
+
+	// If no ids are specified : get all
+	if len(ids) == 0 {
+		ids = c.exports
+	}
+
+	for id, e := range ids {
+
+		if e.HasCollections(collections) == false {
+			continue
+		}
+
+		// For all collections
+		for _, collection := range collections {
+
+			// For all items
+			for _, item := range collection.GetItems() {
+
+				// Try to export them
+				c.exports[id].engine.OnInput(item.Engine)
+			}
+		}
+
+		// Send notification
+		go c.SendExportEvent(id, false)
+	}
+
+	return nil
 }
 
 // Stop the exporting process

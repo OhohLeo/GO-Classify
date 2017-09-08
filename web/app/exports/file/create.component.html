@@ -1,1 +1,26 @@
-<p>FILE CREATE</p>
+<form (ngSubmit)="onSubmit()" #createForm="ngForm">
+   <div class="row">
+	<div class="input-field col s6">
+	  <input name="path"
+			 type="string"
+			 id="path"
+			 [(ngModel)]="file.path" />
+	  <label for="path">Path</label>
+	</div>
+	<div class="input-field col s6">
+	  <input name="permissions"
+			 type="string"
+			 id="permissions"
+			 [(ngModel)]="file.permissions" />
+	  <label for="permissions">Permissions</label>
+	</div>
+  </div>
+  <div class="row">
+  	<button type="submit"
+  			[disabled]="!createForm.form.valid"
+  			class="btn waves-effect waves-light">
+  	  New file
+  	  <i class="material-icons right">send</i>
+  	</button>
+  </div>
+</form>

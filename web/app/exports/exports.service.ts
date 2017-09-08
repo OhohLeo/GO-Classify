@@ -66,6 +66,10 @@ export class ExportsService {
         this.updateList = updateList;
     }
 
+	addConvertToExport(name: string, callback) {
+		this.convertToExport[name] = callback
+	}
+
     // Refresh the export list
     private update() {
         if (this.updateList != undefined)
@@ -106,7 +110,7 @@ export class ExportsService {
         this.exports.get(i.getRef()).push(i)
     }
 
-    addExport(i: ExportBase) {
+    addExport(i: ExportBase, onParams: any, onSuccess: any) {
 
         // Disable cache
         this.enableCache = false
@@ -131,6 +135,10 @@ export class ExportsService {
                 let body = rsp.json()
 
                 if (body === undefined && body.id === undefined) {
+
+					if (onParams !== undefined && onParams(body))
+						return
+
                     throw new Error('Id not found when adding new export!');
                 }
 
@@ -139,6 +147,10 @@ export class ExportsService {
                 this.add(i)
 
                 this.update()
+
+				if (onSuccess !== undefined) {
+					onSuccess(i)
+				}
             })
     }
 
@@ -190,7 +202,7 @@ export class ExportsService {
             })
     }
 
-    startExport(i: ExportBase) {
+    forceExport(i: ExportBase) {
         return this.actionExport(true, i)
     }
 
@@ -198,25 +210,25 @@ export class ExportsService {
         return this.actionExport(false, i)
     }
 
-    actionExport(isStart: boolean, i: ExportBase) {
+    actionExport(isForce: boolean, i: ExportBase) {
 
         if (this.hasExport(i) === false) {
             console.error("No existing " + i.getRef())
             return
         }
 
-        let action = isStart ? "start" : "stop"
+        let action = isForce ? "force" : "stop"
         let urlParams = "?id=" + i.getId()
             + "&collection=" + this.apiService.getCollectionName();
 
         return this.apiService.put("exports/" + action + urlParams)
             .subscribe(rsp => {
                 if (rsp.status != 204) {
-                    throw new Error('Error when '
+                    throw new Error(' Error when '
                         + action + ' export: ' + rsp.status)
                 }
 
-                if (isStart)
+                if (isForce)
                     this.bufferService.disableCache();
             })
     }

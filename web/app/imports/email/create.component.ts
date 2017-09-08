@@ -1,6 +1,5 @@
 import { Component, NgZone } from '@angular/core'
-import { ImportsService, ImportBase } from './../imports.service'
-import { ApiService } from '../../api.service'
+import { ImportsService } from './../imports.service'
 import { Email } from './email'
 
 @Component({
@@ -14,8 +13,7 @@ export class EmailCreateComponent {
 	public mailboxes : string[] = []
 
     constructor(private zone: NgZone,
-				private importsService: ImportsService,
-				private apiService: ApiService) {
+				private importsService: ImportsService) {
 
 		this.email = new Email("")
 	}

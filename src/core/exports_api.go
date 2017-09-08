@@ -133,6 +133,24 @@ func (c *Classify) ApiDeleteExport(w rest.ResponseWriter, r *rest.Request) {
 	w.WriteHeader(http.StatusNoContent)
 }
 
+// Force exportation
+// PUT /exports/force?id=EXPORT_ID&collection=COLLECTION_NAME
+func (c *Classify) ApiForceExport(w rest.ResponseWriter, r *rest.Request) {
+
+	ids, collections, err := c.getExportIdsAndCollections(r)
+	if err != nil {
+		rest.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	if err := c.ForceExports(ids, collections); err != nil {
+		rest.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	w.WriteHeader(http.StatusNoContent)
+}
+
 // Stop the analysis of the collection export
 // PUT /exports/stop?id=EXPORT_ID&collection=COLLECTION_NAME
 func (c *Classify) ApiStopExport(w rest.ResponseWriter, r *rest.Request) {

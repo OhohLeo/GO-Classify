@@ -49,7 +49,7 @@ export function Convert2Directory(id: string, params): ImportBase {
 	let directory = new Directory(id)
 
 	directory.path = path
-	directory.isRecursive = isRecursive ? true : false;
+	directory.isRecursive = isRecursive ? true : false
 
 	return directory
 }

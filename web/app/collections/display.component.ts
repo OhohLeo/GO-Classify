@@ -5,7 +5,7 @@ import { Item } from './item'
 import { Collection } from './collection'
 
 @Component({
-    selector: 'collection-display',
+    selector: 'collection',
     templateUrl: './display.component.html'
 })
 

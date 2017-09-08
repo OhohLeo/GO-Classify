@@ -20,10 +20,10 @@ import { DeleteCollectionComponent } from './delete.component'
 			  SimpleModule],
     providers: [ApiService, CollectionService],
     declarations: [CollectionsComponent,
-        CreateCollectionComponent,
-        ModifyCollectionComponent,
-        DisplayCollectionComponent,
-        DeleteCollectionComponent],
+				   CreateCollectionComponent,
+				   ModifyCollectionComponent,
+				   DisplayCollectionComponent,
+				   DeleteCollectionComponent],
     exports: [CollectionsComponent, DisplayCollectionComponent],
 })
 
