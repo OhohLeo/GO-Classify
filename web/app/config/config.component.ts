@@ -1,4 +1,4 @@
-import { Component, NgZone, Input, OnInit, OnDestroy } from '@angular/core';
+import { Component, NgZone, Input, OnInit, OnDestroy, Renderer } from '@angular/core';
 import { ConfigService, ConfigBase } from './config.service';
 import { StringListEvent } from '../tools/stringlist.component';
 
@@ -10,8 +10,13 @@ import { StringListEvent } from '../tools/stringlist.component';
 export class ConfigComponent {
     @Input() collection: string
     public config: ConfigBase
+    public currentRef: string
+    public collectionConfig: any
+    public importsConfig: any
+    public exportsConfig: any
 
     constructor(private zone: NgZone,
+        private render: Renderer,
         private configService: ConfigService) {
     }
 
@@ -28,13 +33,31 @@ export class ConfigComponent {
             })
     }
 
+    onRef(event: any, ref: string) {
+
+        // Set collection-items as active
+        event.preventDefault()
+
+        for (let item of event.target.parentElement.children) {
+            this.render.setElementClass(item, "active", false)
+        }
+
+        this.render.setElementClass(event.target, "active", true)
+
+        this.zone.run(() => {
+            this.currentRef = ref
+        })
+    }
+
     onChange(event) {
 
-        if (event.target.name === "enableStore") {
-            event.target.value = this.config.enableStore
-        }
-        else if (event.target.name === "enableBuffer") {
-            event.target.value = this.config.enableBuffer
+        switch (event.target.name) {
+            case "'enableStore'":
+                event.target.value = this.config.enableStore
+                break;
+            case "'enableBuffer'":
+                event.target.value = this.config.enableBuffer
+                break;
         }
 
         this.configService.onChange(this.collection, event)

@@ -6,7 +6,7 @@ import (
 )
 
 const (
-	EMAIL Ref = iota
+	IMAP Ref = iota
 	DIRECTORY
 )
 
@@ -17,12 +17,12 @@ func (t Ref) String() string {
 }
 
 var REF_IDX2STR = []string{
-	"email",
+	"imap",
 	"directory",
 }
 
 var REF_STR2IDX = map[string]Ref{
-	REF_IDX2STR[EMAIL]:     EMAIL,
+	REF_IDX2STR[IMAP]:      IMAP,
 	REF_IDX2STR[DIRECTORY]: DIRECTORY,
 }
 

@@ -13,31 +13,31 @@ declare var jQuery: any;
 
 export class ExportsComponent implements OnInit, OnDestroy {
 
-	public refs: Array<string> = []
-	public refs2Display: Array<string> = []
+    public refs: Array<string> = []
+    public refs2Display: Array<string> = []
     public exports: Map<string, ExportBase[]>
-	public currentRef: string
+    public currentRef: string
 
     private events
 
     constructor(private zone: NgZone,
-				private render: Renderer,
-				private apiService: ApiService,
-				private exportsService: ExportsService) {
+        private render: Renderer,
+        private apiService: ApiService,
+        private exportsService: ExportsService) {
 
-		// Refresh the import ref list
-		apiService.getReferences()
-			.subscribe((references) => {
-				this.refs = references["exports"]
-			})
+        // Refresh the import ref list
+        apiService.getReferences()
+            .subscribe((references) => {
+                this.refs = references["exports"]
+            })
 
         // Method called to refresh the export list
         exportsService.setUpdateList(() => {
             this.update()
         })
 
-		// Subscribe to convert received data
-		exportsService.addConvertToExport("file", Convert2File)
+        // Subscribe to convert received data
+        exportsService.addConvertToExport("file", Convert2File)
 
 
         this.events = exportsService.subscribeEvents("status")
@@ -91,22 +91,22 @@ export class ExportsComponent implements OnInit, OnDestroy {
             })
     }
 
-	onRef(event: any, ref: string) {
+    onRef(event: any, ref: string) {
 
-		// Set collection-items as active
-		event.preventDefault()
+        // Set collection-items as active
+        event.preventDefault()
 
-		for (let item of event.target.parentElement.children) {
-			this.render.setElementClass(item, "active", false)
-		}
+        for (let item of event.target.parentElement.children) {
+            this.render.setElementClass(item, "active", false)
+        }
 
-		this.render.setElementClass(event.target, "active", true)
+        this.render.setElementClass(event.target, "active", true)
 
-		this.zone.run(() => {
-			this.refs2Display = (ref === "all") ? this.refs : [ ref ]
-			this.currentRef = ref
-		})
-	}
+        this.zone.run(() => {
+            this.refs2Display = (ref === "all") ? this.refs : [ref]
+            this.currentRef = ref
+        })
+    }
 
     onRefresh(item: ExportBase) {
         if (item.isRunning) {

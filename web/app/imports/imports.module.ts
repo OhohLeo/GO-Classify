@@ -9,24 +9,24 @@ import { ImportsService } from './imports.service'
 import { ImportsComponent } from './imports.component'
 import { DirectoryCreateComponent } from './directory/create.component'
 import { DirectoryDisplayComponent } from './directory/display.component'
-import { EmailCreateComponent } from './email/create.component'
-import { EmailSearchComponent } from './email/search.component'
-import { EmailDisplayComponent } from './email/display.component'
+import { ImapCreateComponent } from './imap/create.component'
+import { ImapSearchComponent } from './imap/search.component'
+import { ImapDisplayComponent } from './imap/display.component'
 
 @NgModule({
     imports: [
         CommonModule,
         BrowserModule,
         FormsModule,
-		ToolsModule
+        ToolsModule
     ],
     providers: [ImportsService],
     declarations: [ImportsComponent,
-				   DirectoryCreateComponent,
-				   DirectoryDisplayComponent,
-				   EmailCreateComponent,
-				   EmailSearchComponent,
-				   EmailDisplayComponent],
+        DirectoryCreateComponent,
+        DirectoryDisplayComponent,
+        ImapCreateComponent,
+        ImapSearchComponent,
+        ImapDisplayComponent],
     exports: [ImportsComponent]
 })
 

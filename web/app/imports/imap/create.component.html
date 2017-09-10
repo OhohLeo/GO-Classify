@@ -4,14 +4,14 @@
 	  <input name="host"
 			 type="string"
 			 id="host"
-			 [(ngModel)]="email.host" />
+			 [(ngModel)]="imap.host" />
 	  <label for="host">Host</label>
 	</div>
 	<div class="input-field col s6">
 	  <input name="port"
 			 type="number"
 			 id="port"
-			 [(ngModel)]="email.port" />
+			 [(ngModel)]="imap.port" />
 	  <label for="port">Port</label>
 	</div>
   </div>
@@ -20,33 +20,33 @@
 	  <input name="login"
 			 type="string"
 			 id="login"
-			 [(ngModel)]="email.login" />
+			 [(ngModel)]="imap.login" />
 	  <label for="login">Login</label>
 	</div>
 	<div class="input-field col s6">
 	  <input name="password"
 			 type="password"
 			 id="password"
-			 [(ngModel)]="email.password" />
+			 [(ngModel)]="imap.password" />
 	  <label for="password">Password</label>
 	</div>
   </div>
   <div class="row" *ngIf="mailboxes.length > 0">
 	<label for="mailbox">Mailbox</label>
 	<select name="mailbox"
-            [(ngModel)]="email.mailbox"
+            [(ngModel)]="imap.mailbox"
             class="browser-default">
-      <option *ngFor="let mailbox of mailboxes" [value]="mailbox">
+	    <option *ngFor="let mailbox of mailboxes" [value]="mailbox">
 		{{mailbox}}
-	  </option>
-    </select>
+	    </option>
+	</select>
+	<imap-search [search]="imap.search"></imap-search>
   </div>
-  <email-search [search]="email.search"></email-search>
   <div class="row">
   	<button type="submit"
   			[disabled]="!createForm.form.valid"
   			class="btn waves-effect waves-light">
-  	  New email
+  	  New imap
   	  <i class="material-icons right">send</i>
   	</button>
   </div>

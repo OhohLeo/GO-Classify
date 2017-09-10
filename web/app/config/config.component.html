@@ -1,55 +1,19 @@
-<div *ngIf="config">
-    <div class="row">
-	<label>Enable store:</label>
-	<div class="switch">
-	    <label>
-		Off
-		<input type="checkbox"
-		       name="enableStore"
-		       [(ngModel)]="config.enableStore"
-		       (change)="onChange($event)"/>
-		<span class="lever"></span>
-		On
-	    </label>
-	</div>
-    </div>
-    <div class="row">
-	<label>Enable buffer:</label>
-	<div class="switch">
-	    <label>
-		Off
-		<input type="checkbox"
-		       name="enableBuffer"
-		       [(ngModel)]="config.enableBuffer"
-		       (change)="onChange($event)"/>
-		<span class="lever"></span>
-		On
-	    </label>
-	</div>
-    </div>
-    <div *ngIf="config.enableBuffer" class="row">
-	<label>buffer size:</label>
-	<input type="number" name="bufferSize"
-	       value="{{config.bufferSize}}"
-	       (change)="onChange($event)"
-	       min="1" step="1">
-    </div>
-    <div class="row">
-	<label>filters:</label>
-	<stringlist [name]="'filters'"
-		    [value]="config.filters"
-		    (change)="onChange($event)"></stringlist>
-    </div>
-    <div class="row">
-	<label>separators:</label>
-	<stringlist [name]="'separators'"
-		    [value]="config.separators"
-		    (change)="onChange($event)"></stringlist>
-    </div>
-    <div class="row">
-	<label>banned:</label>
-	<stringlist [name]="'banned'"
-		    [value]="config.banned"
-		    (change)="onChange($event)"></stringlist>
+<div class="col s3">
+    <div class="collection">
+	<a class="collection-item"
+	   (click)="onRef($event, 'collection')">collection</a>
+	<a *ngFor="let collection of collectionsConfig"
+	   class="collection-item"
+	   (click)="onRef($event, collection)">{{collection}}</a>
+	<a class="collection-item"
+	   (click)="onRef($event, 'imports')">imports</a>
+	<a *ngFor="let import of importsConfig"
+	   class="collection-item"
+	   (click)="onRef($event, import)">{{import}}</a>
+	<a class="collection-item"
+	   (click)="onRef($event, 'exports')">exports</a>
+	<a *ngFor="let export of exportsConfig"
+	   class="collection-item"
+	   (click)="onRef($event, export)">{{export}}</a>
     </div>
 </div>

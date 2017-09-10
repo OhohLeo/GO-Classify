@@ -6,8 +6,8 @@
 	</div>
 </div>
 <div class="col s9" [ngSwitch]="currentRef">
-  <div *ngSwitchCase="'email'">
-	<email-create></email-create>
+  <div *ngSwitchCase="'imap'">
+	<imap-create></imap-create>
   </div>
   <div *ngSwitchCase="'directory'">
 	<directory-create></directory-create>
@@ -16,13 +16,20 @@
 	<table *ngFor="let ref of refs2Display">
 	  <tr *ngFor="let import of imports.get(ref)">
 		<th [ngSwitch]="ref">
-		  <email-display *ngSwitchCase="'email'"
-						 [email]="import"></email-display>
+		  <imap-display *ngSwitchCase="'imap'"
+				[imap]="import">
+		  </imap-display>
 		  <directory-display *ngSwitchCase="'directory'"
-							 [directory]="import"></directory-display>
+				     [directory]="import">
+		  </directory-display>
 		</th>
-	  	<th><i id="{{import.id}}" class="material-icons refresh" (click)="onRefresh(import)">refresh</i></th>
-	  	<th><i class="material-icons" (click)="onDelete(import)">delete</i></th>
+	  	<th><i id="{{import.id}}"
+		       class="material-icons refresh"
+		       (click)="onRefresh(import)">refresh</i>
+		</th>
+	  	<th><i class="material-icons"
+		       (click)="onDelete(import)">delete</i>
+		</th>
 	  </tr>
 	</table>
   </div>

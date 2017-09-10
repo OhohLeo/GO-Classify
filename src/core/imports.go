@@ -7,7 +7,7 @@ import (
 	"github.com/ohohleo/classify/database"
 	"github.com/ohohleo/classify/imports"
 	"github.com/ohohleo/classify/imports/directory"
-	"github.com/ohohleo/classify/imports/email"
+	"github.com/ohohleo/classify/imports/imap"
 	"log"
 	"strconv"
 )
@@ -15,7 +15,7 @@ import (
 // Type of imports
 var newImports = map[string]imports.BuildImport{
 	"directory": directory.ToBuild(),
-	"email":     email.ToBuild(),
+	"imap":      imap.ToBuild(),
 }
 
 type Import struct {

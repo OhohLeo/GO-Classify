@@ -1,24 +1,32 @@
 <div class="col s3">
-	<div class="collection">
-	  <a class="collection-item" (click)="onRef($event, 'all')">all</a>
-	  <a *ngFor="let ref of refs"
-		 class="collection-item" (click)="onRef($event, ref)">{{ref}}</a>
-	</div>
+    <div class="collection">
+	<a class="collection-item"
+	   (click)="onRef($event, 'all')">all</a>
+	<a *ngFor="let ref of refs"
+	   class="collection-item"
+	   (click)="onRef($event, ref)">{{ref}}</a>
+    </div>
 </div>
 <div class="col s9" [ngSwitch]="currentRef">
-  <div *ngSwitchCase="'file'">
+    <div *ngSwitchCase="'file'">
 	<file-create></file-create>
-  </div>
-  <div *ngIf="exports">
+    </div>
+    <div *ngIf="exports">
 	<table *ngFor="let ref of refs2Display">
-	  <tr *ngFor="let export of exports.get(ref)">
+	    <tr *ngFor="let export of exports.get(ref)">
 		<th [ngSwitch]="ref">
-		  <file-display *ngSwitchCase="'file'"
-					   [file]="export"></file-display>
+		    <file-display *ngSwitchCase="'file'"
+				  [file]="export"></file-display>
 		</th>
-	  	<th><i id="{{export.id}}" class="material-icons refresh" (click)="onRefresh(export)">refresh</i></th>
-	  	<th><i class="material-icons" (click)="onDelete(export)">delete</i></th>
-	  </tr>
+	  	<th>
+		    <i id="{{export.id}}"
+		       class="material-icons refresh"
+		       (click)="onRefresh(export)">refresh</i>
+		</th>
+	  	<th><i class="material-icons"
+		       (click)="onDelete(export)">delete</i>
+		</th>
+	    </tr>
 	</table>
-  </div>
+    </div>
 </div>

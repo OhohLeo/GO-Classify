@@ -1,4 +1,4 @@
-package email
+package imap
 
 import (
 	"encoding/json"
@@ -24,7 +24,7 @@ const (
 
 type Request int
 
-type Email struct {
+type Imap struct {
 	Host     string `json:"host"`
 	Port     int    `json:"port"`
 	Login    string `json:"login"`
@@ -51,7 +51,7 @@ func (s *Search) IsValid() bool {
 	return true
 }
 
-type EmailOutputParams struct {
+type ImapOutputParams struct {
 	MailBoxes []string `json:"mailboxes"`
 }
 
@@ -65,132 +65,132 @@ func Create(input json.RawMessage,
 	config map[string][]string,
 	collections []string) (i imports.Import, params interface{}, err error) {
 
-	var email Email
-	err = json.Unmarshal(input, &email)
+	var imap Imap
+	err = json.Unmarshal(input, &imap)
 
 	// MailBox is required
-	if email.MailBox == "" {
+	if imap.MailBox == "" {
 
 		// Check connection
-		err = email.Connect()
+		err = imap.Connect()
 		if err != nil {
 			return
 		}
 
 		// Returns mailbox
 		var mailboxes []string
-		mailboxes, err = email.GetMailBoxes()
+		mailboxes, err = imap.GetMailBoxes()
 		if err != nil {
 			return
 		}
 
-		params = &EmailOutputParams{
+		params = &ImapOutputParams{
 			MailBoxes: mailboxes,
 		}
 
-		email.Stop()
-		err = fmt.Errorf("import 'email' needs more params")
+		imap.Stop()
+		err = fmt.Errorf("import 'imap' needs more params")
 		return
 	}
 
-	switch email.Request {
+	switch imap.Request {
 	case SEARCH:
-		if email.Search.IsValid() == false {
-			err = fmt.Errorf("import 'email' invalid search params")
+		if imap.Search.IsValid() == false {
+			err = fmt.Errorf("import 'imap' invalid search params")
 			return
 		}
 	case ALL:
 	}
 
-	i = &email
+	i = &imap
 
 	return
 }
 
-func (e *Email) GetRef() imports.Ref {
-	return imports.EMAIL
+func (i *Imap) GetRef() imports.Ref {
+	return imports.IMAP
 }
 
-func (e *Email) Check(config map[string][]string, collections []string) error {
+func (i *Imap) Check(config map[string][]string, collections []string) error {
 	return nil
 }
 
-func (e *Email) Start() (c chan data.Data, err error) {
+func (i *Imap) Start() (c chan data.Data, err error) {
 
 	// Check if the analysis is not already going on
-	if e.cnx != nil {
-		err = fmt.Errorf("import 'email' already started")
+	if i.cnx != nil {
+		err = fmt.Errorf("import 'imap' already started")
 		return
 	}
 
 	// Establish connection
-	if err = e.Connect(); err != nil {
+	if err = i.Connect(); err != nil {
 		return
 	}
 
-	switch e.Request {
+	switch i.Request {
 	case SEARCH:
-		go e.GetSearch()
+		go i.GetSearch()
 	case ALL:
-		go e.GetAllMessages()
+		go i.GetAllMessages()
 	}
 
 	c = make(chan data.Data)
 
-	e.dataChannel = c
+	i.dataChannel = c
 
 	return
 }
 
-func (e *Email) Stop() error {
+func (i *Imap) Stop() error {
 
 	// No need to close unitialised connection
-	if e.cnx == nil {
-		return fmt.Errorf("import 'email' already stopped")
+	if i.cnx == nil {
+		return fmt.Errorf("import 'imap' already stopped")
 	}
 
-	e.cnx.Logout()
-	e.cnx = nil
+	i.cnx.Logout()
+	i.cnx = nil
 	return nil
 }
 
-func (e *Email) Eq(new imports.Import) bool {
-	newEmail, _ := new.(*Email)
-	return e.Host == newEmail.Host &&
-		e.Port == newEmail.Port &&
-		e.Login == newEmail.Login
+func (i *Imap) Eq(new imports.Import) bool {
+	newImap, _ := new.(*Imap)
+	return i.Host == newImap.Host &&
+		i.Port == newImap.Port &&
+		i.Login == newImap.Login
 }
 
-func (e *Email) Connect() error {
+func (i *Imap) Connect() error {
 
-	address := fmt.Sprintf("%s:%d", e.Host, e.Port)
+	address := fmt.Sprintf("%s:%d", i.Host, i.Port)
 
 	log.Printf("Connecting to '%s'...\n", address)
 
 	// Connect to IMAP server
 	cnx, err := client.DialTLS(address, nil)
 	if err != nil {
-		return fmt.Errorf("import 'email' connection: %s", err.Error())
+		return fmt.Errorf("import 'imap' connection: %s", err.Error())
 	}
 
 	// Login
-	if err := cnx.Login(e.Login, e.Password); err != nil {
-		return fmt.Errorf("import 'email' login: %s", err.Error())
+	if err := cnx.Login(i.Login, i.Password); err != nil {
+		return fmt.Errorf("import 'imap' login: %s", err.Error())
 	}
 
 	log.Printf("'%s' Connected!\n", address)
 
 	// Store connection
-	e.cnx = cnx
+	i.cnx = cnx
 
 	return nil
 }
 
 // Permet la gestion des commandes asynchrones
-func (e *Email) GetMailBoxes() (mailboxes []string, err error) {
+func (i *Imap) GetMailBoxes() (mailboxes []string, err error) {
 
-	if e.cnx == nil {
-		err = fmt.Errorf("email uninitialised")
+	if i.cnx == nil {
+		err = fmt.Errorf("imap uninitialised")
 		return
 	}
 
@@ -199,11 +199,11 @@ func (e *Email) GetMailBoxes() (mailboxes []string, err error) {
 	done := make(chan error)
 
 	go func() {
-		done <- e.cnx.List("", "*", infos)
+		done <- i.cnx.List("", "*", infos)
 	}()
 
 	if err = <-done; err != nil {
-		e.Stop()
+		i.Stop()
 		return
 	}
 
@@ -214,9 +214,9 @@ func (e *Email) GetMailBoxes() (mailboxes []string, err error) {
 	return
 }
 
-func (e *Email) GetAllMessages() error {
+func (i *Imap) GetAllMessages() error {
 
-	mailbox, err := e.cnx.Select(e.MailBox, false)
+	mailbox, err := i.cnx.Select(i.MailBox, false)
 	if err != nil {
 		return err
 	}
@@ -228,45 +228,45 @@ func (e *Email) GetAllMessages() error {
 	seqset := new(imap.SeqSet)
 	seqset.AddRange(from, to)
 
-	return e.Proceed(seqset)
+	return i.Proceed(seqset)
 }
 
-func (e *Email) GetSearch() error {
+func (i *Imap) GetSearch() error {
 
-	_, err := e.cnx.Select(e.MailBox, false)
+	_, err := i.cnx.Select(i.MailBox, false)
 	if err != nil {
 		return err
 	}
 
 	criteria := &imap.SearchCriteria{
-		Since:   e.Search.Since,
-		Before:  e.Search.Before,
-		Larger:  e.Search.Larger,
-		Smaller: e.Search.Smaller,
-		Text:    e.Search.Text,
+		Since:   i.Search.Since,
+		Before:  i.Search.Before,
+		Larger:  i.Search.Larger,
+		Smaller: i.Search.Smaller,
+		Text:    i.Search.Text,
 	}
 
 	// Launch research
-	seqNums, err := e.cnx.Search(criteria)
+	seqNums, err := i.cnx.Search(criteria)
 	if err != nil {
 		fmt.Printf("ERROR: %+v\n", err)
-		e.Stop()
+		i.Stop()
 		return err
 	}
 
 	seqset := new(imap.SeqSet)
 	seqset.AddNum(seqNums...)
 
-	return e.Proceed(seqset)
+	return i.Proceed(seqset)
 }
 
-func (e *Email) Proceed(seqset *imap.SeqSet) error {
+func (i *Imap) Proceed(seqset *imap.SeqSet) error {
 
 	messages := make(chan *imap.Message, 10)
 	done := make(chan error)
 
 	go func() {
-		done <- e.cnx.Fetch(seqset, []string{"BODY[]"}, messages)
+		done <- i.cnx.Fetch(seqset, []string{"BODY[]"}, messages)
 	}()
 
 	if err := <-done; err != nil {
@@ -336,14 +336,14 @@ func (e *Email) Proceed(seqset *imap.SeqSet) error {
 				}
 
 				email.Attachments = append(email.Attachments, attachment)
-				e.dataChannel <- attachment
+				i.dataChannel <- attachment
 			}
 		}
 
-		e.dataChannel <- email
+		i.dataChannel <- email
 	}
 
-	close(e.dataChannel)
-	e.Stop()
+	close(i.dataChannel)
+	i.Stop()
 	return nil
 }

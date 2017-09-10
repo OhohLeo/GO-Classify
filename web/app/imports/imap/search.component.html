@@ -1,19 +1,18 @@
-<label>Search</label>
 <div class="row">
-  <div class="input-field col s6">
+    <div class="input-field col s6">
+	<label for="since" class="active">Since</label>
 	<input name="since"
-		   type="datetime-local"
-		   id="since"
-		   (change)="onSince($event.target.value)" />
-	<label for="since">Since</label>
-  </div>
-  <div class="input-field col s6">
+	       class="datepicker"
+	       id="since"
+	       (change)="onSince($event.target.value)" />
+    </div>
+    <div class="input-field col s6">
+	<label for="before" class="active">Before</label>
 	<input name="before"
-		   type="datetime-local"
-		   id="before"
-		   (change)="onBefore($event.target.value)" />
-	<label for="before">Before</label>
-  </div>
+	       class="datepicker"
+	       id="before"
+	       (change)="onBefore($event.target.value)" />
+    </div>
 </div>
 <div class="row">
   <div class="input-field col s6">
