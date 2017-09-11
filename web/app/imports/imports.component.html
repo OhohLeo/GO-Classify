@@ -5,13 +5,32 @@
 		 class="collection-item" (click)="onRef($event, ref)">{{ref}}</a>
 	</div>
 </div>
-<div class="col s9" [ngSwitch]="currentRef">
-  <div *ngSwitchCase="'imap'">
-	<imap-create></imap-create>
-  </div>
-  <div *ngSwitchCase="'directory'">
-	<directory-create></directory-create>
-  </div>
+<div class="col s9">
+  <form *ngIf="currentRef !== 'all'"
+		#createForm="ngForm"
+		(ngSubmit)="onSubmit()">
+	<div class="row">
+	  <div class="input-field col s6">
+		<label for="name">Name</label>
+		<input name="name"
+			   type="string"
+			   id="name"
+			   [(ngModel)]="importName" />
+	  </div>
+	</div>
+	<div [ngSwitch]="currentRef">
+	  <imap-create *ngSwitchCase="'imap'"></imap-create>
+	  <directory-create *ngSwitchCase="'directory'"></directory-create>
+	</div>
+	<div class="row">
+	  <button type="submit"
+			  [disabled]="!createForm.form.valid"
+			  class="btn waves-effect waves-light">
+		New {{currentRef}}
+		<i class="material-icons right">send</i>
+	  </button>
+	</div>
+  </form>
   <div *ngIf="imports">
 	<table *ngFor="let ref of refs2Display">
 	  <tr *ngFor="let import of imports.get(ref)">

@@ -1,5 +1,6 @@
 import { Component, NgZone } from '@angular/core'
-import { ImportsService } from './../imports.service'
+import { ImportsService } from '../imports.service'
+import { ImportCreateComponent } from '../create.component'
 import { Imap } from './imap'
 
 @Component({
@@ -7,15 +8,14 @@ import { Imap } from './imap'
     templateUrl: './create.component.html'
 })
 
-export class ImapCreateComponent {
+export class ImapCreateComponent extends ImportCreateComponent {
 
-    public imap: Imap
     public mailboxes: string[] = []
 
     constructor(private zone: NgZone,
-        private importsService: ImportsService) {
+				private importsService: ImportsService) {
 
-        this.imap = new Imap("")
+		super(new Imap(""));
     }
 
     onParams(params: any): boolean {
@@ -37,18 +37,10 @@ export class ImapCreateComponent {
         return false
     }
 
-    onSuccess(imap: Imap) {
+    onSuccess(data: Imap) {
         this.zone.run(() => {
-            this.imap = new Imap("")
+            this.data = new Imap("")
             this.mailboxes = []
         })
-    }
-
-    // Create new import collection
-    onSubmit() {
-        this.importsService.addImport(
-            this.imap,
-            (params) => { return this.onParams(params) },
-            (imap) => { return this.onSuccess(imap) })
     }
 }

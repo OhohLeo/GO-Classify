@@ -1,7 +1,9 @@
-import { Component, NgZone, OnInit, OnDestroy, Renderer } from '@angular/core'
+import { Component, NgZone, OnInit, OnDestroy,
+		 ContentChildren, QueryList, Renderer } from '@angular/core'
 import { NgSwitch } from '@angular/common'
 import { ApiService, Event } from './../api.service'
 import { ImportsService, ImportBase } from './imports.service'
+import { ImportCreateComponent } from './create.component'
 import { Convert2Imap } from './imap/imap';
 import { Convert2Directory } from './directory/directory';
 
@@ -17,7 +19,11 @@ export class ImportsComponent implements OnInit, OnDestroy {
     public refs: Array<string> = []
     public refs2Display: Array<string> = []
     public imports: Map<string, ImportBase[]>
-    public currentRef: string
+    public currentRef: string = "all"
+
+	public importName: string
+	@ContentChildren(ImportCreateComponent) createImports: QueryList<ImportCreateComponent>
+	public imports2create: Map<string, ImportCreateComponent>
 
     private events
 
@@ -44,16 +50,16 @@ export class ImportsComponent implements OnInit, OnDestroy {
         this.events = importsService.subscribeEvents("status")
             .subscribe((e: Event) => {
 
-                let importBase = this.importsService.importsById.get(e.id)
+                let importBase = this.importsService.importsByName.get(e.name)
                 if (importBase == undefined) {
-                    console.error("Not referenced import with id " + e.id)
+                    console.error("Not referenced import with name " + e.name)
                     return
                 }
 
                 if (e.event.endsWith("status")) {
-                    let item = jQuery("i#" + e.id)
+                    let item = jQuery("i#" + e.name)
                     if (item == undefined) {
-                        console.error("Import with id " + e.id + " not displayed")
+                        console.error("Import with name " + e.name + " not displayed")
                         return
                     }
 
@@ -107,6 +113,22 @@ export class ImportsComponent implements OnInit, OnDestroy {
             this.refs2Display = (ref === "all") ? this.refs : [ref]
             this.currentRef = ref
         })
+    }
+
+    // Create new import collection
+    onSubmit() {
+
+		let createComponent = this.imports2create[this.currentRef]
+		if (createComponent === undefined) {
+			console.error("import create component " + this.currentRef + " not found")
+			return
+		}
+
+        this.importsService.addImport(
+			this.importName,
+			createComponent.data,
+			(params) => { return createComponent.onParams(params) },
+			(newImport) => { return createComponent.onSuccess(newImport) })
     }
 
     onRefresh(item: ImportBase) {

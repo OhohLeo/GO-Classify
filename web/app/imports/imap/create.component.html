@@ -1,53 +1,43 @@
-<form (ngSubmit)="onSubmit()" #createForm="ngForm">
-  <div class="row">
-	<div class="input-field col s6">
-	  <input name="host"
-			 type="string"
-			 id="host"
-			 [(ngModel)]="imap.host" />
-	  <label for="host">Host</label>
-	</div>
-	<div class="input-field col s6">
-	  <input name="port"
-			 type="number"
-			 id="port"
-			 [(ngModel)]="imap.port" />
-	  <label for="port">Port</label>
-	</div>
+<div class="row">
+  <div class="input-field col s6">
+	<input name="host"
+		   type="string"
+		   id="host"
+		   [(ngModel)]="data.host" />
+	<label for="host">Host</label>
   </div>
-  <div class="row">
-	<div class="input-field col s6">
-	  <input name="login"
-			 type="string"
-			 id="login"
-			 [(ngModel)]="imap.login" />
-	  <label for="login">Login</label>
-	</div>
-	<div class="input-field col s6">
-	  <input name="password"
-			 type="password"
-			 id="password"
-			 [(ngModel)]="imap.password" />
-	  <label for="password">Password</label>
-	</div>
+  <div class="input-field col s6">
+	<input name="port"
+		   type="number"
+		   id="port"
+		   [(ngModel)]="data.port" />
+	<label for="port">Port</label>
   </div>
-  <div class="row" *ngIf="mailboxes.length > 0">
-	<label for="mailbox">Mailbox</label>
-	<select name="mailbox"
-            [(ngModel)]="imap.mailbox"
-            class="browser-default">
-	    <option *ngFor="let mailbox of mailboxes" [value]="mailbox">
-		{{mailbox}}
-	    </option>
-	</select>
-	<imap-search [search]="imap.search"></imap-search>
+</div>
+<div class="row">
+  <div class="input-field col s6">
+	<input name="login"
+		   type="string"
+		   id="login"
+		   [(ngModel)]="data.login" />
+	<label for="login">Login</label>
   </div>
-  <div class="row">
-  	<button type="submit"
-  			[disabled]="!createForm.form.valid"
-  			class="btn waves-effect waves-light">
-  	  New imap
-  	  <i class="material-icons right">send</i>
-  	</button>
+  <div class="input-field col s6">
+	<input name="password"
+		   type="password"
+		   id="password"
+		   [(ngModel)]="data.password" />
+	<label for="password">Password</label>
   </div>
-</form>
+</div>
+<div class="row" *ngIf="mailboxes.length > 0">
+  <label for="mailbox">Mailbox</label>
+  <select name="mailbox"
+          [(ngModel)]="data.mailbox"
+          class="browser-default">
+	<option *ngFor="let mailbox of mailboxes" [value]="mailbox">
+	  {{mailbox}}
+	</option>
+  </select>
+  <imap-search [search]="data.search"></imap-search>
+</div>

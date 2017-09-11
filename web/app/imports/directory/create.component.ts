@@ -1,6 +1,7 @@
 import { Component, NgZone } from '@angular/core'
 import { ImportsService, ImportBase } from '../imports.service'
 import { ApiService } from '../../api.service'
+import { ImportCreateComponent } from './../create.component'
 import { Directory } from './directory'
 
 @Component({
@@ -8,56 +9,45 @@ import { Directory } from './directory'
     templateUrl: './create.component.html'
 })
 
-export class DirectoryCreateComponent {
+export class DirectoryCreateComponent extends ImportCreateComponent {
 
 	public paths: string[] = []
-    public directory : Directory
-
 
     constructor(private zone: NgZone,
 				private importsService: ImportsService,
 				private apiService: ApiService) {
 
-		this.directory = new Directory("")
+		super(new Directory(""))
 
-        // Get configuration import
-        importsService.getImportsConfig("directory")
-            .subscribe(config => {
-                if (config === undefined)
-                    return
+        // // Get configuration import
+        // importsService.getImportsConfig("directory")
+        //     .subscribe(config => {
+        //         if (config === undefined)
+        //             return
 
-                // Get global paths
-                let paths: string[] = config["*"]
-                if (paths == undefined)
-                    paths = []
+        //         // Get global paths
+        //         let paths: string[] = config["*"]
+        //         if (paths == undefined)
+        //             paths = []
 
-                // Add specific collection paths
-                let collectionName: string = apiService.getCollectionName()
-                if (collectionName != undefined) {
-                    let collectionPaths: string[] = config[collectionName]
-                    if (collectionPaths != undefined) {
-                        for (var path of collectionPaths) {
-                            paths.push(path)
-                        }
-                    }
-                }
+        //         // Add specific collection paths
+        //         let collectionName: string = apiService.getCollectionName()
+        //         if (collectionName != undefined) {
+        //             let collectionPaths: string[] = config[collectionName]
+        //             if (collectionPaths != undefined) {
+        //                 for (var path of collectionPaths) {
+        //                     paths.push(path)
+        //                 }
+        //             }
+        //         }
 
-                this.paths = paths
-            })
+        //         this.paths = paths
+        //     })
     }
 
-	onSuccess(directory: Directory) {
+	onSuccess(data: Directory) {
 		this.zone.run(() => {
-			this.directory = new Directory("")
+			this.data = new Directory("")
 		})
 	}
-
-    // Create new import collection
-    onSubmit() {
-        this.importsService.addImport(
-			this.directory,
-			undefined,
-			(directory) => { this.onSuccess(directory) })
-    }
-
 }

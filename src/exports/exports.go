@@ -30,7 +30,7 @@ type Export interface {
 	Eq(Export) bool
 }
 
-type BuildExport struct {
-	CheckConfig func(config map[string][]string) error
-	Create      func(json.RawMessage, map[string][]string, []string) (Export, error)
+type Build struct {
+	CheckConfig func(json.RawMessage) error
+	Create      func(json.RawMessage, json.RawMessage, []string) (Export, error)
 }

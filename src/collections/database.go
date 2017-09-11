@@ -25,11 +25,7 @@ func INIT_REF_DB(db *database.Database) error {
 	return db.InsertRef("collections_refs", REF_IDX2STR)
 }
 
-type Params struct {
-	Websites []string `json:"websites"`
-}
-
-type OnCollection func(id uint64, name string, ref Ref, params Params) error
+type OnCollection func(id uint64, name string, ref Ref, params []byte) error
 
 func RetreiveDBCollections(db *database.Database, onCollection OnCollection) (err error) {
 
@@ -42,7 +38,7 @@ func RetreiveDBCollections(db *database.Database, onCollection OnCollection) (er
 	for _, dbCollection := range dbCollections {
 
 		// Get collection params
-		var params Params
+		var params []byte
 		err = dbCollection.GetParams(&params)
 		if err != nil {
 			return

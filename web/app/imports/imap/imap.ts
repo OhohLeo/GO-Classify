@@ -10,8 +10,8 @@ export class Imap extends ImportBase {
     public onlyAttached: boolean = false
     public search: Search = new Search()
 
-    constructor(public id: string) {
-        super("imap", id);
+    constructor(public name: string) {
+        super("imap", name);
     }
 
     getParams(): any {
@@ -67,9 +67,9 @@ export class Search {
     }
 }
 
-export function Convert2Imap(id: string, params): ImportBase {
+export function Convert2Imap(name: string, params): ImportBase {
 
-    let imap = new Imap(id)
+    let imap = new Imap(name)
 
     imap.host = params['host']
     imap.port = params['port']

@@ -55,14 +55,14 @@ type ImapOutputParams struct {
 	MailBoxes []string `json:"mailboxes"`
 }
 
-func ToBuild() imports.BuildImport {
-	return imports.BuildImport{
+func ToBuild() imports.Build {
+	return imports.Build{
 		Create: Create,
 	}
 }
 
 func Create(input json.RawMessage,
-	config map[string][]string,
+	config json.RawMessage,
 	collections []string) (i imports.Import, params interface{}, err error) {
 
 	var imap Imap
@@ -111,7 +111,7 @@ func (i *Imap) GetRef() imports.Ref {
 	return imports.IMAP
 }
 
-func (i *Imap) Check(config map[string][]string, collections []string) error {
+func (i *Imap) Check(config json.RawMessage) error {
 	return nil
 }
 

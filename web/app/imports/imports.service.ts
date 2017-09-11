@@ -8,15 +8,7 @@ export class ImportBase {
 
     public isRunning: boolean
 
-    constructor(private ref: string, public id: string) { }
-
-    setId(id: string) {
-        this.id = id;
-    }
-
-    getId(): string {
-        return this.id
-    }
+    constructor(private ref: string, public name: string) { }
 
     getRef(): string {
         if (this.ref === undefined)
@@ -49,7 +41,7 @@ export class ImportsService {
 
     enableCache: boolean
     imports: Map<string, ImportBase[]> = new Map<string, ImportBase[]>()
-    importsById: Map<string, ImportBase> = new Map<string, ImportBase>()
+    importsByName: Map<string, ImportBase> = new Map<string, ImportBase>()
     configs: any
     updateList: any
 
@@ -76,7 +68,7 @@ export class ImportsService {
 
     // Check if import does exist
     hasImport(search: ImportBase): boolean {
-        return this.importsById.get(search.id) != undefined
+        return this.importsByName.get(search.name) != undefined
     }
 
     // Check if import does exist
@@ -97,8 +89,8 @@ export class ImportsService {
 
     private add(i: ImportBase) {
 
-        // Store imports by id
-        this.importsById.set(i.id, i)
+        // Store imports by name
+        this.importsByName.set(i.name, i)
 
         // Store imports by ref
         if (this.imports.get(i.getRef()) === undefined) {
@@ -108,7 +100,7 @@ export class ImportsService {
         this.imports.get(i.getRef()).push(i)
     }
 
-    addImport(i: ImportBase, onParams: any, onSuccess: any) {
+    addImport(name: string, i: ImportBase, onParams: any, onSuccess: any) {
 
         // Disable cache
         this.enableCache = false
@@ -120,6 +112,7 @@ export class ImportsService {
 
         return this.apiService.post(
             "imports", {
+				"name": name,
                 "ref": i.getRef(),
                 "params": i.getParams(),
                 "collections": [this.apiService.getCollectionName()],
@@ -132,15 +125,13 @@ export class ImportsService {
 
                 let body = rsp.json()
 
-                if (body === undefined || body.id === undefined) {
+                if (body === undefined || body.name === undefined) {
 
 					if (onParams !== undefined && onParams(body))
 						return
 
-                    throw new Error('Id not found when adding new import!')
+                    throw new Error('Name not found when adding new import!')
                 }
-
-                i.setId(body.id)
 
                 this.add(i)
 
@@ -154,14 +145,14 @@ export class ImportsService {
 
     private delete(i: ImportBase) {
 
-        // Delete import by id
-        this.importsById.delete(i.id)
+        // Delete import by name
+        this.importsByName.delete(i.name)
 
         // Delete import by ref
         let importList = this.imports.get(i.getRef())
         for (let idx in importList) {
             let importItem = importList[idx]
-            if (importItem.id === i.getId()) {
+            if (importItem.name === i.name) {
                 importList.splice(+idx, 1)
                 break;
             }
@@ -183,7 +174,7 @@ export class ImportsService {
             return
         }
 
-        let urlParams = "?id=" + i.getId()
+        let urlParams = "?name=" + i.name
             + "&collection=" + this.apiService.getCollectionName();
 
         return this.apiService.delete("imports" + urlParams)
@@ -216,7 +207,7 @@ export class ImportsService {
         }
 
         let action = isStart ? "start" : "stop"
-        let urlParams = "?id=" + i.getId()
+        let urlParams = "?name=" + i.name
             + "&collection=" + this.apiService.getCollectionName();
 
         return this.apiService.put("imports/" + action + urlParams)
@@ -245,7 +236,7 @@ export class ImportsService {
 
                 // Init the import lists
                 this.imports = new Map<string, ImportBase[]>()
-                this.importsById = new Map<string, ImportBase>()
+                this.importsByName = new Map<string, ImportBase>()
 
                 for (let importRef in rsp) {
 
@@ -256,8 +247,8 @@ export class ImportsService {
                         continue
                     }
 
-                    for (let importId in rsp[importRef]) {
-                        let i = convert(importId, rsp[importRef][importId])
+                    for (let importName in rsp[importRef]) {
+                        let i = convert(importName, rsp[importRef][importName])
                         if (i === undefined)
                             continue
 

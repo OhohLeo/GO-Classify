@@ -9,17 +9,17 @@ import (
 	"github.com/ohohleo/classify/imports/directory"
 	"github.com/ohohleo/classify/imports/imap"
 	"log"
-	"strconv"
 )
 
 // Type of imports
-var newImports = map[string]imports.BuildImport{
+var newImports = map[string]imports.Build{
 	"directory": directory.ToBuild(),
 	"imap":      imap.ToBuild(),
 }
 
 type Import struct {
 	Id          uint64 `json:"id"`
+	Name        string `json:"name"`
 	engine      imports.Import
 	collections map[string]*Collection
 }
@@ -62,6 +62,7 @@ func (i *Import) Store2DB(db *database.Database) error {
 
 	// Store the imports
 	lastId, err := db.Insert("imports", &database.GenStruct{
+		Name:   i.Name,
 		Ref:    uint64(i.engine.GetRef()),
 		Params: paramsStr,
 	})
@@ -116,10 +117,15 @@ func (i *Import) Delete2DB(db *database.Database) error {
 }
 
 // Check imports configuration
-func (c *Classify) CheckImportsConfig(configuration map[string]map[string][]string) (err error) {
+func (c *Classify) CheckImportsConfig(configuration map[string]json.RawMessage) (err error) {
 
 	// For all import configuration
 	for importType, config := range configuration {
+
+		// Select only generic type (ie ':type_name')
+		if len(importType) < 1 || importType[0] != ':' {
+			continue
+		}
 
 		// Check that the import type does exists
 		buildImport, ok := newImports[importType]
@@ -139,25 +145,25 @@ func (c *Classify) CheckImportsConfig(configuration map[string]map[string][]stri
 }
 
 // Check imports ids and return the list of imports
-func (c *Classify) GetImportsByIds(ids []uint64) (imports map[uint64]*Import, err error) {
+func (c *Classify) GetImportsByNames(names []string) (imports map[string]*Import, err error) {
 
-	imports = make(map[uint64]*Import)
+	imports = make(map[string]*Import)
+	for _, name := range names {
 
-	for _, id := range ids {
-		i, ok := c.imports[id]
+		i, ok := c.imports[name]
 		if ok == false {
-			err = fmt.Errorf("import '%s' not existing", id)
+			err = fmt.Errorf("import '%s' not found", name)
 			return
 		}
 
-		imports[id] = i
+		imports[name] = i
 	}
 
 	return
 }
 
 // Add new import process
-func (c *Classify) AddImport(ref imports.Ref, inParams json.RawMessage, collections map[string]*Collection) (i *Import, outParams interface{}, err error) {
+func (c *Classify) AddImport(name string, ref imports.Ref, inParams json.RawMessage, collections map[string]*Collection) (i *Import, outParams interface{}, err error) {
 
 	// Nécessite l'existence d'au moins une collection
 	if len(collections) < 1 {
@@ -172,11 +178,8 @@ func (c *Classify) AddImport(ref imports.Ref, inParams json.RawMessage, collecti
 		return
 	}
 
-	// Get import configuration
-	var config map[string][]string
-	if c.config != nil {
-		config, _ = c.config.Imports[ref.String()]
-	}
+	// TODO Get import configuration
+	var config json.RawMessage
 
 	// Get collections list
 	idx := 0
@@ -213,16 +216,17 @@ func (c *Classify) AddImport(ref imports.Ref, inParams json.RawMessage, collecti
 
 		i = &Import{
 			Id:          id,
+			Name:        name,
 			engine:      importEngine,
 			collections: collections,
 		}
 
 		if c.imports == nil {
-			c.imports = make(map[uint64]*Import)
+			c.imports = make(map[string]*Import)
 		}
 
 		// Store the new import
-		c.imports[id] = i
+		c.imports[name] = i
 
 		return
 	}
@@ -232,24 +236,24 @@ func (c *Classify) AddImport(ref imports.Ref, inParams json.RawMessage, collecti
 }
 
 // Remove import from the list
-func (c *Classify) DeleteImports(ids map[uint64]*Import, collections map[string]*Collection) (err error) {
+func (c *Classify) DeleteImports(importList map[string]*Import, collections map[string]*Collection) (err error) {
 
 	// At least one import id or one collection must be specified
-	if len(ids) == 0 && len(collections) == 0 {
-		err = errors.New("required import ids or collection names")
+	if len(importList) == 0 && len(collections) == 0 {
+		err = errors.New("required import names or collection names")
 		return
 	}
 
 	// Stop all imports
-	c.StopImports(ids, collections)
+	c.StopImports(importList, collections)
 
-	// If no ids are specified : remove all import relative to the
+	// If no importList are specified : remove all import relative to the
 	// same collection
-	if len(ids) == 0 {
-		ids = c.imports
+	if len(importList) == 0 {
+		importList = c.imports
 	}
 
-	for id, i := range ids {
+	for name, i := range importList {
 
 		// Unlink the collection with the specified import
 		for name, collection := range collections {
@@ -269,23 +273,23 @@ func (c *Classify) DeleteImports(ids map[uint64]*Import, collections map[string]
 			}
 
 			// Remove the import
-			delete(c.imports, id)
+			delete(c.imports, name)
 		}
 	}
 	return
 }
 
 // Get the whole list of imports by Type
-func (c *Classify) GetImports(ids map[uint64]*Import, collections map[string]*Collection) (res map[string]map[uint64]imports.Import, err error) {
+func (c *Classify) GetImports(importList map[string]*Import, collections map[string]*Collection) (res map[string]map[string]imports.Import, err error) {
 
-	res = make(map[string]map[uint64]imports.Import)
+	res = make(map[string]map[string]imports.Import)
 
-	// If no ids are specified : get all
-	if len(ids) == 0 {
-		ids = c.imports
+	// If no importList are specified : get all
+	if len(importList) == 0 {
+		importList = c.imports
 	}
 
-	for name, i := range ids {
+	for name, i := range importList {
 
 		if i.HasCollections(collections) == false {
 			continue
@@ -294,7 +298,7 @@ func (c *Classify) GetImports(ids map[uint64]*Import, collections map[string]*Co
 		ref := i.engine.GetRef()
 
 		if res[ref.String()] == nil {
-			res[ref.String()] = make(map[uint64]imports.Import)
+			res[ref.String()] = make(map[string]imports.Import)
 		}
 
 		res[ref.String()][name] = i.engine
@@ -303,7 +307,7 @@ func (c *Classify) GetImports(ids map[uint64]*Import, collections map[string]*Co
 	return
 }
 
-func (c *Classify) SendImportEvent(id uint64, status bool) {
+func (c *Classify) SendImportEvent(name string, status bool) {
 
 	var statusStr string
 	if status {
@@ -312,19 +316,19 @@ func (c *Classify) SendImportEvent(id uint64, status bool) {
 		statusStr = "end"
 	}
 
-	c.SendEvent("import/status", statusStr, strconv.Itoa(int(id)), status)
+	c.SendEvent("import/status", statusStr, name, status)
 }
 
 // Launch the process of importation of specified imports
-func (c *Classify) StartImports(ids map[uint64]*Import, collections map[string]*Collection) error {
+func (c *Classify) StartImports(imports map[string]*Import, collections map[string]*Collection) error {
 
-	// If no ids are specified : get all
-	if len(ids) == 0 {
-		ids = c.imports
+	// If no imports are specified : get all
+	if len(imports) == 0 {
+		imports = c.imports
 	}
 
 	// Get the import channel
-	for id, i := range ids {
+	for name, i := range imports {
 
 		if i.HasCollections(collections) == false {
 			continue
@@ -339,7 +343,7 @@ func (c *Classify) StartImports(ids map[uint64]*Import, collections map[string]*
 		go func() {
 
 			// Send notification to start analysis
-			c.SendImportEvent(id, true)
+			c.SendImportEvent(name, true)
 
 			for {
 				if input, ok := <-channel; ok {
@@ -359,7 +363,7 @@ func (c *Classify) StartImports(ids map[uint64]*Import, collections map[string]*
 			}
 
 			// Send notification to stop analysis
-			c.SendImportEvent(id, false)
+			c.SendImportEvent(name, false)
 		}()
 	}
 
@@ -367,23 +371,23 @@ func (c *Classify) StartImports(ids map[uint64]*Import, collections map[string]*
 }
 
 // Stop the importing process
-func (c *Classify) StopImports(ids map[uint64]*Import, collections map[string]*Collection) error {
+func (c *Classify) StopImports(imports map[string]*Import, collections map[string]*Collection) error {
 
-	// If no ids are specified : get all
-	if len(ids) == 0 {
-		ids = c.imports
+	// If no imports are specified : get all
+	if len(imports) == 0 {
+		imports = c.imports
 	}
 
-	for id, i := range ids {
+	for name, i := range imports {
 
 		if i.HasCollections(collections) == false {
 			continue
 		}
 
-		c.imports[id].engine.Stop()
+		c.imports[name].engine.Stop()
 
 		// Send notification
-		go c.SendImportEvent(id, false)
+		go c.SendImportEvent(name, false)
 	}
 
 	return nil

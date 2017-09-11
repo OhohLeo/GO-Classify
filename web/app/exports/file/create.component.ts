@@ -1,5 +1,6 @@
 import { Component, NgZone } from '@angular/core'
 import { ExportsService } from './../exports.service'
+import { ExportCreateComponent } from '../create.component'
 import { File } from './file'
 
 @Component({
@@ -7,26 +8,17 @@ import { File } from './file'
     templateUrl: './create.component.html'
 })
 
-export class FileCreateComponent {
-	public file : File
+export class FileCreateComponent extends ExportCreateComponent {
 
     constructor(private zone: NgZone,
 				private exportsService: ExportsService) {
 
-		this.file = new File("")
+		super(new File(""))
 	}
 
 	onSuccess(file: File) {
 		this.zone.run(() => {
-			this.file = new File("")
+			this.data = new File("")
 		})
 	}
-
-	// Create new export collection
-    onSubmit() {
-        this.exportsService.addExport(
-			this.file,
-			undefined,
-			(file) => { return this.onSuccess(file) })
-    }
 }

@@ -6,7 +6,6 @@ import (
 	"github.com/ant0ine/go-json-rest/rest"
 	"github.com/ohohleo/classify/exports"
 	"net/http"
-	"strconv"
 )
 
 // List all config exports
@@ -15,26 +14,19 @@ func (c *Classify) ApiGetExportsConfig(w rest.ResponseWriter, r *rest.Request) {
 	w.WriteJson(c.config.Exports)
 }
 
-// getExportIdsAndCollections get from Url parameters exports and the collections
-func (c *Classify) getExportIdsAndCollections(r *rest.Request) (exports map[uint64]*Export, collections map[string]*Collection, err error) {
+// getExportNamesAndCollections get from Url parameters exports and the collections
+func (c *Classify) getExportNamesAndCollections(r *rest.Request) (exports map[string]*Export, collections map[string]*Collection, err error) {
 
 	// From the url query list
 	values := r.URL.Query()
 
-	var ids []uint64
-	for _, idStr := range values["id"] {
-
-		var id int
-		id, err = strconv.Atoi(idStr)
-		if err != nil {
-			return
-		}
-
-		ids = append(ids, uint64(id))
+	var exportList []string
+	for _, name := range values["name"] {
+		exportList = append(exportList, name)
 	}
 
 	// Check and get the export list
-	exports, err = c.GetExportsByIds(ids)
+	exports, err = c.GetExportsByNames(exportList)
 	if err != nil {
 		return
 	}
@@ -49,6 +41,7 @@ func (c *Classify) getExportIdsAndCollections(r *rest.Request) (exports map[uint
 }
 
 type ApiAddExportsBody struct {
+	Name        string          `json:"name"`
 	Ref         string          `json:"ref"`
 	Collections []string        `json:"collections"`
 	Params      json.RawMessage `json:"params"`
@@ -80,7 +73,7 @@ func (c *Classify) ApiAddExport(w rest.ResponseWriter, r *rest.Request) {
 		return
 	}
 
-	e, err := c.AddExport(ref, body.Params, collections)
+	e, err := c.AddExport(body.Name, ref, body.Params, collections)
 	if err != nil {
 		rest.Error(w, err.Error(), http.StatusBadRequest)
 		return
@@ -96,16 +89,16 @@ func (c *Classify) ApiAddExport(w rest.ResponseWriter, r *rest.Request) {
 }
 
 // List all the exports selected by id or by collections
-// GET /exports?id=EXPORT_ID&collection=COLLECTION_NAME
+// GET /exports?name=EXPORT_NAME&collection=COLLECTION_NAME
 func (c *Classify) ApiGetExports(w rest.ResponseWriter, r *rest.Request) {
 
-	ids, collections, err := c.getExportIdsAndCollections(r)
+	names, collections, err := c.getExportNamesAndCollections(r)
 	if err != nil {
 		rest.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 
-	res, err := c.GetExports(ids, collections)
+	res, err := c.GetExports(names, collections)
 	if err != nil {
 		rest.Error(w, err.Error(), http.StatusBadRequest)
 		return
@@ -116,16 +109,16 @@ func (c *Classify) ApiGetExports(w rest.ResponseWriter, r *rest.Request) {
 
 // ApiDeleteExport remove specified export selected by id and by the
 // collections
-// DELETE /exports?id=EXPORT_ID&collection=COLLECTION_NAME
+// DELETE /exports?name=EXPORT_NAME&collection=COLLECTION_NAME
 func (c *Classify) ApiDeleteExport(w rest.ResponseWriter, r *rest.Request) {
 
-	ids, collections, err := c.getExportIdsAndCollections(r)
+	names, collections, err := c.getExportNamesAndCollections(r)
 	if err != nil {
 		rest.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 
-	if err := c.DeleteExports(ids, collections); err != nil {
+	if err := c.DeleteExports(names, collections); err != nil {
 		rest.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
@@ -134,16 +127,16 @@ func (c *Classify) ApiDeleteExport(w rest.ResponseWriter, r *rest.Request) {
 }
 
 // Force exportation
-// PUT /exports/force?id=EXPORT_ID&collection=COLLECTION_NAME
+// PUT /exports/force?name=EXPORT_NAME&collection=COLLECTION_NAME
 func (c *Classify) ApiForceExport(w rest.ResponseWriter, r *rest.Request) {
 
-	ids, collections, err := c.getExportIdsAndCollections(r)
+	names, collections, err := c.getExportNamesAndCollections(r)
 	if err != nil {
 		rest.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 
-	if err := c.ForceExports(ids, collections); err != nil {
+	if err := c.ForceExports(names, collections); err != nil {
 		rest.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
@@ -152,16 +145,16 @@ func (c *Classify) ApiForceExport(w rest.ResponseWriter, r *rest.Request) {
 }
 
 // Stop the analysis of the collection export
-// PUT /exports/stop?id=EXPORT_ID&collection=COLLECTION_NAME
+// PUT /exports/stop?name=EXPORT_NAME&collection=COLLECTION_NAME
 func (c *Classify) ApiStopExport(w rest.ResponseWriter, r *rest.Request) {
 
-	ids, collections, err := c.getExportIdsAndCollections(r)
+	names, collections, err := c.getExportNamesAndCollections(r)
 	if err != nil {
 		rest.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 
-	if err := c.StopExports(ids, collections); err != nil {
+	if err := c.StopExports(names, collections); err != nil {
 		rest.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}

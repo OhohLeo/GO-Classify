@@ -18,14 +18,14 @@ type File struct {
 	mode        os.FileMode
 }
 
-func ToBuild() exports.BuildExport {
-	return exports.BuildExport{
+func ToBuild() exports.Build {
+	return exports.Build{
 		Create: Create,
 	}
 }
 
 func Create(input json.RawMessage,
-	config map[string][]string,
+	config json.RawMessage,
 	collections []string) (e exports.Export, err error) {
 
 	var file File

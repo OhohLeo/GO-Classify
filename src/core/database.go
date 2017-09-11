@@ -53,8 +53,8 @@ func (c *Classify) StartDB(config *Config) (err error) {
 
 	// Retreive all stored collections
 	err = collections.RetreiveDBCollections(c.database,
-		func(id uint64, name string, ref collections.Ref, params collections.Params) (err error) {
-			collection, err := c.AddCollection(name, ref, params.Websites)
+		func(id uint64, name string, ref collections.Ref, params []byte) (err error) {
+			collection, err := c.AddCollection(name, ref, params)
 			if err != nil {
 				return
 			}
@@ -69,14 +69,14 @@ func (c *Classify) StartDB(config *Config) (err error) {
 
 	// Retreive all stored imports
 	err = imports.RetreiveDBImports(c.database,
-		func(id uint64, ref imports.Ref, params []byte, names []string) (err error) {
+		func(id uint64, name string, ref imports.Ref, params []byte, names []string) (err error) {
 
 			collections, err := c.GetCollectionsByNames(names)
 			if err != nil {
 				return
 			}
 
-			i, _, err := c.AddImport(ref, params, collections)
+			i, _, err := c.AddImport(name, ref, params, collections)
 			if err != nil {
 				return
 			}
@@ -91,14 +91,14 @@ func (c *Classify) StartDB(config *Config) (err error) {
 
 	// Retreive all stored exports
 	err = exports.RetreiveDBExports(c.database,
-		func(id uint64, ref exports.Ref, params []byte, names []string) (err error) {
+		func(id uint64, name string, ref exports.Ref, params []byte, names []string) (err error) {
 
 			collections, err := c.GetCollectionsByNames(names)
 			if err != nil {
 				return
 			}
 
-			e, err := c.AddExport(ref, params, collections)
+			e, err := c.AddExport(name, ref, params, collections)
 			if err != nil {
 				return
 			}

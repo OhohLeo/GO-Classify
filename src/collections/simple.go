@@ -5,7 +5,11 @@ import (
 )
 
 func BuildSimple() Build {
-	return func() Collection { return new(Simple) }
+	return Build{
+		Create: func(json.RawMessage, json.RawMessage) (Collection, error) {
+			return new(Simple), nil
+		},
+	}
 }
 
 type Simple struct {
@@ -13,6 +17,10 @@ type Simple struct {
 
 func (s *Simple) GetRef() Ref {
 	return SIMPLE
+}
+
+func (r *Simple) Check(config json.RawMessage) error {
+	return nil
 }
 
 func (s *Simple) Validate(id string, decoder *json.Decoder) error {

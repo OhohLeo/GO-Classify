@@ -1,6 +1,8 @@
-import { Component, NgZone, OnInit, OnDestroy, Renderer } from '@angular/core'
+import { Component, NgZone, OnInit, OnDestroy,
+		 ContentChildren, QueryList, Renderer } from '@angular/core'
 import { NgSwitch } from '@angular/common'
 import { ExportsService, ExportBase } from './exports.service'
+import { ExportCreateComponent } from './create.component'
 import { ApiService, Event } from '../api.service'
 import { Convert2File } from './file/file';
 
@@ -16,7 +18,11 @@ export class ExportsComponent implements OnInit, OnDestroy {
     public refs: Array<string> = []
     public refs2Display: Array<string> = []
     public exports: Map<string, ExportBase[]>
-    public currentRef: string
+	public currentRef: string = "all"
+
+	public exportName: string
+	@ContentChildren(ExportCreateComponent) createExports: QueryList<ExportCreateComponent>
+	public exports2create: Map<string, ExportCreateComponent>
 
     private events
 
@@ -43,16 +49,16 @@ export class ExportsComponent implements OnInit, OnDestroy {
         this.events = exportsService.subscribeEvents("status")
             .subscribe((e: Event) => {
 
-                let exportBase = this.exportsService.exportsById.get(e.id)
+                let exportBase = this.exportsService.exportsByName.get(e.name)
                 if (exportBase == undefined) {
-                    console.error("Not referenced export with id " + e.id)
+                    console.error("Not referenced export with name " + e.name)
                     return
                 }
 
                 if (e.event.endsWith("status")) {
-                    let item = jQuery("i#" + e.id)
+                    let item = jQuery("i#" + e.name)
                     if (item == undefined) {
-                        console.error("Export with id " + e.id + " not displayed")
+                        console.error("Export with name " + e.name + " not displayed")
                         return
                     }
 
@@ -106,6 +112,22 @@ export class ExportsComponent implements OnInit, OnDestroy {
             this.refs2Display = (ref === "all") ? this.refs : [ref]
             this.currentRef = ref
         })
+    }
+
+	// Create new export collection
+    onSubmit() {
+
+		let createComponent = this.exports2create[this.currentRef]
+		if (createComponent === undefined) {
+			console.error("export create component " + this.currentRef + " not found")
+			return
+		}
+
+        this.exportsService.addExport(
+			this.exportName,
+			createComponent.data,
+			(params) => { return createComponent.onParams(params) },
+			(newExport) => { return createComponent.onSuccess(newExport) })
     }
 
     onRefresh(item: ExportBase) {

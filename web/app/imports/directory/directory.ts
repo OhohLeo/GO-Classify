@@ -5,8 +5,8 @@ export class Directory extends ImportBase {
 	public path: string
 	public isRecursive: boolean = false
 
-    constructor(public id: string) {
-        super("directory", id);
+    constructor(public name: string) {
+        super("directory", name);
     }
 
     getParams(): any {
@@ -27,7 +27,7 @@ export class Directory extends ImportBase {
     }
 }
 
-export function Convert2Directory(id: string, params): ImportBase {
+export function Convert2Directory(name: string, params): ImportBase {
 
 	if (typeof params != 'object') {
 		console.error("Unsupported directory parameters!")
@@ -46,7 +46,7 @@ export function Convert2Directory(id: string, params): ImportBase {
 		return undefined
 	}
 
-	let directory = new Directory(id)
+	let directory = new Directory(name)
 
 	directory.path = path
 	directory.isRecursive = isRecursive ? true : false

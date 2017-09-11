@@ -8,15 +8,7 @@ export class ExportBase {
 
     public isRunning: boolean
 
-    constructor(private ref: string, public id: string) { }
-
-    setId(id: string) {
-        this.id = id;
-    }
-
-    getId(): string {
-        return this.id
-    }
+    constructor(private ref: string, public name: string) { }
 
     getRef(): string {
         if (this.ref === undefined)
@@ -49,7 +41,7 @@ export class ExportsService {
 
     enableCache: boolean
     exports: Map<string, ExportBase[]> = new Map<string, ExportBase[]>()
-    exportsById: Map<string, ExportBase> = new Map<string, ExportBase>()
+    exportsByName: Map<string, ExportBase> = new Map<string, ExportBase>()
     configs: any
     updateList: any
 
@@ -78,7 +70,7 @@ export class ExportsService {
 
     // Check if export does exist
     hasExport(search: ExportBase): boolean {
-        return this.exportsById.get(search.id) != undefined
+        return this.exportsByName.get(search.name) != undefined
     }
 
     // Check if export does exist
@@ -99,8 +91,8 @@ export class ExportsService {
 
     private add(i: ExportBase) {
 
-        // Store exports by id
-        this.exportsById.set(i.id, i)
+        // Store exports by name
+        this.exportsByName.set(i.name, i)
 
         // Store exports by ref
         if (this.exports.get(i.getRef()) === undefined) {
@@ -110,7 +102,7 @@ export class ExportsService {
         this.exports.get(i.getRef()).push(i)
     }
 
-    addExport(i: ExportBase, onParams: any, onSuccess: any) {
+    addExport(name: string, i: ExportBase, onParams: any, onSuccess: any) {
 
         // Disable cache
         this.enableCache = false
@@ -122,6 +114,7 @@ export class ExportsService {
 
         return this.apiService.post(
             "exports", {
+				"name": name,
                 "ref": i.getRef(),
                 "params": i.getParams(),
                 "collections": [this.apiService.getCollectionName()],
@@ -134,15 +127,13 @@ export class ExportsService {
 
                 let body = rsp.json()
 
-                if (body === undefined && body.id === undefined) {
+                if (body === undefined && body.name === undefined) {
 
 					if (onParams !== undefined && onParams(body))
 						return
 
-                    throw new Error('Id not found when adding new export!');
+                    throw new Error('Name not found when adding new export!');
                 }
-
-                i.setId(body.id)
 
                 this.add(i)
 
@@ -156,14 +147,14 @@ export class ExportsService {
 
     private delete(i: ExportBase) {
 
-        // Delete export by id
-        this.exportsById.delete(i.id)
+        // Delete export by name
+        this.exportsByName.delete(i.name)
 
         // Delete export by ref
         let exportList = this.exports.get(i.getRef())
         for (let idx in exportList) {
             let exportItem = exportList[idx]
-            if (exportItem.id === i.getId()) {
+            if (exportItem.name === i.name) {
                 exportList.splice(+idx, 1)
                 break;
             }
@@ -185,7 +176,7 @@ export class ExportsService {
             return
         }
 
-        let urlParams = "?id=" + i.getId()
+        let urlParams = "?name=" + i.name
             + "&collection=" + this.apiService.getCollectionName();
 
         return this.apiService.delete("exports" + urlParams)
@@ -202,23 +193,23 @@ export class ExportsService {
             })
     }
 
-    forceExport(i: ExportBase) {
-        return this.actionExport(true, i)
+    forceExport(e: ExportBase) {
+        return this.actionExport(true, e)
     }
 
-    stopExport(i: ExportBase) {
-        return this.actionExport(false, i)
+    stopExport(e: ExportBase) {
+        return this.actionExport(false, e)
     }
 
-    actionExport(isForce: boolean, i: ExportBase) {
+    actionExport(isForce: boolean, e: ExportBase) {
 
-        if (this.hasExport(i) === false) {
-            console.error("No existing " + i.getRef())
+        if (this.hasExport(e) === false) {
+            console.error("No existing " + e.getRef())
             return
         }
 
         let action = isForce ? "force" : "stop"
-        let urlParams = "?id=" + i.getId()
+        let urlParams = "?name=" + e.name
             + "&collection=" + this.apiService.getCollectionName();
 
         return this.apiService.put("exports/" + action + urlParams)
@@ -248,7 +239,7 @@ export class ExportsService {
 
                 // Init the export lists
                 this.exports = new Map<string, ExportBase[]>()
-                this.exportsById = new Map<string, ExportBase>()
+                this.exportsByName = new Map<string, ExportBase>()
 
                 for (let exportRef in rsp) {
 
@@ -259,8 +250,8 @@ export class ExportsService {
                         continue
                     }
 
-                    for (let exportId in rsp[exportRef]) {
-                        let i = convert(exportId, rsp[exportRef][exportId])
+                    for (let exportName in rsp[exportRef]) {
+                        let i = convert(exportName, rsp[exportRef][exportName])
                         if (i === undefined)
                             continue
 

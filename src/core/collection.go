@@ -13,7 +13,7 @@ import (
 
 type Collection struct {
 	Id       uint64 `json:"id"`
-	Name     string
+	Name     string `json:"name"`
 	buffer   *Buffer
 	items    *Items
 	config   *CollectionConfig

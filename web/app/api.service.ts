@@ -23,7 +23,7 @@ export enum CollectionStatus {
 export interface Event {
     event: string
     status: string
-    id: string
+    name: string
     data: any
 }
 

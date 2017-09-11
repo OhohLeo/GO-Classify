@@ -9,9 +9,9 @@ import (
 )
 
 type ApiCollection struct {
-	Name     string   `json:"name"`
-	Ref      string   `json:"ref"`
-	Websites []string `json:"websites"`
+	Name   string          `json:"name"`
+	Ref    string          `json:"ref"`
+	Params json.RawMessage `json:"params"`
 }
 
 // AddCollection adds new collection by API
@@ -45,7 +45,7 @@ func (c *Classify) ApiPostCollection(w rest.ResponseWriter, r *rest.Request) {
 	}
 
 	// Create new collection
-	collection, err := c.AddCollection(body.Name, ref, body.Websites)
+	collection, err := c.AddCollection(body.Name, ref, body.Params)
 	if err != nil {
 		rest.Error(w, err.Error(), http.StatusBadRequest)
 		return

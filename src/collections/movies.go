@@ -5,7 +5,11 @@ import (
 )
 
 func BuildMovies() Build {
-	return func() Collection { return new(Movies) }
+	return Build{
+		Create: func(json.RawMessage, json.RawMessage) (Collection, error) {
+			return new(Movies), nil
+		},
+	}
 }
 
 type Movies struct {
@@ -13,6 +17,10 @@ type Movies struct {
 
 func (m *Movies) GetRef() Ref {
 	return MOVIES
+}
+
+func (r *Movies) Check(config json.RawMessage) error {
+	return nil
 }
 
 func (m *Movies) Validate(id string, decoder *json.Decoder) error {

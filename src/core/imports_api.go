@@ -6,7 +6,6 @@ import (
 	"github.com/ant0ine/go-json-rest/rest"
 	"github.com/ohohleo/classify/imports"
 	"net/http"
-	"strconv"
 )
 
 // List all config imports
@@ -15,26 +14,19 @@ func (c *Classify) ApiGetImportsConfig(w rest.ResponseWriter, r *rest.Request) {
 	w.WriteJson(c.config.Imports)
 }
 
-// getImportIdsAndCollections get from Url parameters imports and the collections
-func (c *Classify) getImportIdsAndCollections(r *rest.Request) (imports map[uint64]*Import, collections map[string]*Collection, err error) {
+// getImportNamesAndCollections get from Url parameters imports and the collections
+func (c *Classify) getImportNamesAndCollections(r *rest.Request) (imports map[string]*Import, collections map[string]*Collection, err error) {
 
 	// From the url query list
 	values := r.URL.Query()
 
-	var ids []uint64
-	for _, idStr := range values["id"] {
-
-		var id int
-		id, err = strconv.Atoi(idStr)
-		if err != nil {
-			return
-		}
-
-		ids = append(ids, uint64(id))
+	var importList []string
+	for _, name := range values["name"] {
+		importList = append(importList, name)
 	}
 
 	// Check and get the import list
-	imports, err = c.GetImportsByIds(ids)
+	imports, err = c.GetImportsByNames(importList)
 	if err != nil {
 		return
 	}
@@ -49,6 +41,7 @@ func (c *Classify) getImportIdsAndCollections(r *rest.Request) (imports map[uint
 }
 
 type ApiAddImportsBody struct {
+	Name        string          `json:"name"`
 	Ref         string          `json:"ref"`
 	Collections []string        `json:"collections"`
 	Params      json.RawMessage `json:"params"`
@@ -80,7 +73,7 @@ func (c *Classify) ApiAddImport(w rest.ResponseWriter, r *rest.Request) {
 		return
 	}
 
-	i, outParams, err := c.AddImport(ref, body.Params, collections)
+	i, outParams, err := c.AddImport(body.Name, ref, body.Params, collections)
 	if err != nil {
 
 		// Manque de paramètres
@@ -103,16 +96,16 @@ func (c *Classify) ApiAddImport(w rest.ResponseWriter, r *rest.Request) {
 }
 
 // List all the imports selected by id or by collections
-// GET /imports?id=IMPORT_ID&collection=COLLECTION_NAME
+// GET /imports?name=IMPORT_NAME&collection=COLLECTION_NAME
 func (c *Classify) ApiGetImports(w rest.ResponseWriter, r *rest.Request) {
 
-	ids, collections, err := c.getImportIdsAndCollections(r)
+	names, collections, err := c.getImportNamesAndCollections(r)
 	if err != nil {
 		rest.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 
-	res, err := c.GetImports(ids, collections)
+	res, err := c.GetImports(names, collections)
 	if err != nil {
 		rest.Error(w, err.Error(), http.StatusBadRequest)
 		return
@@ -123,16 +116,16 @@ func (c *Classify) ApiGetImports(w rest.ResponseWriter, r *rest.Request) {
 
 // ApiDeleteImport remove specified import selected by id and by the
 // collections
-// DELETE /imports?id=IMPORT_ID&collection=COLLECTION_NAME
+// DELETE /imports?name=IMPORT_NAME&collection=COLLECTION_NAME
 func (c *Classify) ApiDeleteImport(w rest.ResponseWriter, r *rest.Request) {
 
-	ids, collections, err := c.getImportIdsAndCollections(r)
+	names, collections, err := c.getImportNamesAndCollections(r)
 	if err != nil {
 		rest.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 
-	if err := c.DeleteImports(ids, collections); err != nil {
+	if err := c.DeleteImports(names, collections); err != nil {
 		rest.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
@@ -141,16 +134,16 @@ func (c *Classify) ApiDeleteImport(w rest.ResponseWriter, r *rest.Request) {
 }
 
 // Launch the analysis of the collection import
-// PUT /imports/start?id=IMPORT_ID&collection=COLLECTION_NAME
+// PUT /imports/start?name=IMPORT_NAME&collection=COLLECTION_NAME
 func (c *Classify) ApiStartImport(w rest.ResponseWriter, r *rest.Request) {
 
-	ids, collections, err := c.getImportIdsAndCollections(r)
+	names, collections, err := c.getImportNamesAndCollections(r)
 	if err != nil {
 		rest.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 
-	if err := c.StartImports(ids, collections); err != nil {
+	if err := c.StartImports(names, collections); err != nil {
 		rest.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
@@ -159,16 +152,16 @@ func (c *Classify) ApiStartImport(w rest.ResponseWriter, r *rest.Request) {
 }
 
 // Stop the analysis of the collection import
-// PUT /imports/stop?id=IMPORT_ID&collection=COLLECTION_NAME
+// PUT /imports/stop?name=IMPORT_NAME&collection=COLLECTION_NAME
 func (c *Classify) ApiStopImport(w rest.ResponseWriter, r *rest.Request) {
 
-	ids, collections, err := c.getImportIdsAndCollections(r)
+	names, collections, err := c.getImportNamesAndCollections(r)
 	if err != nil {
 		rest.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 
-	if err := c.StopImports(ids, collections); err != nil {
+	if err := c.StopImports(names, collections); err != nil {
 		rest.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}

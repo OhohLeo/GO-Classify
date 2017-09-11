@@ -26,8 +26,12 @@ var REF_STR2IDX = map[string]Ref{
 }
 
 type Collection interface {
+	Check(json.RawMessage) error
 	GetRef() Ref
 	Validate(string, *json.Decoder) error
 }
 
-type Build func() Collection
+type Build struct {
+	CheckConfig func(json.RawMessage) error
+	Create      func(json.RawMessage, json.RawMessage) (Collection, error)
+}

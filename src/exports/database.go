@@ -7,7 +7,7 @@ import (
 func INIT_DB(db *database.Database) (err error) {
 
 	err = db.AddTable("exports",
-		[]string{"id", "ref", "params"})
+		[]string{"id", "name", "ref", "params"})
 	if err != nil {
 		return
 	}
@@ -31,7 +31,7 @@ func INIT_REF_DB(db *database.Database) error {
 	return db.InsertRef("exports_refs", REF_IDX2STR)
 }
 
-type OnExport func(id uint64, ref Ref, params []byte, collections []string) error
+type OnExport func(id uint64, name string, ref Ref, params []byte, collections []string) error
 
 func RetreiveDBExports(db *database.Database, onExport OnExport) (err error) {
 
@@ -56,7 +56,7 @@ func RetreiveDBExports(db *database.Database, onExport OnExport) (err error) {
 			return
 		}
 
-		err = onExport(dbExport.Id, Ref(dbExport.Ref),
+		err = onExport(dbExport.Id, dbExport.Name, Ref(dbExport.Ref),
 			dbExport.Params, collections)
 	}
 

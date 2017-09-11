@@ -1,18 +1,45 @@
 package core
 
 import (
+	"encoding/json"
 	"errors"
 	"fmt"
 	"github.com/ohohleo/classify/collections"
-	"github.com/ohohleo/classify/websites"
+	// "github.com/ohohleo/classify/websites"
 )
-
-// Collection common methods
 
 // Type of collections
 var newCollections = map[string]collections.Build{
 	"movies": collections.BuildMovies(),
 	"simple": collections.BuildSimple(),
+}
+
+// Check imports configuration
+func (c *Classify) CheckCollectionsConfig(configuration map[string]json.RawMessage) (err error) {
+
+	// For all collection configuration
+	for collectionType, config := range configuration {
+
+		// Select only generic type (ie ':type_name')
+		if len(collectionType) < 1 || collectionType[0] != ':' {
+			continue
+		}
+
+		// Check that the collection type does exists
+		buildCollection, ok := newCollections[collectionType]
+		if ok == false {
+			err = errors.New("collection type '" + collectionType + "' not handled")
+			return
+		}
+
+		// Check specified configuration
+		err = buildCollection.CheckConfig(config)
+		if err != nil {
+			return
+		}
+	}
+
+	return nil
 }
 
 // Check collection names, returns the list of selected collections
@@ -33,39 +60,39 @@ func (c *Classify) GetCollectionsByNames(names []string) (map[string]*Collection
 	return collections, nil
 }
 
-func (c *Classify) AddCollection(name string, ref collections.Ref, webNames []string) (collection *Collection, err error) {
+func (c *Classify) AddCollection(name string, ref collections.Ref, params json.RawMessage) (collection *Collection, err error) {
 
-	var website websites.Website
+	// var website websites.Website
 
-	// Check if the websites does exists
-	websites := make([]websites.Website, 0)
-	for _, name := range webNames {
+	// // Check if the websites does exists
+	// websites := make([]websites.Website, 0)
+	// for _, name := range webNames {
 
-		website, err = c.AddWebsite(name)
-		if err != nil {
-			return
-		}
+	// 	website, err = c.AddWebsite(name)
+	// 	if err != nil {
+	// 		return
+	// 	}
 
-		// Add new website
-		websites = append(websites, website)
-	}
+	// 	// Add new website
+	// 	websites = append(websites, website)
+	// }
 
 	// Add stored collection
-	collection, err = c.addCollection(name, ref)
+	collection, err = c.addCollection(name, ref, params)
 	if err != nil {
 		return
 	}
 
-	// Add websites to the collection created
-	for _, website := range websites {
-		collection.AddWebsite(website)
-	}
+	// // Add websites to the collection created
+	// for _, website := range websites {
+	// 	collection.AddWebsite(website)
+	// }
 
 	return
 }
 
 // Add a new collection
-func (c *Classify) addCollection(name string, ref collections.Ref) (collection *Collection, err error) {
+func (c *Classify) addCollection(name string, ref collections.Ref, params json.RawMessage) (collection *Collection, err error) {
 
 	// Check that the name of the collection is unique
 	if _, ok := c.collections[name]; ok {
@@ -80,8 +107,13 @@ func (c *Classify) addCollection(name string, ref collections.Ref) (collection *
 	}
 
 	// Create the new collection
+	collectionEngine, err := buildCollection.Create(params, nil)
+	if err != nil {
+		return
+	}
+
 	collection = &Collection{
-		engine: buildCollection(),
+		engine: collectionEngine,
 	}
 
 	if c.collections == nil {
