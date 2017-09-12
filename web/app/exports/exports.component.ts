@@ -21,8 +21,7 @@ export class ExportsComponent implements OnInit, OnDestroy {
 	public currentRef: string = "all"
 
 	public exportName: string
-	@ContentChildren(ExportCreateComponent) createExports: QueryList<ExportCreateComponent>
-	public exports2create: Map<string, ExportCreateComponent>
+	public createComponent: ExportCreateComponent
 
     private events
 
@@ -114,20 +113,30 @@ export class ExportsComponent implements OnInit, OnDestroy {
         })
     }
 
+	onExportCreated(exportCreated) {
+		this.createComponent = exportCreated
+	}
+
 	// Create new export collection
     onSubmit() {
 
-		let createComponent = this.exports2create[this.currentRef]
-		if (createComponent === undefined) {
-			console.error("export create component " + this.currentRef + " not found")
+		if (this.createComponent === undefined) {
+			console.error("export created component not found", this.currentRef)
 			return
 		}
 
         this.exportsService.addExport(
 			this.exportName,
-			createComponent.data,
-			(params) => { return createComponent.onParams(params) },
-			(newExport) => { return createComponent.onSuccess(newExport) })
+			this.createComponent.data,
+			(params) => { return this.createComponent.onParams(params) },
+			(newExport) => {
+
+				this.zone.run(() => {
+					this.exportName = ""
+				})
+
+				return this.createComponent.onSuccess(newExport)
+			})
     }
 
     onRefresh(item: ExportBase) {

@@ -14,8 +14,7 @@ export class ImapCreateComponent extends ImportCreateComponent {
 
     constructor(private zone: NgZone,
 				private importsService: ImportsService) {
-
-		super(new Imap(""));
+		super(new Imap(""))
     }
 
     onParams(params: any): boolean {

@@ -10,17 +10,21 @@
 		#createForm="ngForm"
 		(ngSubmit)="onSubmit()">
 	<div class="row">
-	  <div class="input-field col s6">
+	  <div class="input-field col s6 offset-s3">
 		<label for="name">Name</label>
 		<input name="name"
 			   type="string"
 			   id="name"
-			   [(ngModel)]="importName" />
+			   [(ngModel)]="importName" required/>
 	  </div>
 	</div>
 	<div [ngSwitch]="currentRef">
-	  <imap-create *ngSwitchCase="'imap'"></imap-create>
-	  <directory-create *ngSwitchCase="'directory'"></directory-create>
+	  <imap-create *ngSwitchCase="'imap'"
+				   (onCreated)="onImportCreated($event)">
+	  </imap-create>
+	  <directory-create *ngSwitchCase="'directory'"
+						(onCreated)="onImportCreated($event)">
+	  </directory-create>
 	</div>
 	<div class="row">
 	  <button type="submit"

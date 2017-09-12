@@ -7,6 +7,7 @@ import { ToolsModule } from '../tools/tools.module'
 import { ImportsService } from './imports.service'
 
 import { ImportsComponent } from './imports.component'
+import { ImportCreateComponent } from './create.component'
 import { DirectoryCreateComponent } from './directory/create.component'
 import { DirectoryDisplayComponent } from './directory/display.component'
 import { ImapCreateComponent } from './imap/create.component'
@@ -20,7 +21,7 @@ import { ImapDisplayComponent } from './imap/display.component'
         FormsModule,
         ToolsModule
     ],
-    providers: [ImportsService],
+    providers: [ImportsService ],
     declarations: [ImportsComponent,
         DirectoryCreateComponent,
         DirectoryDisplayComponent,

@@ -16,8 +16,8 @@ export class CollectionsComponent {
 
     constructor(private apiService: ApiService) {
 
-        apiService.getAll().subscribe(
-            list => {
+        apiService.getCollections().subscribe(
+            (list) => {
                 this.collections = list
                 this.onChooseCollection(undefined)
             })

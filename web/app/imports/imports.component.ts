@@ -1,11 +1,12 @@
-import { Component, NgZone, OnInit, OnDestroy,
-		 ContentChildren, QueryList, Renderer } from '@angular/core'
+import { Component, NgZone, OnInit, AfterViewInit, OnDestroy,
+		 ViewChildren, QueryList, Renderer } from '@angular/core'
 import { NgSwitch } from '@angular/common'
 import { ApiService, Event } from './../api.service'
 import { ImportsService, ImportBase } from './imports.service'
 import { ImportCreateComponent } from './create.component'
 import { Convert2Imap } from './imap/imap';
 import { Convert2Directory } from './directory/directory';
+import { DirectoryCreateComponent } from './directory/create.component';
 
 declare var jQuery: any;
 
@@ -22,8 +23,7 @@ export class ImportsComponent implements OnInit, OnDestroy {
     public currentRef: string = "all"
 
 	public importName: string
-	@ContentChildren(ImportCreateComponent) createImports: QueryList<ImportCreateComponent>
-	public imports2create: Map<string, ImportCreateComponent>
+	public createComponent: ImportCreateComponent
 
     private events
 
@@ -79,7 +79,7 @@ export class ImportsComponent implements OnInit, OnDestroy {
     }
 
     ngOnInit() {
-        this.update();
+        this.update()
     }
 
     ngOnDestroy() {
@@ -115,20 +115,30 @@ export class ImportsComponent implements OnInit, OnDestroy {
         })
     }
 
+	onImportCreated(importCreated) {
+		this.createComponent = importCreated
+	}
+
     // Create new import collection
     onSubmit() {
 
-		let createComponent = this.imports2create[this.currentRef]
-		if (createComponent === undefined) {
-			console.error("import create component " + this.currentRef + " not found")
+		if (this.createComponent === undefined) {
+			console.error("import created component not found", this.currentRef)
 			return
 		}
 
         this.importsService.addImport(
 			this.importName,
-			createComponent.data,
-			(params) => { return createComponent.onParams(params) },
-			(newImport) => { return createComponent.onSuccess(newImport) })
+			this.createComponent.data,
+			(params) => { return this.createComponent.onParams(params) },
+			(newImport) => {
+
+				this.zone.run(() => {
+					this.importName = ""
+				})
+
+				return this.createComponent.onSuccess(newImport)
+			})
     }
 
     onRefresh(item: ImportBase) {

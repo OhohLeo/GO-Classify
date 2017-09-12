@@ -37,15 +37,9 @@ func RetreiveDBCollections(db *database.Database, onCollection OnCollection) (er
 
 	for _, dbCollection := range dbCollections {
 
-		// Get collection params
-		var params []byte
-		err = dbCollection.GetParams(&params)
-		if err != nil {
-			return
-		}
-
 		// Add new stored collection
-		err = onCollection(dbCollection.Id, dbCollection.Name, Ref(dbCollection.Ref), params)
+		err = onCollection(dbCollection.Id, dbCollection.Name,
+			Ref(dbCollection.Ref), dbCollection.Params)
 		if err != nil {
 			return
 		}

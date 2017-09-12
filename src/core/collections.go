@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"github.com/ohohleo/classify/collections"
 	// "github.com/ohohleo/classify/websites"
+	"log"
 )
 
 // Type of collections
@@ -82,6 +83,8 @@ func (c *Classify) AddCollection(name string, ref collections.Ref, params json.R
 	if err != nil {
 		return
 	}
+
+	log.Printf("Add collection '%s' as '%s'\n", name, ref.String())
 
 	// // Add websites to the collection created
 	// for _, website := range websites {

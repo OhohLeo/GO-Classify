@@ -2,6 +2,7 @@ package core
 
 import (
 	"encoding/json"
+	"fmt"
 	"github.com/ant0ine/go-json-rest/rest"
 	"github.com/ohohleo/classify/collections"
 	"golang.org/x/net/websocket"
@@ -11,7 +12,7 @@ import (
 type ApiCollection struct {
 	Name   string          `json:"name"`
 	Ref    string          `json:"ref"`
-	Params json.RawMessage `json:"params"`
+	params json.RawMessage `json:"params"`
 }
 
 // AddCollection adds new collection by API
@@ -45,7 +46,7 @@ func (c *Classify) ApiPostCollection(w rest.ResponseWriter, r *rest.Request) {
 	}
 
 	// Create new collection
-	collection, err := c.AddCollection(body.Name, ref, body.Params)
+	collection, err := c.AddCollection(body.Name, ref, body.params)
 	if err != nil {
 		rest.Error(w, err.Error(), http.StatusBadRequest)
 		return
@@ -68,22 +69,22 @@ func (c *Classify) ApiPostCollection(w rest.ResponseWriter, r *rest.Request) {
 // GET /collections
 func (c *Classify) ApiGetCollections(w rest.ResponseWriter, r *rest.Request) {
 
-	collections := make([]ApiCollection, len(c.collections))
+	result := make([]ApiCollection, len(c.collections))
 	i := 0
 
 	for name, c := range c.collections {
 
-		collectionRef := c.engine.GetRef()
-
-		collections[i] = ApiCollection{
+		result[i] = ApiCollection{
 			Name: name,
-			Ref:  collectionRef.String(),
+			Ref:  c.engine.GetRef().String(),
 		}
 
 		i++
 	}
 
-	w.WriteJson(&collections)
+	if err := w.WriteJson(result); err != nil {
+		fmt.Printf("Get collections issue : %s\n", err.Error())
+	}
 }
 
 func (c *Classify) getCollectionByName(w rest.ResponseWriter, r *rest.Request) *Collection {
