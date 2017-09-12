@@ -37,12 +37,13 @@
   <div *ngIf="exports">
 	<table *ngFor="let ref of refs2Display">
 	  <tr *ngFor="let export of exports.get(ref)">
+		<th>{{export.name}}</th>
 		<th [ngSwitch]="ref">
 		  <file-display *ngSwitchCase="'file'"
 						[file]="export"></file-display>
 		</th>
 	  	<th>
-		  <i id="{{export.id}}"
+		  <i id="{{export.name}}"
 		     class="material-icons refresh"
 		     (click)="onRefresh(export)">refresh</i>
 		</th>

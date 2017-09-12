@@ -38,6 +38,7 @@
   <div *ngIf="imports">
 	<table *ngFor="let ref of refs2Display">
 	  <tr *ngFor="let import of imports.get(ref)">
+	  	<th>{{import.name}}</th>
 		<th [ngSwitch]="ref">
 		  <imap-display *ngSwitchCase="'imap'"
 				[imap]="import">
@@ -46,7 +47,7 @@
 				     [directory]="import">
 		  </directory-display>
 		</th>
-	  	<th><i id="{{import.id}}"
+	  	<th><i id="{{import.name}}"
 		       class="material-icons refresh"
 		       (click)="onRefresh(import)">refresh</i>
 		</th>

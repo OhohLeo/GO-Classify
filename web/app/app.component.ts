@@ -79,7 +79,7 @@ export class AppComponent implements OnInit {
                 }
 
                 // Import data
-                if (new RegExp("^imports").test(e.event)) {
+                if (new RegExp("^import").test(e.event)) {
                     this.handleImport(e);
                     return;
                 }
@@ -153,11 +153,16 @@ export class AppComponent implements OnInit {
 
     // Gestion des nouveaux imports
     handleImport(e: Event) {
+
+		console.log("IMPORT?", e)
+
         // Send notifications to the imports list
         this.importsService.addEvent(e);
 
         // Display imports status
         if (new RegExp('status$').test(e.event)) {
+
+			console.log("Status??")
 
             // Status 'TRUE': rotate refresh logo
             if (e.data) {

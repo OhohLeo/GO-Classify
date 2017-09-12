@@ -31,7 +31,7 @@ type ProtocolReq struct {
 type Event struct {
 	Event  string      `json:"event"`
 	Status string      `json:"status"`
-	Id     string      `json:"id"`
+	Name   string      `json:"name"`
 	Data   interface{} `json:"data"`
 }
 
@@ -127,15 +127,14 @@ func (c *Classify) CreateServer(config ServerConfig) (server *Server, err error)
 			c.ApiGetCollectionBuffers),
 		rest.Delete("/collections/:name/buffers",
 			c.ApiDeleteCollectionBuffers),
-
 		rest.Get("/collections/:name/buffers/:id",
 			c.ApiGetCollectionSingleBuffer),
-		rest.Post("/collections/:name/buffers/:id/validate",
-			c.ApiValidateCollectionSingleBuffer),
 		rest.Patch("/collections/:name/buffers/:id",
 			c.ApiPatchCollectionSingleBuffer),
 		rest.Delete("/collections/:name/buffers/:id",
 			c.ApiDeleteCollectionSingleBuffer),
+		rest.Post("/collections/:name/buffers/:id/validate",
+			c.ApiValidateCollectionSingleBuffer),
 
 		// Handle collection items
 		rest.Get("/collections/:name/items",
@@ -163,8 +162,8 @@ func (c *Classify) CreateServer(config ServerConfig) (server *Server, err error)
 	return
 }
 
-func (c *Classify) SendEvent(event string, status string, id string, data interface{}) {
-	c.Server.SendEvent(event, status, id, data)
+func (c *Classify) SendEvent(event string, status string, name string, data interface{}) {
+	c.Server.SendEvent(event, status, name, data)
 }
 
 func (s *Server) Start() {
@@ -182,14 +181,14 @@ func (s *Server) Stop() {
 }
 
 // SendEvent add new event on the event channel
-func (s *Server) SendEvent(eventType string, status string, id string, data interface{}) {
+func (s *Server) SendEvent(eventType string, status string, name string, data interface{}) {
 
-	fmt.Printf("SEND EVENT %s [%s] id:%s %+v\n", eventType, status, id, data)
+	fmt.Printf("SEND EVENT %s [%s] name:%s %+v\n", eventType, status, name, data)
 
 	s.events.Add(Event{
 		Event:  eventType,
 		Status: status,
-		Id:     id,
+		Name:   name,
 		Data:   data,
 	})
 }
