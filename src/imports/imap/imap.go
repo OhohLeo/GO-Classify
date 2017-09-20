@@ -111,8 +111,12 @@ func (i *Imap) GetRef() imports.Ref {
 	return imports.IMAP
 }
 
-func (i *Imap) Check(config json.RawMessage) error {
+func (i *Imap) CheckConfig(config json.RawMessage) error {
 	return nil
+}
+
+func (i *Imap) GetParam(string, json.RawMessage) (result interface{}, err error) {
+	return
 }
 
 func (i *Imap) Start() (c chan data.Data, err error) {

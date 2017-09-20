@@ -144,19 +144,28 @@ func (c *Classify) CheckImportsConfig(configuration map[string]json.RawMessage) 
 	return nil
 }
 
-// Check imports ids and return the list of imports
+// Check import name and return the imports
+func (c *Classify) GetImportByName(name string) (i *Import, err error) {
+
+	var ok bool
+	i, ok = c.imports[name]
+	if ok == false {
+		err = fmt.Errorf("import '%s' not found", name)
+		return
+	}
+
+	return
+}
+
+// Check imports names and return the list of imports
 func (c *Classify) GetImportsByNames(names []string) (imports map[string]*Import, err error) {
 
 	imports = make(map[string]*Import)
 	for _, name := range names {
-
-		i, ok := c.imports[name]
-		if ok == false {
-			err = fmt.Errorf("import '%s' not found", name)
+		imports[name], err = c.GetImportByName(name)
+		if err != nil {
 			return
 		}
-
-		imports[name] = i
 	}
 
 	return

@@ -64,7 +64,7 @@ func (r *Directory) GetRef() imports.Ref {
 	return imports.DIRECTORY
 }
 
-func (r *Directory) Check(config json.RawMessage) error {
+func (r *Directory) CheckConfig(config json.RawMessage) error {
 
 	// // Check we have an existing directory
 	// if _, err := os.Stat(r.Path); os.IsNotExist(err) {
@@ -113,6 +113,24 @@ func (r *Directory) Check(config json.RawMessage) error {
 
 	// return errors.New("invalid or unauthorised import path '" + r.Path + "'")
 	return nil
+}
+
+type ParamPathIn struct {
+	œ
+}
+
+func (r *Directory) GetParam(name string, params json.RawMessage) (result interface{}, err error) {
+
+	switch name {
+
+	case "path":
+
+	default:
+		err = fmt.Errorf("import 'directory' invalid param '%s'", name)
+		return
+	}
+
+	return
 }
 
 // Return a channel of files in the directory

@@ -14,6 +14,18 @@ func (c *Classify) ApiGetImportsConfig(w rest.ResponseWriter, r *rest.Request) {
 	w.WriteJson(c.config.Imports)
 }
 
+// getImportByName get from Url parameters import
+func (c *Classify) getImportByName(w rest.ResponseWriter, r *rest.Request) *Import {
+
+	i, err := c.GetImportByName(r.PathParam("name"))
+	if err != nil {
+		rest.Error(w, err.Error(), http.StatusBadRequest)
+		return nil
+	}
+
+	return i
+}
+
 // getImportNamesAndCollections get from Url parameters imports and the collections
 func (c *Classify) getImportNamesAndCollections(r *rest.Request) (imports map[string]*Import, collections map[string]*Collection, err error) {
 
@@ -167,4 +179,15 @@ func (c *Classify) ApiStopImport(w rest.ResponseWriter, r *rest.Request) {
 	}
 
 	w.WriteHeader(http.StatusNoContent)
+}
+
+// Handle import params
+// PUT /imports/:name/:param
+func (c *Classify) ApiGetImportParam(w rest.ResponseWriter, r *rest.Request) {
+
+	i := c.getImportByName(w, r)
+	if i == nil {
+		return
+	}
+
 }

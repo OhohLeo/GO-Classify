@@ -27,7 +27,8 @@ var REF_STR2IDX = map[string]Ref{
 }
 
 type Import interface {
-	Check(json.RawMessage) error
+	CheckConfig(json.RawMessage) error
+	GetParam(string, json.RawMessage) (interface{}, error)
 	Start() (chan data.Data, error)
 	Stop() error
 	GetRef() Ref
