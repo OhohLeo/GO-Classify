@@ -1,0 +1,23 @@
+<a (click)="onModal()">{{displayPath}}</a>
+<div id="path" class="modal bottom-sheet">
+    <div class="modal-content">
+	<div>
+	    <p>Directories</p>
+	    <ul class="collection">
+		<li class="collection row" *ngFor="let directory of directories">
+		    {{directory}}
+		</li>
+	    </ul>
+	</div>
+	<div>
+	    <p>Files</p>
+	    <ul class="collection">
+		<li class="collection row" *ngFor="let file of files">
+		    {{file}}
+		</li>
+	    </ul>
+	</div>
+    </div>
+    <div class="modal-footer">
+    </div>
+</div>

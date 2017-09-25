@@ -95,7 +95,7 @@ func (c *Classify) CreateServer(config ServerConfig) (server *Server, err error)
 		rest.Put("/imports/start", c.ApiStartImport),
 		rest.Put("/imports/stop", c.ApiStopImport),
 		rest.Get("/imports/config", c.ApiGetImportsConfig),
-		rest.Get("/imports/:name/:param", c.ApiGetImportParam),
+		rest.Put("/imports/:name/:param", c.ApiPutImportParam),
 
 		// Handle exports
 		rest.Post("/exports", c.ApiAddExport),

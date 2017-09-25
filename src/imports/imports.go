@@ -28,7 +28,6 @@ var REF_STR2IDX = map[string]Ref{
 
 type Import interface {
 	CheckConfig(json.RawMessage) error
-	GetParam(string, json.RawMessage) (interface{}, error)
 	Start() (chan data.Data, error)
 	Stop() error
 	GetRef() Ref
@@ -38,4 +37,5 @@ type Import interface {
 type Build struct {
 	CheckConfig func(json.RawMessage) error
 	Create      func(json.RawMessage, json.RawMessage, []string) (Import, interface{}, error)
+	GetParam    func(string, json.RawMessage) (interface{}, error)
 }

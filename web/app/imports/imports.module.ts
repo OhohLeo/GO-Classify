@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common'
 import { BrowserModule } from '@angular/platform-browser'
 import { FormsModule } from '@angular/forms'
 import { ToolsModule } from '../tools/tools.module'
+import { ParamsModule } from '../params/params.module'
 
 import { ImportsService } from './imports.service'
 
@@ -19,9 +20,10 @@ import { ImapDisplayComponent } from './imap/display.component'
         CommonModule,
         BrowserModule,
         FormsModule,
-        ToolsModule
+        ToolsModule,
+        ParamsModule
     ],
-    providers: [ImportsService ],
+    providers: [ImportsService],
     declarations: [ImportsComponent,
         DirectoryCreateComponent,
         DirectoryDisplayComponent,

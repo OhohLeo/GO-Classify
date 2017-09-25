@@ -26,7 +26,7 @@ export class BufferComponent implements OnInit, OnDestroy {
     private buffers: BufferItem[] = []
 
     constructor(private zone: NgZone,
-				private bufferService: BufferService) {
+        private bufferService: BufferService) {
     }
 
     ngOnInit() {

@@ -183,11 +183,36 @@ func (c *Classify) ApiStopImport(w rest.ResponseWriter, r *rest.Request) {
 
 // Handle import params
 // PUT /imports/:name/:param
-func (c *Classify) ApiGetImportParam(w rest.ResponseWriter, r *rest.Request) {
+func (c *Classify) ApiPutImportParam(w rest.ResponseWriter, r *rest.Request) {
 
-	i := c.getImportByName(w, r)
-	if i == nil {
+	param := r.PathParam("param")
+	name := r.PathParam("name")
+
+	// Récupération du type de l'importation
+	i, err := c.GetImportByName(name)
+	if err == nil {
+		name = i.engine.GetRef().String()
+	}
+
+	newImport, ok := newImports[name]
+	if ok == false {
+		rest.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 
+	var body json.RawMessage
+	err = r.DecodeJsonPayload(&body)
+	if err != nil {
+		rest.Error(w, "invalid json body", http.StatusBadRequest)
+		return
+	}
+
+	res, err := newImport.GetParam(param, body)
+	if err != nil {
+		rest.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	w.WriteJson(res)
+	return
 }

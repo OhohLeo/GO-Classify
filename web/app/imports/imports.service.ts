@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs/Rx';
-import { ApiService, Event}  from './../api.service';
+import { ApiService, Event } from './../api.service';
 import { BufferService } from './../buffer/buffer.service';
 import { Response } from '@angular/http';
 
@@ -49,16 +49,16 @@ export class ImportsService {
     private convertToImport = {}
 
     constructor(private apiService: ApiService,
-				private bufferService: BufferService) { }
+        private bufferService: BufferService) { }
 
     // Set update import list function
     setUpdateList(updateList: any) {
         this.updateList = updateList;
     }
 
-	addConvertToImport(name: string, callback) {
-		this.convertToImport[name] = callback
-	}
+    addConvertToImport(name: string, callback) {
+        this.convertToImport[name] = callback
+    }
 
     // Refresh the import list
     private update() {
@@ -112,7 +112,7 @@ export class ImportsService {
 
         return this.apiService.post(
             "imports", {
-				"name": name,
+                "name": name,
                 "ref": i.getRef(),
                 "params": i.getParams(),
                 "collections": [this.apiService.getCollectionName()],
@@ -127,8 +127,8 @@ export class ImportsService {
 
                 if (body === undefined || body.name === undefined) {
 
-					if (onParams !== undefined && onParams(body))
-						return
+                    if (onParams !== undefined && onParams(body))
+                        return
 
                     throw new Error('Name not found when adding new import!')
                 }
@@ -137,9 +137,9 @@ export class ImportsService {
 
                 this.update()
 
-				if (onSuccess !== undefined) {
-					onSuccess(i)
-				}
+                if (onSuccess !== undefined) {
+                    onSuccess(i)
+                }
             })
     }
 
@@ -216,8 +216,8 @@ export class ImportsService {
                     throw new Error('Error when ' + action + ' import: ' + rsp.status)
                 }
 
-				if (isStart)
-					this.bufferService.disableCache();
+                if (isStart)
+                    this.bufferService.disableCache();
             })
     }
 
