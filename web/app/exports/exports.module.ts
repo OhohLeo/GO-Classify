@@ -2,6 +2,7 @@ import { NgModule } from '@angular/core'
 import { CommonModule } from '@angular/common'
 import { BrowserModule } from '@angular/platform-browser'
 import { FormsModule } from '@angular/forms'
+import { ParamsModule } from '../params/params.module'
 
 import { ExportsService } from './exports.service'
 
@@ -13,12 +14,13 @@ import { FileDisplayComponent } from './file/display.component'
     imports: [
         CommonModule,
         BrowserModule,
-        FormsModule
+        FormsModule,
+        ParamsModule
     ],
     providers: [ExportsService],
     declarations: [ExportsComponent,
-				   FileCreateComponent,
-				   FileDisplayComponent],
+        FileCreateComponent,
+        FileDisplayComponent],
     exports: [ExportsComponent]
 })
 

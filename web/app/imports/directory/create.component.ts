@@ -11,13 +11,13 @@ import { Directory } from './directory'
 
 export class DirectoryCreateComponent extends ImportCreateComponent {
 
-	public paths: string[] = []
+    public paths: string[] = []
 
     constructor(private zone: NgZone,
-				private importsService: ImportsService,
-				private apiService: ApiService) {
+        private importsService: ImportsService,
+        private apiService: ApiService) {
 
-		super(new Directory(""))
+        super(new Directory(""))
 
         // // Get configuration import
         // importsService.getImportsConfig("directory")
@@ -45,9 +45,9 @@ export class DirectoryCreateComponent extends ImportCreateComponent {
         //     })
     }
 
-	onSuccess(data: Directory) {
-		this.zone.run(() => {
-			this.data = new Directory("")
-		})
-	}
+    onSuccess(data: Directory) {
+        this.zone.run(() => {
+            this.data = new Directory("")
+        })
+    }
 }

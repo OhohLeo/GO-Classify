@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"github.com/ohohleo/classify/data"
 	"github.com/ohohleo/classify/exports"
+	"github.com/ohohleo/classify/params"
 	"io/ioutil"
 	"os"
 	"strconv"
@@ -20,7 +21,8 @@ type File struct {
 
 func ToBuild() exports.Build {
 	return exports.Build{
-		Create: Create,
+		Create:   Create,
+		GetParam: GetParam,
 	}
 }
 
@@ -50,6 +52,18 @@ func Create(input json.RawMessage,
 	file.mode = os.FileMode(mode)
 
 	e = &file
+	return
+}
+
+func GetParam(name string, data json.RawMessage) (result interface{}, err error) {
+
+	switch name {
+	case "path":
+		result, err = params.GetPath(data)
+	default:
+		err = fmt.Errorf("export 'file' invalid param '%s'", name)
+	}
+
 	return
 }
 

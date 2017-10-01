@@ -9,19 +9,20 @@ export class ParamsService {
     constructor(private apiService: ApiService) { }
 
 
-    actionParam(type: string, name: string, param: string, data: string) {
+    actionParam(type: string, name: string, param: string, data: any) {
 
         return new Observable(observer => {
 
-            return this.apiService.put(type + "/" + name + "/" + param)
+            return this.apiService.putWithData(
+                type + "/" + name + "/" + param, data)
                 .subscribe(rsp => {
-                    if (rsp.status != 204) {
+                    if (rsp.status != 200) {
                         throw new Error('Error when ' + name + '/' + param
                             + ' ' + type + ': '
                             + rsp.status)
                     }
 
-                    observer.next(rsp)
+                    observer.next(rsp.json())
                 })
         })
     }

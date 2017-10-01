@@ -8,10 +8,16 @@ import (
 	"net/http"
 )
 
-// List all config exports
-// GET /exports/config
-func (c *Classify) ApiGetExportsConfig(w rest.ResponseWriter, r *rest.Request) {
-	w.WriteJson(c.config.Exports)
+// getExportByName get from Url parameters export
+func (c *Classify) getExportByName(w rest.ResponseWriter, r *rest.Request) *Export {
+
+	i, err := c.GetExportByName(r.PathParam("name"))
+	if err != nil {
+		rest.Error(w, err.Error(), http.StatusBadRequest)
+		return nil
+	}
+
+	return i
 }
 
 // getExportNamesAndCollections get from Url parameters exports and the collections
@@ -160,4 +166,52 @@ func (c *Classify) ApiStopExport(w rest.ResponseWriter, r *rest.Request) {
 	}
 
 	w.WriteHeader(http.StatusNoContent)
+}
+
+// List all config exports
+// GET /exports/:name/config
+func (c *Classify) ApiGetExportConfig(w rest.ResponseWriter, r *rest.Request) {
+	w.WriteJson(nil)
+}
+
+// Set config exports
+// PATCH /exports/:name/config
+func (c *Classify) ApiPatchExportConfig(w rest.ResponseWriter, r *rest.Request) {
+	w.WriteJson(nil)
+}
+
+// Handle export params
+// PUT /exports/:name/:param
+func (c *Classify) ApiPutExportParam(w rest.ResponseWriter, r *rest.Request) {
+
+	param := r.PathParam("param")
+	name := r.PathParam("name")
+
+	// Récupération du type de l'exportation
+	i, err := c.GetExportByName(name)
+	if err == nil {
+		name = i.engine.GetRef().String()
+	}
+
+	newExport, ok := newExports[name]
+	if ok == false {
+		rest.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	var body json.RawMessage
+	err = r.DecodeJsonPayload(&body)
+	if err != nil {
+		rest.Error(w, "invalid json body", http.StatusBadRequest)
+		return
+	}
+
+	res, err := newExport.GetParam(param, body)
+	if err != nil {
+		rest.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	w.WriteJson(res)
+	return
 }

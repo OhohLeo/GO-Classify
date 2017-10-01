@@ -7,8 +7,8 @@ import (
 	"fmt"
 	"github.com/ohohleo/classify/data"
 	"github.com/ohohleo/classify/imports"
+	"github.com/ohohleo/classify/params"
 	"io/ioutil"
-	"os"
 	"os/exec"
 	"path/filepath"
 	"strings"
@@ -64,64 +64,15 @@ func Create(input json.RawMessage, config json.RawMessage, collections []string)
 	return
 }
 
-func GetParam(name string, params json.RawMessage) (result interface{}, err error) {
+func GetParam(name string, data json.RawMessage) (result interface{}, err error) {
 
 	switch name {
-
 	case "path":
-		result, err = GetPath(params)
+		result, err = params.GetPath(data)
 	default:
 		err = fmt.Errorf("import 'directory' invalid param '%s'", name)
 	}
 
-	return
-}
-
-type ParamPath struct {
-	Directory string `json:"directory"`
-}
-
-type ParamPathResult struct {
-	Directories []string `json:"directories"`
-	Files       []string `json:"files"`
-}
-
-func GetPath(params json.RawMessage) (result interface{}, err error) {
-
-	// Get path parameter
-	var paramPath ParamPath
-	err = json.Unmarshal(params, &paramPath)
-	if err != nil {
-		return
-	}
-
-	// Check path validity
-	var file *os.File
-	file, err = os.Open(paramPath.Directory)
-	if err != nil {
-		return
-	}
-
-	// Search for files inside
-	var fileInfos []os.FileInfo
-	fileInfos, err = file.Readdir(0)
-	if err != nil {
-		return
-	}
-
-	paramPathResult := new(ParamPathResult)
-
-	for _, fileInfo := range fileInfos {
-		if fileInfo.IsDir() {
-			paramPathResult.Directories =
-				append(paramPathResult.Directories, fileInfo.Name())
-		} else if fileInfo.Mode().IsRegular() {
-			paramPathResult.Files =
-				append(paramPathResult.Files, fileInfo.Name())
-		}
-	}
-
-	result = paramPathResult
 	return
 }
 

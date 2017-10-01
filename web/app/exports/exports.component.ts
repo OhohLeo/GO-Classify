@@ -1,5 +1,7 @@
-import { Component, NgZone, OnInit, OnDestroy,
-		 ContentChildren, QueryList, Renderer } from '@angular/core'
+import {
+    Component, NgZone, OnInit, OnDestroy,
+    ContentChildren, QueryList, Renderer
+} from '@angular/core'
 import { NgSwitch } from '@angular/common'
 import { ExportsService, ExportBase } from './exports.service'
 import { ExportCreateComponent } from './create.component'
@@ -18,10 +20,10 @@ export class ExportsComponent implements OnInit, OnDestroy {
     public refs: Array<string> = []
     public refs2Display: Array<string> = []
     public exports: Map<string, ExportBase[]>
-	public currentRef: string = "all"
+    public currentRef: string = "all"
 
-	public exportName: string
-	public createComponent: ExportCreateComponent
+    public exportName: string
+    public createComponent: ExportCreateComponent
 
     private events
 
@@ -113,30 +115,30 @@ export class ExportsComponent implements OnInit, OnDestroy {
         })
     }
 
-	onExportCreated(exportCreated) {
-		this.createComponent = exportCreated
-	}
+    onExportCreated(exportCreated) {
+        this.createComponent = exportCreated
+    }
 
-	// Create new export collection
+    // Create new export collection
     onSubmit() {
 
-		if (this.createComponent === undefined) {
-			console.error("export created component not found", this.currentRef)
-			return
-		}
+        if (this.createComponent === undefined) {
+            console.error("export created component not found", this.currentRef)
+            return
+        }
 
         this.exportsService.addExport(
-			this.exportName,
-			this.createComponent.data,
-			(params) => { return this.createComponent.onParams(params) },
-			(newExport) => {
+            this.exportName,
+            this.createComponent.data,
+            (params) => { return this.createComponent.onParams(params) },
+            (newExport) => {
 
-				this.zone.run(() => {
-					this.exportName = ""
-				})
+                this.zone.run(() => {
+                    this.exportName = ""
+                })
 
-				return this.createComponent.onSuccess(newExport)
-			})
+                return this.createComponent.onSuccess(newExport)
+            })
     }
 
     onRefresh(item: ExportBase) {
@@ -145,6 +147,9 @@ export class ExportsComponent implements OnInit, OnDestroy {
         } else {
             this.exportsService.forceExport(item)
         }
+    }
+
+    onConfig(item: ExportBase) {
     }
 
     onDelete(item: ExportBase) {

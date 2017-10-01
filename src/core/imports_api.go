@@ -8,12 +8,6 @@ import (
 	"net/http"
 )
 
-// List all config imports
-// GET /imports/config
-func (c *Classify) ApiGetImportsConfig(w rest.ResponseWriter, r *rest.Request) {
-	w.WriteJson(c.config.Imports)
-}
-
 // getImportByName get from Url parameters import
 func (c *Classify) getImportByName(w rest.ResponseWriter, r *rest.Request) *Import {
 
@@ -179,6 +173,18 @@ func (c *Classify) ApiStopImport(w rest.ResponseWriter, r *rest.Request) {
 	}
 
 	w.WriteHeader(http.StatusNoContent)
+}
+
+// List all config imports
+// GET /imports/:name/config
+func (c *Classify) ApiGetImportConfig(w rest.ResponseWriter, r *rest.Request) {
+	w.WriteJson(nil)
+}
+
+// Set config imports
+// PATCH /imports/:name/config
+func (c *Classify) ApiPatchImportConfig(w rest.ResponseWriter, r *rest.Request) {
+	w.WriteJson(nil)
 }
 
 // Handle import params

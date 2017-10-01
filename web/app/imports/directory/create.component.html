@@ -1,20 +1,15 @@
-
 <div class="row">
   <div class="input-field col s6">
-      <params-path></params-path>
-      <!-- <select name="path"
-       [(ngModel)]="data.path"
-       class="browser-default"
-       required>
-       <option *ngFor="let path of paths"
-       [ngValue]="path">{{path}}</option>
-       </select> -->
+      <params-path [(ngModel)]="data.path"
+		   [type]="'imports'"
+		   [name]="'directory'">
+      </params-path>
   </div>
   <div class="input-field col s6">
 	<input name="isRecursive"
-		   type="checkbox"
-		   id="isRecursive"
-		   [(ngModel)]="data.isRecursive" />
+	       type="checkbox"
+	       id="isRecursive"
+	       [(ngModel)]="data.isRecursive" />
 	<label for="isRecursive">with sub-directories</label>
   </div>
 </div>

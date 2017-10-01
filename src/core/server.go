@@ -94,7 +94,8 @@ func (c *Classify) CreateServer(config ServerConfig) (server *Server, err error)
 		rest.Delete("/imports", c.ApiDeleteImport),
 		rest.Put("/imports/start", c.ApiStartImport),
 		rest.Put("/imports/stop", c.ApiStopImport),
-		rest.Get("/imports/config", c.ApiGetImportsConfig),
+		rest.Get("/imports/:name/config", c.ApiGetImportConfig),
+		rest.Patch("/imports/:name/config", c.ApiPatchImportConfig),
 		rest.Put("/imports/:name/:param", c.ApiPutImportParam),
 
 		// Handle exports
@@ -103,25 +104,18 @@ func (c *Classify) CreateServer(config ServerConfig) (server *Server, err error)
 		rest.Delete("/exports", c.ApiDeleteExport),
 		rest.Put("/exports/force", c.ApiForceExport),
 		rest.Put("/exports/stop", c.ApiStopExport),
-		rest.Get("/exports/config", c.ApiGetExportsConfig),
+		rest.Get("/exports/:name/config", c.ApiGetExportConfig),
+		rest.Patch("/exports/:name/config", c.ApiPatchExportConfig),
+		rest.Put("/exports/:name/:param", c.ApiPutExportParam),
 
 		// Handle collections
-		rest.Post("/collections",
-			c.ApiPostCollection),
-		rest.Get("/collections",
-			c.ApiGetCollections),
-		rest.Get("/collections/:name",
-			c.ApiGetCollectionByName),
-		rest.Patch("/collections/:name",
-			c.ApiPatchCollection),
-		rest.Delete("/collections/:name",
-			c.ApiDeleteCollectionByName),
-
-		// Handle collection configuration
-		rest.Get("/collections/:name/config",
-			c.ApiGetCollectionConfig),
-		rest.Patch("/collections/:name/config",
-			c.ApiPatchCollectionConfig),
+		rest.Post("/collections", c.ApiPostCollection),
+		rest.Get("/collections", c.ApiGetCollections),
+		rest.Get("/collections/:name", c.ApiGetCollectionByName),
+		rest.Patch("/collections/:name", c.ApiPatchCollection),
+		rest.Delete("/collections/:name", c.ApiDeleteCollectionByName),
+		rest.Get("/collections/:name/config", c.ApiGetCollectionConfig),
+		rest.Patch("/collections/:name/config", c.ApiPatchCollectionConfig),
 
 		// Handle collection buffer
 		rest.Get("/collections/:name/buffers",

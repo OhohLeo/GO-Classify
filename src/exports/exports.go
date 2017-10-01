@@ -33,4 +33,5 @@ type Export interface {
 type Build struct {
 	CheckConfig func(json.RawMessage) error
 	Create      func(json.RawMessage, json.RawMessage, []string) (Export, error)
+	GetParam    func(string, json.RawMessage) (interface{}, error)
 }

@@ -1,11 +1,9 @@
 <div class="row">
   <div class="input-field col s6">
-	<input name="path"
-		   type="string"
-		   id="path"
-		   [(ngModel)]="data.path" />
-	<label for="path">Path</label>
-  </div>
+      <params-path [(ngModel)]="data.path"
+		   [type]="'exports'"
+		   [name]="'file'">
+      </params-path>  </div>
   <div class="input-field col s6">
 	<input name="permissions"
 		   type="string"

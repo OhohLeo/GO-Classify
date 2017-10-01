@@ -141,19 +141,28 @@ func (c *Classify) CheckExportsConfig(configuration map[string]json.RawMessage) 
 	return nil
 }
 
-// Check exports ids and return the list of exports
+// Check export name and return the exports
+func (c *Classify) GetExportByName(name string) (i *Export, err error) {
+
+	var ok bool
+	i, ok = c.exports[name]
+	if ok == false {
+		err = fmt.Errorf("export '%s' not found", name)
+		return
+	}
+
+	return
+}
+
+// Check exports names and return the list of exports
 func (c *Classify) GetExportsByNames(names []string) (exports map[string]*Export, err error) {
 
 	exports = make(map[string]*Export)
 	for _, name := range names {
-
-		e, ok := c.exports[name]
-		if ok == false {
-			err = fmt.Errorf("import '%s' not found", name)
+		exports[name], err = c.GetExportByName(name)
+		if err != nil {
 			return
 		}
-
-		exports[name] = e
 	}
 
 	return

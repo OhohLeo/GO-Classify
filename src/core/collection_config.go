@@ -2,18 +2,18 @@ package core
 
 import (
 	"fmt"
-	"sort"
+	"github.com/ohohleo/classify/config"
 	"strconv"
 	"strings"
 )
 
 type CollectionConfig struct {
-	EnableStore  bool          `json:"enableStore"`
-	EnableBuffer bool          `json:"enableBuffer"`
-	BufferSize   int           `json:"bufferSize"`
-	Filters      CfgStringList `json:"filters"`
-	Separators   CfgStringList `json:"separators"`
-	Banned       CfgStringList `json:"banned"`
+	EnableStore  bool              `json:"enableStore"`
+	EnableBuffer bool              `json:"enableBuffer"`
+	BufferSize   int               `json:"bufferSize"`
+	Filters      config.StringList `json:"filters"`
+	Separators   config.StringList `json:"separators"`
+	Banned       config.StringList `json:"banned"`
 }
 
 func NewCollectionConfig(bufferSize int) *CollectionConfig {
@@ -99,9 +99,9 @@ func (c *CollectionConfig) GetBannedList() []string {
 
 func (c *Collection) ModifyConfig(name string, action string, list []string) (err error) {
 
-	var currentList *CfgStringList
+	var currentList *config.StringList
 
-	params := map[string]*CfgStringList{
+	params := map[string]*config.StringList{
 		"filters":    &c.config.Filters,
 		"separators": &c.config.Separators,
 		"banned":     &c.config.Banned,
@@ -190,97 +190,4 @@ func (c *Collection) ModifyConfigValue(name string, value string) error {
 
 func (c *Collection) GetConfig() *CollectionConfig {
 	return c.config
-}
-
-type CfgStringList []string
-
-func (c *CfgStringList) Add(toAdd []string) error {
-
-	mapCurrent := map[string]struct{}{}
-	for _, current := range *c {
-		mapCurrent[current] = struct{}{}
-	}
-
-	hasChanged := false
-	list := *c
-
-	// Check if item doesn't already exist
-	for _, add := range toAdd {
-
-		if _, ok := mapCurrent[add]; ok {
-			continue
-		}
-
-		list = append(list, add)
-		hasChanged = true
-	}
-
-	if hasChanged {
-
-		// Sort longest item first, short one at the end
-		sort.Sort(CfgStringList(list))
-		*c = list
-		return nil
-	}
-
-	return fmt.Errorf("invalid config to add '%s': nothing changed",
-		strings.Join(toAdd, ","))
-}
-
-func (c *CfgStringList) Remove(toRemove []string) error {
-
-	list := *c
-
-	mapToRemove := map[string]struct{}{}
-	for _, remove := range toRemove {
-		mapToRemove[remove] = struct{}{}
-	}
-
-	for i := len(list) - 1; i >= 0; i-- {
-
-		current := list[i]
-
-		if _, ok := mapToRemove[current]; ok {
-
-			if i > 0 {
-				list = append(list[:i], list[:i+1]...)
-			} else if len(list) > 0 {
-				list = list[1:]
-			} else {
-				list = []string{}
-			}
-
-			delete(mapToRemove, current)
-		}
-	}
-
-	*c = list
-
-	// No errors found
-	if len(mapToRemove) == 0 {
-		return nil
-	}
-
-	keys := make([]string, len(mapToRemove))
-
-	i := 0
-	for key, _ := range mapToRemove {
-		keys[i] = key
-		i++
-	}
-
-	return fmt.Errorf("invalid config to remove '%s'", strings.Join(keys, ","))
-}
-
-// Methods used to implement sort.Interface
-func (c CfgStringList) Len() int {
-	return len(c)
-}
-
-func (c CfgStringList) Swap(i, j int) {
-	c[i], c[j] = c[j], c[i]
-}
-
-func (c CfgStringList) Less(i, j int) bool {
-	return len(c[j]) < len(c[i])
 }

@@ -1,5 +1,7 @@
-import { Component, NgZone, OnInit, AfterViewInit, OnDestroy,
-		 ViewChildren, QueryList, Renderer } from '@angular/core'
+import {
+    Component, NgZone, OnInit, AfterViewInit, OnDestroy,
+    ViewChildren, QueryList, Renderer
+} from '@angular/core'
 import { NgSwitch } from '@angular/common'
 import { ApiService, Event } from './../api.service'
 import { ImportsService, ImportBase } from './imports.service'
@@ -22,8 +24,8 @@ export class ImportsComponent implements OnInit, OnDestroy {
     public imports: Map<string, ImportBase[]>
     public currentRef: string = "all"
 
-	public importName: string
-	public createComponent: ImportCreateComponent
+    public importName: string
+    public createComponent: ImportCreateComponent
 
     private events
 
@@ -115,30 +117,30 @@ export class ImportsComponent implements OnInit, OnDestroy {
         })
     }
 
-	onImportCreated(importCreated) {
-		this.createComponent = importCreated
-	}
+    onImportCreated(importCreated) {
+        this.createComponent = importCreated
+    }
 
     // Create new import collection
     onSubmit() {
 
-		if (this.createComponent === undefined) {
-			console.error("import created component not found", this.currentRef)
-			return
-		}
+        if (this.createComponent === undefined) {
+            console.error("import created component not found", this.currentRef)
+            return
+        }
 
         this.importsService.addImport(
-			this.importName,
-			this.createComponent.data,
-			(params) => { return this.createComponent.onParams(params) },
-			(newImport) => {
+            this.importName,
+            this.createComponent.data,
+            (params) => { return this.createComponent.onParams(params) },
+            (newImport) => {
 
-				this.zone.run(() => {
-					this.importName = ""
-				})
+                this.zone.run(() => {
+                    this.importName = ""
+                })
 
-				return this.createComponent.onSuccess(newImport)
-			})
+                return this.createComponent.onSuccess(newImport)
+            })
     }
 
     onRefresh(item: ImportBase) {
@@ -147,6 +149,9 @@ export class ImportsComponent implements OnInit, OnDestroy {
         } else {
             this.importsService.startImport(item)
         }
+    }
+
+    onConfig(item: ImportBase) {
     }
 
     onDelete(item: ImportBase) {

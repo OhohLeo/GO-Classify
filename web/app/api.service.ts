@@ -45,7 +45,7 @@ export class ApiService {
 
     public collectionSelected: Collection
 
-    constructor(private http: Http) {}
+    constructor(private http: Http) { }
 
     headers() {
         return new RequestOptions({
@@ -69,6 +69,13 @@ export class ApiService {
     put(path: string) {
         return this.http.put(
             this.url + path, this.headers())
+            .catch(this.handleError);
+    }
+
+    putWithData(path: string, data: any) {
+        console.log("PUT", data)
+        return this.http.put(
+            this.url + path, JSON.stringify(data), this.headers())
             .catch(this.handleError);
     }
 
@@ -214,7 +221,7 @@ export class ApiService {
 
         return new Observable<Collection[]>(observer => {
 
-			console.log("COLLECTIONS BEFORE !!", this.collections)
+            console.log("COLLECTIONS BEFORE !!", this.collections)
 
             if (this.collections) {
                 observer.next(this.collections)
@@ -228,7 +235,7 @@ export class ApiService {
 
             request.subscribe(collections => {
 
-				console.log("COLLECTIONS!!", collections)
+                console.log("COLLECTIONS!!", collections)
 
                 if (collections) {
                     this.collections = collections

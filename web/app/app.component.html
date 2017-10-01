@@ -9,9 +9,9 @@
 	<div class="nav-content">
 	  <ul class="tabs tabs-transparent">
 		<li class="tab"><a (click)="onCollection()">Collection</a></li>
-		<li class="tab"><a (click)="onImport()">Imports</a></li>
-		<li class="tab"><a (click)="onExport()">Exports</a></li>
-		<li class="tab"><a (click)="onConfig()">Config</a></li>
+		<li class="tab"><a (click)="onImports()">Imports</a></li>
+		<li class="tab"><a (click)="onExports()">Exports</a></li>
+		<li class="tab"><a (click)="onConfigs()">Configs</a></li>
 	  </ul>
     </div>
 </nav>
@@ -24,14 +24,14 @@
 	      <collection [collection]="collection">
 	      </collection>
 		</div>
-        <div *ngSwitchCase="appStatus.IMPORT">
+        <div *ngSwitchCase="appStatus.IMPORTS">
             <imports></imports>
         </div>
-        <div *ngSwitchCase="appStatus.EXPORT">
+        <div *ngSwitchCase="appStatus.EXPORTS">
 	     <exports></exports>
 	</div>
-        <div *ngSwitchCase="appStatus.CONFIG">
-	    <config [collection]="title"></config>
+        <div *ngSwitchCase="appStatus.CONFIGS">
+	    <configs></configs>
 	</div>
 	<div *ngSwitchCase="appStatus.BUFFER_ITEM">
 	    <buffer-item *ngIf="bufferItem"

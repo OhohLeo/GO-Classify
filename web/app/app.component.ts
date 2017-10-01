@@ -1,12 +1,11 @@
-import { Component, NgZone, OnInit, ViewChild } from '@angular/core';
+import { Component, NgZone, OnInit, ViewChild } from '@angular/core'
 
-import { ApiService, CollectionStatus, Event } from './api.service';
-import { ImportsService } from './imports/imports.service';
-import { BufferService } from './buffer/buffer.service';
-import { CollectionService } from './collections/collection.service';
-import { ConfigService, ConfigBase } from './config/config.service';
+import { ApiService, CollectionStatus, Event } from './api.service'
+import { ImportsService } from './imports/imports.service'
+import { BufferService } from './buffer/buffer.service'
+import { CollectionService } from './collections/collection.service'
 
-import { Collection } from './collections/collection';
+import { Collection } from './collections/collection'
 
 import { CollectionsComponent } from './collections/collections.component'
 import { BufferComponent } from './buffer/buffer.component'
@@ -19,9 +18,9 @@ declare var jQuery: any;
 enum AppStatus {
     NONE = 0,
     COLLECTION,
-    IMPORT,
-    EXPORT,
-    CONFIG,
+    IMPORTS,
+    EXPORTS,
+    CONFIGS,
     BUFFER_ITEM,
 }
 
@@ -53,7 +52,6 @@ export class AppComponent implements OnInit {
     constructor(private zone: NgZone,
         private apiService: ApiService,
         private importsService: ImportsService,
-        private configService: ConfigService,
         private bufferService: BufferService,
         private collectionService: CollectionService) { }
 
@@ -102,10 +100,6 @@ export class AppComponent implements OnInit {
                 this.title = collection.name
                 this.collection = collection
 
-                // Get all configuration specific to the collection
-                this.configService.getConfigs(collection.name)
-                    .subscribe((config: ConfigBase) => { })
-
                 switch (status) {
                     case CollectionStatus.CREATED:
                     case CollectionStatus.MODIFIED:
@@ -123,16 +117,16 @@ export class AppComponent implements OnInit {
         this.onNewState(AppStatus.COLLECTION)
     }
 
-    onImport() {
-        this.onNewState(AppStatus.IMPORT)
+    onImports() {
+        this.onNewState(AppStatus.IMPORTS)
     }
 
-    onExport() {
-        this.onNewState(AppStatus.EXPORT)
+    onExports() {
+        this.onNewState(AppStatus.EXPORTS)
     }
 
-    onConfig() {
-        this.onNewState(AppStatus.CONFIG)
+    onConfigs() {
+        this.onNewState(AppStatus.CONFIGS)
     }
 
     onBufferItem(bufferItem: BufferItem) {
@@ -154,7 +148,7 @@ export class AppComponent implements OnInit {
     // Gestion des nouveaux imports
     handleImport(e: Event) {
 
-		console.log("IMPORT?", e)
+        console.log("IMPORT?", e)
 
         // Send notifications to the imports list
         this.importsService.addEvent(e);
@@ -162,7 +156,7 @@ export class AppComponent implements OnInit {
         // Display imports status
         if (new RegExp('status$').test(e.event)) {
 
-			console.log("Status??")
+            console.log("Status??")
 
             // Status 'TRUE': rotate refresh logo
             if (e.data) {
@@ -198,22 +192,21 @@ export class AppComponent implements OnInit {
         }
 
         // Send notifications to the imports list
-        switch (destination)
-		{
-		case "buffer":
+        switch (destination) {
+            case "buffer":
 
-			let bufferItem = new BufferItem(e.data)
+                let bufferItem = new BufferItem(e.data)
 
-			if (this.bufferItem != undefined && this.bufferItem.id == bufferItem.id) {
-				this.bufferItemComponent.onUpdate(bufferItem)
-				this.bufferItem = bufferItem
-			}
+                if (this.bufferItem != undefined && this.bufferItem.id == bufferItem.id) {
+                    this.bufferItemComponent.onUpdate(bufferItem)
+                    this.bufferItem = bufferItem
+                }
 
-            this.bufferService.addEvent(collection, e, bufferItem)
-			break;
-        case "items":
-			this.collectionService.addEvent(collection, e, new Item(e))
-			break;
+                this.bufferService.addEvent(collection, e, bufferItem)
+                break;
+            case "items":
+                this.collectionService.addEvent(collection, e, new Item(e))
+                break;
         }
     }
 

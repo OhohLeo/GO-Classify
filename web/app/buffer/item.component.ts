@@ -1,9 +1,7 @@
 import { Component, Input, Output, EventEmitter, NgZone, OnInit, OnDestroy } from '@angular/core'
 
 import { BufferService } from './buffer.service'
-import { Event } from '../api.service'
-import { ConfigService, ConfigBase } from '../config/config.service';
-import { ApiService } from '../api.service';
+import { ApiService, Event } from '../api.service'
 import { BufferItem } from './item'
 
 declare var jQuery: any
@@ -26,7 +24,6 @@ export class BufferItemComponent implements OnInit, OnDestroy {
     private selectColor: { [key: string]: string } = {}
 
     constructor(private zone: NgZone,
-        private configService: ConfigService,
         private bufferService: BufferService) {
     }
 
@@ -105,9 +102,8 @@ export class BufferItemComponent implements OnInit, OnDestroy {
     }
 
     onChange(event) {
-        this.configService.onChange(this.collection, event)
+        // this.configService.onChange(this.collection, event)
     }
-
 
     onSearch(search: string) {
         console.log("SEARCH!", search)

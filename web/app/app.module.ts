@@ -5,7 +5,7 @@ import { FormsModule } from '@angular/forms';
 import { HttpModule } from '@angular/http';
 
 import { CollectionsModule } from './collections/collections.module';
-import { ConfigModule } from './config/config.module';
+import { ConfigsModule } from './configs/configs.module';
 import { ImportsModule } from './imports/imports.module';
 import { ExportsModule } from './exports/exports.module';
 import { BufferModule } from './buffer/buffer.module';
@@ -25,7 +25,7 @@ import { AppComponent } from './app.component';
         ImportsModule,
         ExportsModule,
         BufferModule,
-        ConfigModule,
+        ConfigsModule,
         ToolsModule
     ],
     providers: [ApiService],

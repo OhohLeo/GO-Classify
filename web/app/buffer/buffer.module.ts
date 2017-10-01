@@ -4,7 +4,7 @@ import { BrowserModule } from '@angular/platform-browser'
 import { FormsModule } from '@angular/forms'
 import { FileModule } from '../imports/file/file.module'
 import { MoviesModule } from '../collections/movies/movies.module'
-import { ConfigModule } from '../config/config.module'
+import { ConfigsModule } from '../configs/configs.module'
 import { ToolsModule } from '../tools/tools.module'
 
 import { BufferService } from './buffer.service'
@@ -17,7 +17,7 @@ import { BufferItemComponent } from './item.component'
         CommonModule,
         BrowserModule,
         FormsModule,
-        ConfigModule,
+        ConfigsModule,
         FileModule,
         MoviesModule,
         ToolsModule

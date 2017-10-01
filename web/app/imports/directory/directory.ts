@@ -1,9 +1,9 @@
-import { ImportBase } from '../imports.service';
+import { ImportBase } from '../imports.service'
 
 export class Directory extends ImportBase {
 
-	public path: string
-	public isRecursive: boolean = false
+    public path: string = ""
+    public isRecursive: boolean = false
 
     constructor(public name: string) {
         super("directory", name);
@@ -29,27 +29,27 @@ export class Directory extends ImportBase {
 
 export function Convert2Directory(name: string, params): ImportBase {
 
-	if (typeof params != 'object') {
-		console.error("Unsupported directory parameters!")
-		return undefined
-	}
+    if (typeof params != 'object') {
+        console.error("Unsupported directory parameters!")
+        return undefined
+    }
 
-	let path = params['path']
-	if (typeof path != 'string') {
-		console.error("Unsupported 'path' directory parameters!")
-		return undefined
-	}
+    let path = params['path']
+    if (typeof path != 'string') {
+        console.error("Unsupported 'path' directory parameters!")
+        return undefined
+    }
 
-	let isRecursive = params['is_recursive']
-	if (isRecursive !== undefined && typeof isRecursive != 'boolean') {
-		console.error("Unsupported 'is_recursive' directory parameters!")
-		return undefined
-	}
+    let isRecursive = params['is_recursive']
+    if (isRecursive !== undefined && typeof isRecursive != 'boolean') {
+        console.error("Unsupported 'is_recursive' directory parameters!")
+        return undefined
+    }
 
-	let directory = new Directory(name)
+    let directory = new Directory(name)
 
-	directory.path = path
-	directory.isRecursive = isRecursive ? true : false
+    directory.path = path
+    directory.isRecursive = isRecursive ? true : false
 
-	return directory
+    return directory
 }
