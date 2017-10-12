@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"github.com/ohohleo/classify/collections"
+	"github.com/ohohleo/classify/config"
 	"github.com/ohohleo/classify/data"
 	"github.com/ohohleo/classify/database"
 	"github.com/ohohleo/classify/exports"
@@ -23,6 +24,34 @@ type Collection struct {
 	exports  []exports.Export
 }
 
+type CollectionConfig struct {
+	Store struct {
+		Enable bool `json:"enable"`
+	} `json:"store"`
+
+	Buffer struct {
+		Enable bool `json:"enable"`
+		Size   int  `json:"size"`
+	} `json:"buffer"`
+
+	Import struct {
+		Filters    config.StringList `json:"filters" kind:"stringlist"`
+		Separators config.StringList `json:"separators" kind:"stringlist"`
+		Banned     config.StringList `json:"banned" kind:"stringlist"`
+	} `json:"import"`
+
+	Collection interface{} `json:"collection"`
+}
+
+func NewCollectionConfig() *CollectionConfig {
+
+	config := &CollectionConfig{}
+
+	config.Buffer.Size = 2
+
+	return config
+}
+
 type CollectionEvent struct {
 	Source string
 	Status string
@@ -39,7 +68,7 @@ func (c *Collection) Init(name string) chan CollectionEvent {
 	c.Name = name
 
 	// Set default Buffer size at 2
-	c.config = NewCollectionConfig(2)
+	c.config = NewCollectionConfig()
 
 	// Init the items storage
 	c.items = NewItems()
@@ -197,7 +226,7 @@ func (c *Collection) OnInput(input data.Data) (*BufferItem, error) {
 		item.AddImportData(input)
 
 		// Get Cleaned name
-		item.SetCleanedName(c.config.Banned, c.config.Separators)
+		item.SetCleanedName(c.config.Import.Banned, c.config.Import.Separators)
 
 		// Store item to the buffer collection
 		c.buffer.Add(item.Item.Engine.GetName(), item)
@@ -243,7 +272,7 @@ func (c *Collection) GetBuffer() []*BufferItem {
 }
 
 func (c *Collection) ResetBuffer() {
-	c.buffer = NewBuffer(c, c.config.BufferSize)
+	c.buffer = NewBuffer(c, 2)
 }
 
 func (c *Collection) GetBufferItems() []*Item {

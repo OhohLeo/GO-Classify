@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/ant0ine/go-json-rest/rest"
 	"github.com/ohohleo/classify/collections"
+	"github.com/ohohleo/classify/config"
 	"golang.org/x/net/websocket"
 	"net/http"
 )
@@ -154,14 +155,17 @@ func (c *Classify) ApiGetCollectionConfig(w rest.ResponseWriter, r *rest.Request
 		return
 	}
 
-	w.WriteJson(collection.GetConfig())
-}
+	// From the url query list
+	values := r.URL.Query()
 
-type ApiCollectionConfig struct {
-	Name   string   `json:"name"`
-	Action string   `json:"action"`
-	List   []string `json:"list"`
-	Value  string   `json:"value"`
+	var result interface{}
+	if _, ok := values["ref"]; ok {
+		result = config.GetRef(collection.config)
+	} else {
+		result = collection.config
+	}
+
+	w.WriteJson(result)
 }
 
 // ApiPatchCollectionConfig mofify configuration parameters
@@ -171,22 +175,6 @@ func (c *Classify) ApiPatchCollectionConfig(w rest.ResponseWriter, r *rest.Reque
 	// Check the collection exist
 	collection := c.getCollectionByName(w, r)
 	if collection == nil {
-		return
-	}
-
-	var body ApiCollectionConfig
-	if err := r.DecodeJsonPayload(&body); err != nil {
-		rest.Error(w, err.Error(), http.StatusBadRequest)
-		return
-	}
-
-	if body.Action != "" {
-		if err := collection.ModifyConfig(body.Name, body.Action, body.List); err != nil {
-			rest.Error(w, err.Error(), http.StatusBadRequest)
-			return
-		}
-	} else if err := collection.ModifyConfigValue(body.Name, body.Value); err != nil {
-		rest.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 

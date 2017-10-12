@@ -6,10 +6,9 @@ import (
 
 type Ref struct {
 	Name     string `json:"name"`
-	Comments string `json:"comments"`
 	Type     string `json:"type"`
-
-	Childs []*Ref `json:"childs"`
+	Comments string `json:"comments,omitempty"`
+	Childs   []*Ref `json:"childs,omitempty"`
 }
 
 type Config struct {
@@ -17,17 +16,25 @@ type Config struct {
 	Data interface{} `json:"data"`
 }
 
-func GetRefs(data interface{}) *Config {
-
-	config := &Config{
-		Refs: make([]*Ref, 0),
-		Data: data,
-	}
+func GetRef(data interface{}) *Config {
 
 	val := reflect.ValueOf(data).Elem()
 
+	config := &Config{
+		Refs: getRefsByValue(val),
+		Data: data,
+	}
+
+	return config
+}
+
+func getRefsByValue(val reflect.Value) []*Ref {
+
+	refs := make([]*Ref, 0)
+
 	for i := 0; i < val.NumField(); i++ {
 
+		valueField := val.Field(i)
 		typeField := val.Type().Field(i)
 		tag := typeField.Tag
 
@@ -36,12 +43,18 @@ func GetRefs(data interface{}) *Config {
 			kind = typeField.Type.Kind().String()
 		}
 
-		config.Refs = append(config.Refs, &Ref{
+		ref := &Ref{
 			Name:     tag.Get("json"),
 			Comments: tag.Get("comments"),
 			Type:     kind,
-		})
+		}
+
+		if kind == "struct" {
+			ref.Childs = getRefsByValue(valueField)
+		}
+
+		refs = append(refs, ref)
 	}
 
-	return config
+	return refs
 }
