@@ -1,48 +1,147 @@
 import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs/Rx';
 import { ApiService, Event } from './../api.service';
-import { BufferService } from './../buffer/buffer.service';
 import { Response } from '@angular/http';
 import { CfgStringList, StringListEvent } from '../tools/stringlist.component';
 
+export class ConfigRef {
+
+	public name: string
+	public type: string
+	public comments: string
+	public data: any
+
+	public childs: ConfigRef[] = []
+	private childsByName: { [name: string]: ConfigRef } = {}
+
+	public callbacks: { [name: string]: (newValue: any) => void } = {}
+
+	constructor(ref: any) {
+		this.name = ref["name"]
+		this.type = ref["type"]
+		this.comments = ref["comments"]
+
+		let childs = ref["childs"]
+		if (childs != undefined	&& Array.isArray(childs)) {
+
+			for (let idx in childs)	{
+				let ref = new ConfigRef(childs[idx])
+				this.childs.push(ref)
+				this.childsByName[ref.name] = ref
+			}
+		}
+	}
+
+	subscribeDataChange(name: string, cb: (newValue: any) => void) {
+		this.callbacks[name] = cb
+	}
+
+	unsubscribeDataChange(name: string) {
+		delete this.callbacks[name]
+	}
+
+	getData() : object {
+
+		let data = {}
+
+		for (let ref of this.childs) {
+
+			switch (ref.type)
+			{
+			case "stringlist":
+				if (ref.data instanceof CfgStringList) {
+					data[ref.name] = ref.data.stringlist
+				} else if (Array.isArray(ref.data)) {
+					data[ref.name] = ref.data
+				} else {
+					data[ref.name] = []
+				}
+				break;
+			case "struct":
+				data[ref.name] = ref.getData()
+				break;
+
+			default:
+				data[ref.name] = ref.data
+			}
+		}
+
+		return data
+	}
+
+	setData(data: any) {
+
+		switch (this.type)
+		{
+		case "stringlist":
+			this.data = Array.isArray(data) ? data : []
+			return;
+
+		case "struct":
+
+			if (typeof data != "object") {
+				console.error("struct expect object", this, data)
+				return;
+			}
+
+			for (let [key, value] of Object.entries(data)) {
+
+				let ref = this.childsByName[key]
+				if (ref === undefined) {
+					console.error("Config child value '" + key + "' not found in", this.name)
+					continue
+				}
+
+				ref.setData(value)
+			}
+
+			return
+		}
+
+		// When values are different :
+		if (data !== this.data) {
+			for (let name in this.callbacks) {
+				this.callbacks[name](data)
+			}
+		}
+
+		this.data = data
+	}
+}
+
 export class ConfigBase {
+
+	private refs: ConfigRef[] = []
+	private refsByName: { [name: string]: ConfigRef } = {}
+
     private cache: boolean
+	private onChange: { [name: string]: (newData: any) => void } = {}
 
-    public enableStore: boolean
-    public enableBuffer: boolean
-    public bufferSize: number
-    public filters = new CfgStringList()
-    public separators = new CfgStringList()
-    public banned = new CfgStringList()
+	setRefs(refs: any) : boolean {
 
-    init(config) {
-        Object.keys(config).forEach((key) => {
-            switch (key) {
-                case "enableStore":
-                    this.enableStore = config[key] ? true : false
-                    break
-                case "enableBuffer":
-                    this.enableBuffer = config[key] ? true : false
-                    break
-                case "bufferSize":
-                    this.bufferSize = config[key]
-                    break
-                case "filters":
-                    this.filters.init(config[key])
-                    break
-                case "separators":
-                    this.separators.init(config[key])
-                    break
-                case "banned":
-                    this.banned.init(config[key])
-                    break
-                default:
-                    console.error("Unhandled configuration '" + key + "'")
-            }
-        })
+		if (Array.isArray(refs) == false) {
+			console.error("Expected config refs array, received", refs)
+			return false
+		}
+
+		for (let idx in refs)	{
+			let ref = new ConfigRef(refs[idx])
+			this.refs.push(ref)
+			this.refsByName[ref.name] = ref
+		}
+
+		return true
     }
 
-    hasCache(): boolean {
+	getRefs() : ConfigRef[] {
+        return this.refs
+    }
+
+	getRef(name: string) : ConfigRef {
+        return this.refsByName[name]
+    }
+
+	hasCache(): boolean {
         return this.cache
     }
 
@@ -53,123 +152,146 @@ export class ConfigBase {
     disableCache() {
         this.cache = false
     }
+
+	getData() : object {
+
+		let data = {}
+
+		for (let ref of this.refs) {
+
+			switch (ref.type)
+			{
+			case "struct":
+				data[ref.name] = ref.getData()
+				break;
+
+			default:
+				data[ref.name] = ref.data
+			}
+		}
+
+		return data
+	}
+
+	setData(data: any) : boolean {
+
+		if (typeof data != "object") {
+			console.error("Expected config object, received", data)
+			return false
+		}
+
+		for (let [key, value] of Object.entries(data)) {
+
+			let ref = this.refsByName[key]
+			if (ref === undefined) {
+				console.error("Config value '" + key + "' not found")
+				continue
+			}
+
+			ref.setData(value)
+		}
+
+		return true
+    }
 }
 
 @Injectable()
 export class ConfigsService {
 
-    // Collections configurations
-    public configs: { [key: string]: ConfigBase; } = {}
+    public configs: { [src: string]: { [name: string]: ConfigBase; } } = {}
 
-    constructor(private apiService: ApiService,
-        private bufferService: BufferService) { }
+    constructor(private apiService: ApiService) { }
 
-    public hasConfig(collection: string): boolean {
-        return this.configs[collection] != undefined
-    }
-
-    public getConfigs(collection: string) {
+    public getConfigs(src: string, name: string) {
 
         return new Observable(observer => {
 
-            let currentConfs = this.configs[collection]
-            if (currentConfs != undefined && currentConfs.hasCache()) {
-                observer.next(currentConfs)
-                return
+			let needRefs : boolean = true
+			let currentCfg = this.configs[src]
+
+            if (currentCfg != undefined) {
+
+				let cfg = currentCfg[name]
+				if (cfg != undefined)
+				{
+					needRefs = (cfg.getRefs().length < 1)
+
+					if (needRefs == false && cfg.hasCache()) {
+						observer.next(cfg)
+						return
+					}
+				}
             }
 
             // Ask for the current configuration
-            this.apiService.get("collections/" + collection + "/config")
-                .subscribe((confs) => {
+            this.apiService.get(src + "/" + name + "/config" + (needRefs ? "?refs" : ""))
+                .subscribe((res : any) => {
 
                     // No config
-                    if (confs == null) {
-                        console.error("No configuration found for collection "
-                            + collection)
+                    if (res == undefined) {
+                        console.error("No configuration found for " + src + "/" + name)
                         return
                     }
 
-                    let config = new ConfigBase()
-                    config.init(confs)
-                    config.enableCache()
-                    this.configs[collection] = config
+					let cfg : ConfigBase
 
-                    observer.next(config)
+					// Refs are expected
+					if (needRefs) {
+
+						if (res["refs"] == undefined) {
+							console.error("No refs received at " + src + "/" + name)
+							return
+						}
+
+						if (res["data"] == undefined) {
+							console.error("No data received at " + src + "/" + name)
+							return
+						}
+
+						cfg = new ConfigBase()
+						cfg.setRefs(res["refs"])
+						cfg.setData(res["data"])
+
+						if (this.configs[src] == undefined) {
+							this.configs[src] = {}
+						}
+
+						this.configs[src][name] = cfg
+
+					}
+					// Needs to update data
+					else {
+						cfg = currentCfg[name]
+						cfg.setData(res)
+					}
+
+                    cfg.enableCache()
+
+                    observer.next(cfg)
                 })
         })
     }
 
-    public setConfig(collection: string, name: string, action: any, value: any) {
+    public setConfig(src: string, name: string) {
 
-        let currentConfs = this.configs[collection]
-        if (currentConfs == undefined) {
-            console.error("No configuration found for collection '"
-                + collection + "'")
+        let currentCfg = this.configs[src]
+        if (currentCfg == undefined	|| currentCfg[name] == undefined) {
+            console.error("No configuration found for " + src + "/" + name)
             return
         }
 
-        let body = {
-            'name': name,
-        }
-
-        body['action'] = action
-
-        switch (action) {
-            case "add":
-            case "remove":
-                body['list'] = value
-                break;
-            default:
-                body['value'] = value
-        }
+		let cfg = currentCfg[name]
 
         return new Observable(observer => {
 
-            currentConfs.disableCache();
+            cfg.disableCache();
 
-            this.apiService.patch("collections/" + collection + "/config", body)
+            this.apiService.patch(src + "/" + name + "/config", cfg.getData())
                 .subscribe((status) => {
                     console.log(status)
-
-                    // On change on buffer size : update buffer list
-                    if (name === "bufferSize")
-                        this.bufferService.disableCache();
 
                     observer.next(status)
                 })
         })
-    }
-
-    public update(collection: string) {
-    }
-
-    public onChange(collection: string, event) {
-
-        console.log("onChange", event)
-
-        let name, action, value
-
-        if (event instanceof StringListEvent) {
-            name = event.name
-            action = event.action
-            value = event.list
-        } else {
-            name = event.target.name
-            switch (event.target.type) {
-                case "number":
-                    value = Number(event.target.value)
-                default:
-                    value = event.target.value
-            }
-        }
-
-        console.log("CHANGE", name, action, value);
-
-        let observable = this.setConfig(
-            collection, name, action, value)
-        if (observable != undefined) {
-            observable.subscribe((status) => {
-            })
-        }
     }
 }

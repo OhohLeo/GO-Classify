@@ -13,11 +13,11 @@
 	<div *ngIf="needNameDetails">
 	  <label>banned:</label>
 	  <stringlist [name]="'banned'"
-			      [value]="bufferItem.banned"
+			      [values]="bufferItem.banned"
 			      (change)="onChange($event)"></stringlist>
 	  <label>separators:</label>
 	  <stringlist [name]="'separators'"
-			      [value]="bufferItem.separators"
+			      [values]="bufferItem.separators"
 			      (change)="onChange($event)"></stringlist>
 	</div>
 	<div *ngFor="let import of bufferItem.getImports()">

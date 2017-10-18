@@ -159,7 +159,7 @@ func (c *Classify) ApiGetCollectionConfig(w rest.ResponseWriter, r *rest.Request
 	values := r.URL.Query()
 
 	var result interface{}
-	if _, ok := values["ref"]; ok {
+	if _, ok := values["refs"]; ok {
 		result = config.GetRef(collection.config)
 	} else {
 		result = collection.config
@@ -175,6 +175,17 @@ func (c *Classify) ApiPatchCollectionConfig(w rest.ResponseWriter, r *rest.Reque
 	// Check the collection exist
 	collection := c.getCollectionByName(w, r)
 	if collection == nil {
+		return
+	}
+
+	var newConfig CollectionConfig
+	if err := r.DecodeJsonPayload(&newConfig); err != nil {
+		rest.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	if err := collection.SetConfig(&newConfig); err != nil {
+		rest.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 

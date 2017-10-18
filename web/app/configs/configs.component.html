@@ -1,3 +1,25 @@
 <div class="col s3">
-    CONFIGS
+	<div class="collection">
+	  <a *ngFor="let name of mainSelector"
+		 class="collection-item" (click)="onRef($event, name)">{{name}}</a>
+	</div>
+</div>
+<div class="col s9">
+	<form #createForm="ngForm">
+		<div *ngFor="let ref of refs">
+			<config-ref [ref]="ref"
+						(update)="onChange($event)">
+			</config-ref>
+		</div>
+		<div class="row">
+			<button *ngIf="validate"
+					(click)="onSubmit($event)"
+					type="submit"
+					[disabled]="!createForm.form.valid"
+				    class="btn waves-effect waves-light">
+				Validate
+				<i class="material-icons right">send</i>
+			</button>
+		</div>
+	</form>
 </div>

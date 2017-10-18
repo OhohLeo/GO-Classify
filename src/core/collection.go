@@ -40,7 +40,7 @@ type CollectionConfig struct {
 		Banned     config.StringList `json:"banned" kind:"stringlist"`
 	} `json:"import"`
 
-	Collection interface{} `json:"collection"`
+	Collection json.RawMessage `json:"collection"`
 }
 
 func NewCollectionConfig() *CollectionConfig {
@@ -77,6 +77,12 @@ func (c *Collection) Init(name string) chan CollectionEvent {
 	c.events = make(chan CollectionEvent)
 
 	return c.events
+}
+
+func (c *Collection) SetConfig(newConfig *CollectionConfig) error {
+
+	c.config = newConfig
+	return nil
 }
 
 func (c *Collection) ActivateBuffer() {

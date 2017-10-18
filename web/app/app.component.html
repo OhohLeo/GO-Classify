@@ -31,7 +31,8 @@
 	     <exports></exports>
 	</div>
         <div *ngSwitchCase="appStatus.CONFIGS">
-	    <configs></configs>
+			<configs [src]="'collections'"
+					 [name]="collection.name"></configs>
 	</div>
 	<div *ngSwitchCase="appStatus.BUFFER_ITEM">
 	    <buffer-item *ngIf="bufferItem"

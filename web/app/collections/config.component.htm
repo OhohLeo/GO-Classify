@@ -36,18 +36,18 @@
 <div class="row">
   <label>filters:</label>
   <stringlist [name]="'filters'"
-	      [value]="config.filters"
+	      [values]="config.filters"
 	      (change)="onChange($event)"></stringlist>
 </div>
 <div class="row">
   <label>separators:</label>
   <stringlist [name]="'separators'"
-	      [value]="config.separators"
+	      [values]="config.separators"
 	      (change)="onChange($event)"></stringlist>
 </div>
 <div class="row">
   <label>banned:</label>
   <stringlist [name]="'banned'"
-	      [value]="config.banned"
+	      [values]="config.banned"
 	      (change)="onChange($event)"></stringlist>
 </div>

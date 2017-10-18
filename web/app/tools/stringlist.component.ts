@@ -7,12 +7,7 @@ export class CfgStringList {
     public stringlist = new Array<string>()
 
     constructor(values?: string[]) {
-
-        if (values) {
-            for (let value of values) {
-                this.add(value)
-            }
-        }
+		this.init(values)
     }
 
     init(values: any) {
@@ -98,8 +93,7 @@ export class CfgStringList {
 export class StringListEvent {
 
     constructor(public name: string,
-        public action: string,
-        public list: string[]) { }
+				public list: string[]) { }
 }
 
 @Component({
@@ -110,10 +104,11 @@ export class StringListEvent {
 export class StringListComponent implements AfterViewChecked {
 
     @Input() name: string
-    @Input() value: CfgStringList
+    @Input() values
 
     @Output() change = new EventEmitter<StringListEvent>()
 
+	private cfg = new CfgStringList()
     private chip: any = undefined
 
     constructor(private zone: NgZone) { }
@@ -123,24 +118,31 @@ export class StringListComponent implements AfterViewChecked {
         if (this.chip != undefined)
             return
 
+		this.cfg = (this.values instanceof CfgStringList)
+			? this.values : new CfgStringList(this.values)
         this.chip = jQuery('div#' + this.name)
-
-		console.log(this.value)
 
         // Initialisation des valeurs
         this.chip.material_chip({
-            data: (this.value instanceof CfgStringList) ?
-                this.value.getTags() : [],
+            data: this.cfg.getTags(),
             placeholder: 'Enter a tag',
             secondaryPlaceholder: '+Tag',
         })
 
         this.chip.on('chip.add', (e, chip) => {
-            this.change.emit(new StringListEvent(this.name, "add", [chip.tag]))
+
+			if (this.cfg.add(chip['tag'])) {
+				this.change.emit(new StringListEvent(
+					this.name, this.cfg.stringlist))
+			}
         })
 
         this.chip.on('chip.delete', (e, chip) => {
-            this.change.emit(new StringListEvent(this.name, "remove", [chip.tag]))
+
+			if (this.cfg.remove(chip['tag']))	{
+				this.change.emit(new StringListEvent(
+					this.name, this.cfg.stringlist))
+			}
         })
     }
 }
