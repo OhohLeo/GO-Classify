@@ -67,7 +67,7 @@ export class ConfigsComponent implements OnInit {
 		this.configsService.getConfigs(this.src, this.name)
             .subscribe((cfg: ConfigBase) => {
 				let ref = cfg.getRef(refSelected)
-				console.log(cfg.getData())
+
 				this.zone.run(() => {
 					this.refs = ref.childs
 					this.validate = false

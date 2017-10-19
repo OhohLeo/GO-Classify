@@ -1,7 +1,4 @@
-<div class="col s6">
-	{{ref.comments}}
-</div>
-<div class="col s6"
+<div class="col s6 offset-s3"
 	 [ngSwitch]="inputType">
 	<div *ngSwitchCase="'stringlist'">
 		<label for={{ref.name}}>{{ref.name}}</label>

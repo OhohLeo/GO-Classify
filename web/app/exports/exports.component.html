@@ -11,15 +11,6 @@
     <form *ngIf="currentRef !== 'all'"
 	  #createForm="ngForm"
 	  (ngSubmit)="onSubmit()">
-	<div class="row">
-	    <div class="input-field col s6 offset-s3">
-		<label for="name">Name</label>
-		<input name="name"
-		       type="string"
-		       id="name"
-		       [(ngModel)]="importName" required/>
-	    </div>
-	</div>
 	<div [ngSwitch]="currentRef">
 	    <file-create *ngSwitchCase="'file'"
 			 (onCreated)="onExportCreated($event)">
@@ -37,7 +28,6 @@
     <div *ngIf="exports">
 	<table *ngFor="let ref of refs2Display">
 	    <tr *ngFor="let export of exports.get(ref)">
-		<th>{{export.name}}</th>
 		<th [ngSwitch]="ref">
 		    <file-display *ngSwitchCase="'file'"
 				  [file]="export"></file-display>

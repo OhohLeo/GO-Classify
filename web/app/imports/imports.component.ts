@@ -24,7 +24,6 @@ export class ImportsComponent implements OnInit, OnDestroy {
     public imports: Map<string, ImportBase[]>
     public currentRef: string = "all"
 
-    public importName: string
     public createComponent: ImportCreateComponent
 
     private events
@@ -130,15 +129,11 @@ export class ImportsComponent implements OnInit, OnDestroy {
         }
 
         this.importsService.addImport(
-            this.importName,
             this.createComponent.data,
-            (params) => { return this.createComponent.onParams(params) },
+            (params) => {
+				return this.createComponent.onParams(params)
+			},
             (newImport) => {
-
-                this.zone.run(() => {
-                    this.importName = ""
-                })
-
                 return this.createComponent.onSuccess(newImport)
             })
     }

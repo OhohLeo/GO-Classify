@@ -9,15 +9,6 @@
   <form *ngIf="currentRef !== 'all'"
 		#createForm="ngForm"
 		(ngSubmit)="onSubmit()">
-	<div class="row">
-	  <div class="input-field col s6 offset-s3">
-		<label for="name">Name</label>
-		<input name="name"
-			   type="string"
-			   id="name"
-			   [(ngModel)]="importName" required/>
-	  </div>
-	</div>
 	<div [ngSwitch]="currentRef">
 	  <imap-create *ngSwitchCase="'imap'"
 				   (onCreated)="onImportCreated($event)">
@@ -38,7 +29,6 @@
   <div *ngIf="imports">
 	<table *ngFor="let ref of refs2Display">
 	  <tr *ngFor="let import of imports.get(ref)">
-	  	<th>{{import.name}}</th>
 		<th [ngSwitch]="ref">
 		  <imap-display *ngSwitchCase="'imap'"
 				[imap]="import">

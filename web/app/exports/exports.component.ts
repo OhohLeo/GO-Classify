@@ -22,7 +22,6 @@ export class ExportsComponent implements OnInit, OnDestroy {
     public exports: Map<string, ExportBase[]>
     public currentRef: string = "all"
 
-    public exportName: string
     public createComponent: ExportCreateComponent
 
     private events
@@ -128,15 +127,11 @@ export class ExportsComponent implements OnInit, OnDestroy {
         }
 
         this.exportsService.addExport(
-            this.exportName,
             this.createComponent.data,
-            (params) => { return this.createComponent.onParams(params) },
+            (params) => {
+				return this.createComponent.onParams(params)
+			},
             (newExport) => {
-
-                this.zone.run(() => {
-                    this.exportName = ""
-                })
-
                 return this.createComponent.onSuccess(newExport)
             })
     }

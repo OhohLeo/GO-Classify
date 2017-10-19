@@ -3,12 +3,17 @@ import { Observable } from 'rxjs/Rx';
 import { ApiService, Event } from './../api.service';
 import { BufferService } from './../buffer/buffer.service';
 import { Response } from '@angular/http';
+import { Md5 } from 'ts-md5/dist/md5';
 
 export class ImportBase {
 
     public isRunning: boolean
 
     constructor(private ref: string, public name: string) { }
+
+	getName(): string {
+		return String(Md5.hashStr(JSON.stringify(this.getParams())))
+	}
 
     getRef(): string {
         if (this.ref === undefined)
@@ -68,7 +73,12 @@ export class ImportsService {
 
     // Check if import does exist
     hasImport(search: ImportBase): boolean {
-        return this.importsByName.get(search.name) != undefined
+        return this.hasSameImportName(search.name)
+    }
+
+    // Check if import does exist
+    hasSameImportName(name: string): boolean {
+        return this.importsByName.get(name) != undefined
     }
 
     // Check if import does exist
@@ -100,7 +110,7 @@ export class ImportsService {
         this.imports.get(i.getRef()).push(i)
     }
 
-    addImport(name: string, i: ImportBase, onParams: any, onSuccess: any) {
+    addImport(i: ImportBase, onParams: any, onSuccess: any) {
 
         // Disable cache
         this.enableCache = false
@@ -109,6 +119,12 @@ export class ImportsService {
             console.error("Already existing " + i.getRef())
             return
         }
+
+		let name = i.getName()
+		if (this.hasSameImportName(name)) {
+			console.error("Already existing name " + name)
+            return
+		}
 
         return this.apiService.post(
             "imports", {

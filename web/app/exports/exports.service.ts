@@ -3,12 +3,17 @@ import { Observable } from 'rxjs/Rx';
 import { ApiService, Event } from './../api.service';
 import { BufferService } from './../buffer/buffer.service';
 import { Response } from '@angular/http';
+import { Md5 } from 'ts-md5/dist/md5';
 
 export class ExportBase {
 
     public isRunning: boolean
 
     constructor(private ref: string, public name: string) { }
+
+	getName(): string {
+		return String(Md5.hashStr(JSON.stringify(this.getParams())))
+	}
 
     getRef(): string {
         if (this.ref === undefined)
@@ -70,7 +75,12 @@ export class ExportsService {
 
     // Check if export does exist
     hasExport(search: ExportBase): boolean {
-        return this.exportsByName.get(search.name) != undefined
+        return this.hasSameExportName(search.name)
+    }
+
+    // Check if export does exist
+    hasSameExportName(name: string): boolean {
+        return this.exportsByName.get(name) != undefined
     }
 
     // Check if export does exist
@@ -102,7 +112,7 @@ export class ExportsService {
         this.exports.get(i.getRef()).push(i)
     }
 
-    addExport(name: string, i: ExportBase, onParams: any, onSuccess: any) {
+    addExport(i: ExportBase, onParams: any, onSuccess: any) {
 
         // Disable cache
         this.enableCache = false
@@ -111,6 +121,12 @@ export class ExportsService {
             console.error("Already existing " + i.getRef())
             return
         }
+
+		let name = i.getName()
+		if (this.hasSameExportName(name)) {
+			console.error("Already existing name " + name)
+            return
+		}
 
         return this.apiService.post(
             "exports", {

@@ -81,7 +81,11 @@ func (c *Collection) Init(name string) chan CollectionEvent {
 
 func (c *Collection) SetConfig(newConfig *CollectionConfig) error {
 
+	// Handle configuration changes
+
+	// Store new config
 	c.config = newConfig
+
 	return nil
 }
 
