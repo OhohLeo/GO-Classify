@@ -1,14 +1,14 @@
 package file
 
 import (
-	"bytes"
-	"encoding/base64"
+	//"bytes"
+	// "encoding/base64"
 	"encoding/json"
 	"fmt"
 	"github.com/ohohleo/classify/data"
 	"github.com/ohohleo/classify/exports"
 	"github.com/ohohleo/classify/params"
-	"io/ioutil"
+	// "io/ioutil"
 	"os"
 	"strconv"
 )
@@ -96,22 +96,22 @@ func (f *File) Eq(new exports.Export) bool {
 
 func (f *File) onAttachment(input data.Data) error {
 
-	attachment, ok := input.(*data.Attachment)
+	_, ok := input.(*data.Attachment)
 	if ok == false {
 		return fmt.Errorf("Invalid attachment data")
 	}
 
-	reader := bytes.NewReader(attachment.Data)
-	data := base64.NewDecoder(base64.StdEncoding, reader)
+	// reader := bytes.NewReader(attachment.Data)
+	// data := base64.NewDecoder(base64.StdEncoding, reader)
 
-	buffer := new(bytes.Buffer)
-	buffer.ReadFrom(data)
+	// buffer := new(bytes.Buffer)
+	// buffer.ReadFrom(data)
 
-	err := ioutil.WriteFile(f.Path+"/"+attachment.Name, buffer.Bytes(), f.mode)
-	if err != nil {
-		return err
-	}
+	// err := ioutil.WriteFile(f.Path+"/"+attachment.Name, buffer.Bytes(), f.mode)
+	// if err != nil {
+	// 	return err
+	// }
 
-	fmt.Printf("ATTACHMENT %s\n", attachment.Name)
+	// fmt.Printf("ATTACHMENT %s\n", attachment.Name)
 	return nil
 }

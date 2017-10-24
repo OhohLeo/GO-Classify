@@ -1,7 +1,5 @@
 package data
 
-import ()
-
 const (
 	SIMPLE Ref = iota
 	FILE

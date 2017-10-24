@@ -12,7 +12,9 @@ import (
 	"log"
 	"mime"
 	"mime/multipart"
+	"mime/quotedprintable"
 	"net/mail"
+	"regexp"
 	"strings"
 	"time"
 )
@@ -23,6 +25,22 @@ const (
 )
 
 type Request int
+
+type ImapConfig struct {
+	Store struct {
+		Path string `json:"path"`
+	} `json:"store"`
+}
+
+func DefaultConfig() *ImapConfig {
+
+	config := &ImapConfig{}
+
+	// Default store/imap config
+	config.Store.Path = "/tmp/classify/imports/imap"
+
+	return config
+}
 
 type Imap struct {
 	Host     string `json:"host"`
@@ -37,6 +55,7 @@ type Imap struct {
 
 	dataChannel chan data.Data
 	cnx         *client.Client
+	config      *ImapConfig
 }
 
 type Search struct {
@@ -61,8 +80,7 @@ func ToBuild() imports.Build {
 	}
 }
 
-func Create(input json.RawMessage,
-	config json.RawMessage,
+func Create(input json.RawMessage, config json.RawMessage,
 	collections []string) (i imports.Import, params interface{}, err error) {
 
 	var imap Imap
@@ -100,6 +118,10 @@ func Create(input json.RawMessage,
 			return
 		}
 	case ALL:
+	}
+
+	if imap.config == nil {
+		imap.config = DefaultConfig()
 	}
 
 	i = &imap
@@ -304,8 +326,6 @@ func (i *Imap) Proceed(seqset *imap.SeqSet) error {
 			ContentType: header.Get("Content-Type"),
 		}
 
-		log.Println("To:", header.Get("To"))
-
 		mediaType, params, err := mime.ParseMediaType(
 			m.Header.Get("Content-Type"))
 		if err != nil {
@@ -318,6 +338,7 @@ func (i *Imap) Proceed(seqset *imap.SeqSet) error {
 
 			email.Attachments = make([]*data.Attachment, 0)
 
+			idx := 0
 			for {
 				p, err := mr.NextPart()
 				if err == io.EOF {
@@ -327,20 +348,26 @@ func (i *Imap) Proceed(seqset *imap.SeqSet) error {
 					return err
 				}
 
-				slurp, err := ioutil.ReadAll(p)
-				if err != nil {
-					return err
+				name := Convert2Utf8(p.FileName())
+				if name == "" {
+					name = fmt.Sprintf("Part%d", idx)
 				}
 
 				attachment := &data.Attachment{
-					Name:               p.FileName(),
+					Part:               p,
+					Name:               name,
 					ContentDisposition: p.FormName(),
 					Date:               date,
-					Data:               slurp,
+				}
+
+				if err := attachment.StoreToFile(i.config.Store.Path); err != nil {
+					log.Printf("Issue storing %s to '%s': %s\n", name,
+						i.config.Store.Path, err.Error())
 				}
 
 				email.Attachments = append(email.Attachments, attachment)
 				i.dataChannel <- attachment
+				idx++
 			}
 		}
 
@@ -350,4 +377,22 @@ func (i *Imap) Proceed(seqset *imap.SeqSet) error {
 	close(i.dataChannel)
 	i.Stop()
 	return nil
+}
+
+var REMOVE_ISO = regexp.MustCompile(`=\?([a-zA-Z0-9-_]+)\?[a-zA-Z]\?([^\?]+)\?=`)
+
+func Convert2Utf8(name string) string {
+
+	submatches := REMOVE_ISO.FindAllStringSubmatch(name, -1)
+	if len(submatches) == 1 && len(submatches[0]) == 3 {
+		name = submatches[0][2]
+	}
+
+	converted, err := ioutil.ReadAll(quotedprintable.NewReader(
+		strings.NewReader(name)))
+	if err == nil {
+		name = string(converted)
+	}
+
+	return name
 }

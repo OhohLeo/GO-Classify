@@ -10,6 +10,7 @@ import (
 	"github.com/ohohleo/classify/database"
 	"github.com/ohohleo/classify/exports"
 	"github.com/ohohleo/classify/websites"
+	"log"
 )
 
 type Collection struct {
@@ -26,7 +27,11 @@ type Collection struct {
 
 type CollectionConfig struct {
 	Store struct {
-		Enable bool `json:"enable"`
+		Database struct {
+			Enable bool `json:"enable"`
+		} `json:"database"`
+
+		Icons data.IconifyConfig `json:"icons"`
 	} `json:"store"`
 
 	Buffer struct {
@@ -47,6 +52,13 @@ func NewCollectionConfig() *CollectionConfig {
 
 	config := &CollectionConfig{}
 
+	// Default store/icons config
+	config.Store.Icons = data.IconifyConfig{
+		Path: "/tmp/classify/collections",
+		Size: "40x40",
+	}
+
+	// Default buffer config
 	config.Buffer.Size = 2
 
 	return config
@@ -227,6 +239,20 @@ func (c *Collection) OnInput(input data.Data) (*BufferItem, error) {
 
 	// Create a new item
 	item := NewBufferItem()
+
+	// Generate data icons
+	if c.config.Store.Icons.Enable {
+
+		// Check if data can get an icon
+		if icon, ok := input.(data.CanIconify); ok {
+
+			_, err := icon.SetIcon(input, &c.config.Store.Icons)
+			if err != nil {
+				log.Printf("OnInput iconify error %+v\n", err)
+			}
+
+		}
+	}
 
 	// log.Printf("OnInput %+v\n", input)
 

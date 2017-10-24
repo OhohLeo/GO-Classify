@@ -10,7 +10,6 @@ import (
 	"github.com/ohohleo/classify/params"
 	"io/ioutil"
 	"os/exec"
-	"path/filepath"
 	"strings"
 )
 
@@ -175,29 +174,25 @@ func (r *Directory) readDirectory(c chan data.Data, path string, isRecursive boo
 			break
 		}
 
-		fullpath := path + "/" + f.Name()
-
 		if f.IsDir() {
 
 			// Read recursively
 			if isRecursive {
-				r.readDirectory(c, fullpath, isRecursive)
+				r.readDirectory(c, path+"/"+f.Name(), isRecursive)
 			}
 
 			continue
 		}
 
-		fullname := f.Name()
-		extension := filepath.Ext(fullname)
-
-		file := &data.File{
-			Name:      strings.TrimRight(fullname, extension),
-			FullName:  fullname,
-			Extension: extension,
-			Path:      path,
-			FullPath:  fullpath,
-			FileInfo:  f,
+		// Get new file
+		file, err := data.NewFileFromPath(path, f.Name())
+		if err != nil {
+			fmt.Printf("Issue when analysing file %s", err.Error())
+			continue
 		}
+
+		// Store FileInfo
+		file.FileInfo = f
 
 		// Search for file header infos
 		if r.exiftoolCmd != "" {
