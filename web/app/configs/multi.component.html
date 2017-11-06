@@ -1,0 +1,15 @@
+<div *ngIf="collections.length > 0"
+	 class="col s3">
+	<div class="collection">
+	  <a *ngFor="let name of collections"
+		 class="collection-item" (click)="onRef($event, name)">{{name}}</a>
+	</div>
+</div>
+<div *ngIf="refs.length > 0"
+	 class="col s12">
+	<div *ngFor="let ref of refs">
+		<config-ref [ref]="ref"
+					(update)="onChange($event)">
+		</config-ref>
+	</div>
+</div>

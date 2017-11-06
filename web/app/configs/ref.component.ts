@@ -20,6 +20,8 @@ export class ConfigRefComponent implements OnInit {
 
     ngOnInit() {
 
+		console.log(this.ref.type)
+
 		switch (this.ref.type)
 		{
 		case "bool":

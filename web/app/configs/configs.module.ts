@@ -5,6 +5,7 @@ import { FormsModule } from '@angular/forms'
 import { ToolsModule } from '../tools/tools.module'
 
 import { ConfigsComponent } from './configs.component'
+import { ConfigMultiComponent } from './multi.component'
 import { ConfigRefComponent } from './ref.component'
 import { ConfigsService } from './configs.service'
 
@@ -15,7 +16,7 @@ import { ConfigsService } from './configs.service'
         FormsModule,
         ToolsModule
     ],
-    declarations: [ConfigsComponent, ConfigRefComponent],
+    declarations: [ConfigsComponent, ConfigMultiComponent, ConfigRefComponent],
     providers: [ConfigsService],
     exports: [ConfigsComponent]
 })

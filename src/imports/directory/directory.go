@@ -130,6 +130,12 @@ func (r *Directory) CheckConfig(config json.RawMessage) error {
 	return nil
 }
 
+func (r *Directory) GetDataList() []data.Data {
+	return []data.Data{
+		new(data.File),
+	}
+}
+
 // Return a channel of files in the directory
 func (r *Directory) Start() (chan data.Data, error) {
 

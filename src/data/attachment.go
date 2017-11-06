@@ -26,6 +26,22 @@ func (s *Attachment) GetRef() Ref {
 	return ATTACHMENT
 }
 
+func (s *Attachment) GetDependencies() []Data {
+
+	if s.File == nil {
+		s.File = new(File)
+	}
+
+	return []Data{
+		s.File,
+	}
+}
+
+func (s *Attachment) OnCollection(Config) error {
+	fmt.Println("ATTACHMENT OnCollection")
+	return nil
+}
+
 func (s *Attachment) StoreToFile(path string) error {
 
 	if s.Part == nil {

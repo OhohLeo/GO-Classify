@@ -1,5 +1,6 @@
-import { Component, Input, OnInit, NgZone, Renderer } from '@angular/core'
+import { Component, Input, OnInit, ViewChild, NgZone, Renderer } from '@angular/core'
 import { ConfigsService, ConfigBase, ConfigRef } from './configs.service'
+import { ConfigMultiComponent } from './multi.component'
 
 @Component({
     selector: 'configs',
@@ -11,8 +12,11 @@ export class ConfigsComponent implements OnInit {
     @Input() src: string
 	@Input() name: string
 
-    public mainSelector: string[] = []
-	public refs: ConfigRef[] = []
+	@ViewChild(ConfigMultiComponent) multi;
+
+    public collections: string[] = []
+
+	public refMulti: ConfigRef
 
 	public validate: boolean = false
 
@@ -39,6 +43,7 @@ export class ConfigsComponent implements OnInit {
 					switch (ref.type)
 					{
 					case "struct":
+					case "map":
 						refsMainList.push(ref.name)
 						break
 					}
@@ -46,14 +51,14 @@ export class ConfigsComponent implements OnInit {
 				}
 
                 this.zone.run(() => {
-					this.mainSelector = refsMainList
+					this.collections = refsMainList
 					this.validate = false
                 })
             })
     }
 
 
-    onRef(event: any, refSelected: string) {
+    onMulti(event: any, refSelected: string) {
 
         // Set collection-items as active
         event.preventDefault()
@@ -66,10 +71,11 @@ export class ConfigsComponent implements OnInit {
 
 		this.configsService.getConfigs(this.src, this.name)
             .subscribe((cfg: ConfigBase) => {
+
 				let ref = cfg.getRef(refSelected)
 
 				this.zone.run(() => {
-					this.refs = ref.childs
+					this.multi.onUpdate(ref)
 					this.validate = false
                 })
 			})

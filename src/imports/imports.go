@@ -31,6 +31,7 @@ type Import interface {
 	Start() (chan data.Data, error)
 	Stop() error
 	GetRef() Ref
+	GetDataList() []data.Data
 	Eq(Import) bool
 }
 

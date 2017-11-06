@@ -1,16 +1,13 @@
 <div class="col s3">
 	<div class="collection">
-	  <a *ngFor="let name of mainSelector"
-		 class="collection-item" (click)="onRef($event, name)">{{name}}</a>
+	  <a *ngFor="let name of collections"
+		 class="collection-item" (click)="onMulti($event, name)">{{name}}</a>
 	</div>
 </div>
 <div class="col s9">
 	<form #createForm="ngForm">
-		<div *ngFor="let ref of refs">
-			<config-ref [ref]="ref"
-						(update)="onChange($event)">
-			</config-ref>
-		</div>
+		<config-multi (update)="onChange($event)">
+		</config-multi>
 		<div class="row">
 			<button *ngIf="validate"
 					(click)="onSubmit($event)"

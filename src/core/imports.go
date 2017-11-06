@@ -224,10 +224,9 @@ func (c *Classify) AddImport(name string, ref imports.Ref, inParams json.RawMess
 		id := getRandomId()
 
 		i = &Import{
-			Id:          id,
-			Name:        name,
-			engine:      importEngine,
-			collections: collections,
+			Id:     id,
+			Name:   name,
+			engine: importEngine,
 		}
 
 		if c.imports == nil {
@@ -236,11 +235,18 @@ func (c *Classify) AddImport(name string, ref imports.Ref, inParams json.RawMess
 
 		// Store the new import
 		c.imports[name] = i
-
-		return
 	}
 
+	// Set collection list to the import
 	i.collections = collections
+
+	// Add import to the collection
+	for _, collection := range collections {
+
+		// Ignore already existing import error
+		collection.AddImport(name, i.engine)
+	}
+
 	return
 }
 
@@ -262,16 +268,20 @@ func (c *Classify) DeleteImports(importList map[string]*Import, collections map[
 		importList = c.imports
 	}
 
-	for name, i := range importList {
+	for importName, i := range importList {
 
 		// Unlink the collection with the specified import
-		for name, collection := range collections {
+		for collectionName, collection := range collections {
 
 			if err = i.Unlink2DB(c.database, collection); err != nil {
 				return
 			}
 
-			delete(i.collections, name)
+			// Unlink in the collection
+			collection.DeleteImport(importName)
+
+			// and in the import collection list
+			delete(i.collections, collectionName)
 		}
 
 		// If no collection are linked with specified import
@@ -282,7 +292,7 @@ func (c *Classify) DeleteImports(importList map[string]*Import, collections map[
 			}
 
 			// Remove the import
-			delete(c.imports, name)
+			delete(c.imports, importName)
 		}
 	}
 	return

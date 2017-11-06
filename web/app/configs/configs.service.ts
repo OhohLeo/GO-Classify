@@ -21,11 +21,33 @@ export class ConfigRef {
 		this.type = ref["type"]
 		this.comments = ref["comments"]
 
-		let childs = ref["childs"]
+		let childs
+
+		// Handle unknown arrays
+		if (this.type == "map" && Array.isArray(ref)) {
+			childs = ref
+		}
+		else
+		{
+			childs = ref["childs"]
+		}
+
 		if (childs != undefined	&& Array.isArray(childs)) {
 
 			for (let idx in childs)	{
 				let ref = new ConfigRef(childs[idx])
+				this.childs.push(ref)
+				this.childsByName[ref.name] = ref
+			}
+		}
+		// Handle map type
+		else if (this.type == "map") {
+			let map = ref["map"]
+			for (let keyIdx in map) {
+
+				let ref = new ConfigRef(map[keyIdx])
+				ref.name = keyIdx
+				ref.type = "key"
 				this.childs.push(ref)
 				this.childsByName[ref.name] = ref
 			}

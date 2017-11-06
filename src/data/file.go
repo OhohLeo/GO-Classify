@@ -1,13 +1,24 @@
 package data
 
 import (
+	"encoding/json"
+	"fmt"
 	"os"
 	"path/filepath"
 	"strings"
 )
 
+type FileConfig struct {
+	Icons IconsConfig `json:"icons"`
+}
+
+func (c *FileConfig) UpdateConfig(json.RawMessage) error {
+	return nil
+}
+
 type File struct {
-	*Iconify
+	*Icons
+
 	Type        string            `json:"type"`
 	Name        string            `json:"name"`
 	FullName    string            `json:"fullname"`
@@ -17,7 +28,9 @@ type File struct {
 	ContentType string            `json:"contentType"`
 	Infos       map[string]string `json:"infos"`
 	FileInfo    os.FileInfo       `json:"-"`
-	file        *os.File          `json:"-"`
+
+	file   *os.File
+	config *FileConfig
 }
 
 func NewFileFromPath(path string, name string) (*File, error) {
@@ -46,17 +59,36 @@ func NewFileFromOsFile(path string, f *os.File) (file *File, err error) {
 		Extension: extension,
 		Path:      path,
 		FullPath:  fullpath,
-		file:      f,
+
+		file:   f,
+		config: new(FileConfig),
 	}
+
+	// file.InitIcons(&file.config.Icons)
+
 	return
+}
+
+func (f *File) GetName() string {
+	return f.Name
 }
 
 func (f *File) GetRef() Ref {
 	return FILE
 }
 
-func (f *File) GetName() string {
-	return f.Name
+func (f *File) GetConfig() Config {
+
+	if f.config == nil {
+		f.config = new(FileConfig)
+	}
+
+	return f.config
+}
+
+func (s *File) OnCollection(Config) error {
+	fmt.Println("File OnCollection")
+	return nil
 }
 
 func (f *File) GetContentType() string {

@@ -15,10 +15,11 @@ type Email struct {
 	Attachments []*Attachment `json:"attachments"`
 }
 
-func (s *Email) GetName() string {
-	return s.From + ":" + s.Subject
+func (e *Email) GetName() string {
+	return e.From + ":" + e.Subject
 }
 
-func (s *Email) GetRef() Ref {
+func (e *Email) GetRef() Ref {
 	return EMAIL
+
 }

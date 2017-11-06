@@ -1,5 +1,9 @@
 package data
 
+import (
+	"encoding/json"
+)
+
 const (
 	SIMPLE Ref = iota
 	FILE
@@ -33,4 +37,20 @@ var REF_STR2IDX = map[string]Ref{
 type Data interface {
 	GetName() string
 	GetRef() Ref
+}
+
+type HasDependencies interface {
+	GetDependencies() []Data
+}
+
+type HasConfig interface {
+	GetConfig() Config
+}
+
+type Config interface {
+	UpdateConfig(json.RawMessage) error
+}
+
+type OnCollection interface {
+	OnCollection(Config) error
 }
