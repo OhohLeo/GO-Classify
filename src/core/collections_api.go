@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"github.com/ant0ine/go-json-rest/rest"
 	"github.com/ohohleo/classify/collections"
-	"github.com/ohohleo/classify/config"
 	"golang.org/x/net/websocket"
 	"net/http"
 )
@@ -155,17 +154,17 @@ func (c *Classify) ApiGetCollectionConfig(w rest.ResponseWriter, r *rest.Request
 		return
 	}
 
+	if collection.config == nil {
+		rest.Error(w, "no collection config found",
+			http.StatusBadRequest)
+		return
+	}
+
 	// From the url query list
 	values := r.URL.Query()
 
-	var result interface{}
-	if _, ok := values["refs"]; ok {
-		result = config.GetRef(collection.config)
-	} else {
-		result = collection.config
-	}
-
-	w.WriteJson(result)
+	_, ok := values["refs"]
+	w.WriteJson(collection.config.Get(ok))
 }
 
 // ApiPatchCollectionConfig mofify configuration parameters
@@ -178,18 +177,41 @@ func (c *Classify) ApiPatchCollectionConfig(w rest.ResponseWriter, r *rest.Reque
 		return
 	}
 
-	var newConfig CollectionConfig
-	if err := r.DecodeJsonPayload(&newConfig); err != nil {
-		rest.Error(w, err.Error(), http.StatusBadRequest)
-		return
-	}
-
-	if err := collection.SetConfig(&newConfig); err != nil {
+	if err := r.DecodeJsonPayload(collection.config); err != nil {
 		rest.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 
 	w.WriteHeader(http.StatusNoContent)
+}
+
+// GET /collections/:name/config/:param
+func (c *Classify) ApiPutCollectionConfigParam(w rest.ResponseWriter, r *rest.Request) {
+
+	// Check the collection exist
+	collection := c.getCollectionByName(w, r)
+	if collection == nil {
+		return
+	}
+
+	path := r.PathParam("path")
+	param := r.PathParam("param")
+
+	var body json.RawMessage
+	err := r.DecodeJsonPayload(&body)
+	if err != nil {
+		rest.Error(w, "invalid json body", http.StatusBadRequest)
+		return
+	}
+
+	res, err := collection.config.GetParam(path, param, body)
+	if err != nil {
+		rest.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	w.WriteJson(res)
+	return
 }
 
 // GET /collections/:name/buffers

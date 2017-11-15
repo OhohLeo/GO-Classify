@@ -1,5 +1,5 @@
 import {
-    Component, NgZone, Input, OnInit, OnDestroy
+    Component, NgZone, Input, Output, EventEmitter, OnInit, OnDestroy
 } from '@angular/core'
 import {
     ControlValueAccessor, NG_VALUE_ACCESSOR
@@ -25,6 +25,8 @@ export class ParamsPathComponent implements OnInit, ControlValueAccessor, OnDest
 
     @Input() type: string
     @Input() name: string
+    @Output() change = new EventEmitter<string>()
+
     private path: string
     private initPath: string
     private displayPath: string
@@ -60,9 +62,17 @@ export class ParamsPathComponent implements OnInit, ControlValueAccessor, OnDest
         this.stop
     }
 
-    // this is the initial value set to the component
+    // Initial value set to the component
     public writeValue(value: any) {
+
+        if (value == undefined || value == "")
+            return
+
         this.path = value;
+
+        this.zone.run(() => {
+            this.displayPath = value
+        })
     }
 
     // registers 'fn' that will be fired when changes are made
@@ -107,19 +117,31 @@ export class ParamsPathComponent implements OnInit, ControlValueAccessor, OnDest
                     this.path = result["current"]
                     this.displayPath = this.path
 
-                    if (path == "") {
+                    if (path === undefined || path == "") {
                         this.initPath = this.path
                     }
 
                     // Reset list
                     this.list = []
 
-                    if (this.path != this.initPath) {
-                        this.list = this.path.substr(
-                            this.initPath.length).split("/")
+                    if (this.path !== this.initPath) {
+
+                        let path = this.path
+
+                        if (this.initPath != undefined) {
+                            path = this.path.substr(this.initPath.length)
+                        }
+
+                        this.list = path.split("/")
+
+                        if (path.charAt(0) == '/') {
+                            this.list[0] = "/"
+                        }
                     }
 
-                    this.list.unshift(this.initPath)
+                    if (this.initPath != undefined) {
+                        this.list.unshift(this.initPath)
+                    }
 
                     this.directories = result["directories"]
                     this.files = result["files"]
@@ -161,6 +183,7 @@ export class ParamsPathComponent implements OnInit, ControlValueAccessor, OnDest
         this.action = undefined
 
         // update the form
-        this.propagateChange(this.path);
+        this.propagateChange(this.path)
+        this.change.emit(this.path)
     }
 }

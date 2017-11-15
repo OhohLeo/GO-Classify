@@ -1,4 +1,4 @@
-import { Component, Output, EventEmitter, OnInit, NgZone , Renderer} from '@angular/core'
+import { Component, Output, EventEmitter, OnInit, NgZone, Renderer } from '@angular/core'
 import { ConfigRef } from './configs.service'
 
 @Component({
@@ -8,50 +8,76 @@ import { ConfigRef } from './configs.service'
 
 export class ConfigMultiComponent implements OnInit {
 
-	@Output() update = new EventEmitter<ConfigRef[]>()
+    @Output() update = new EventEmitter<ConfigRef[]>()
 
-	public collections: string[] = []
+    public tabs: string[] = []
+    public structs: string[] = []
 
-	public multiRef: { [name: string]: ConfigRef } = {}
-	public refs: ConfigRef[] = []
+    public refsByTab: { [name: string]: ConfigRef[] } = {}
+    public refsByStruct: { [name: string]: ConfigRef[] } = {}
+    public refs: ConfigRef[] = []
 
-	constructor(private zone: NgZone,
-			   	private render: Renderer) { }
+    constructor(private zone: NgZone,
+        private render: Renderer) { }
 
-    ngOnInit() {
+    ngOnInit() { }
 
-	}
+    onUpdate(ref: ConfigRef) {
 
-	onUpdate(ref : ConfigRef) {
-		console.log("MULTI", ref)
+        let tabs: string[] = []
 
-		let collections : string[] = []
+        let childs: ConfigRef[] = []
 
-		let childs: ConfigRef[] = []
+        switch (ref.type) {
+            case "map":
+                for (let idx in ref.childs) {
+                    let refElement = ref.childs[idx]
+                    tabs.push(refElement.name)
+                    if (refElement.type === "key") {
+                        this.refsByTab[refElement.name] = refElement.childs
+                    } else {
+                        childs.push(refElement)
+                    }
+                }
+                break;
+            case "struct":
+                childs = ref.childs
+                break;
+        }
 
-		switch (ref.type)
-		{
-		case "map":
-			for (let idx in ref.childs) {
-				let refChild = ref.childs[idx]
-				collections.push(refChild.name)
-			}
-			break;
-		case "struct":
-			childs = ref.childs
-			break;
-		}
+        this.zone.run(() => {
+            this.tabs = tabs
+        })
 
-		this.zone.run(() => {
-			this.collections = collections
-			this.refs = childs
-		})
-	}
+        this.updateRefChilds(childs)
+    }
 
-	onChange(event) {
-		this.update.emit(this.refs)
-	}
+    updateRefChilds(childs: ConfigRef[]) {
 
+        let structs: string[] = []
+        let refs: ConfigRef[] = []
+
+        for (let idx in childs) {
+            let refChild = childs[idx]
+            switch (refChild.type) {
+                case "struct":
+                    structs.push(refChild.name)
+                    this.refsByStruct[refChild.name] = refChild.childs
+                    break
+                default:
+                    refs.push(refChild)
+            }
+        }
+
+        this.zone.run(() => {
+            this.structs = structs
+            this.refs = refs
+        })
+    }
+
+    onChange(ref) {
+        this.update.emit(this.refs)
+    }
 
     onRef(event: any, refSelected: string) {
 
@@ -64,6 +90,6 @@ export class ConfigMultiComponent implements OnInit {
 
         this.render.setElementClass(event.target, "active", true)
 
-		console.log(refSelected)
-	}
+        this.updateRefChilds(this.refsByTab[refSelected])
+    }
 }

@@ -1,14 +1,16 @@
 package config
 
 import (
+	"github.com/ohohleo/classify/params"
 	"log"
 	"reflect"
 )
 
 type Ref struct {
 	Name     string            `json:"name"`
-	Key      string            `json:"key"`
 	Type     string            `json:"type"`
+	Key      string            `json:"key,omitempty"`
+	Default  interface{}       `json:"default,omitempty"`
 	Comments string            `json:"comments,omitempty"`
 	Childs   []*Ref            `json:"childs,omitempty"`
 	Map      map[string][]*Ref `json:"map,omitempty"`
@@ -19,19 +21,13 @@ type Config struct {
 	Data interface{} `json:"data"`
 }
 
-func GetRef(data interface{}) *Config {
+func GetRefs(prefix string, data interface{}) ([]*Ref, map[string]params.HasParam) {
 
-	val := reflect.ValueOf(data).Elem()
-
-	config := &Config{
-		Refs: getRefsByValue(val),
-		Data: data,
-	}
-
-	return config
+	params := make(map[string]params.HasParam)
+	return getRefsByValue(prefix, reflect.ValueOf(data).Elem(), params), params
 }
 
-func getRefsByValue(val reflect.Value) []*Ref {
+func getRefsByValue(src string, val reflect.Value, p map[string]params.HasParam) []*Ref {
 
 	refs := make([]*Ref, 0)
 
@@ -50,11 +46,21 @@ func getRefsByValue(val reflect.Value) []*Ref {
 		val = val.Elem()
 	}
 
+	// Store structure handling params
+	if param, ok := val.Interface().(params.HasParam); ok {
+		p[src] = param
+	}
+
 	for i := 0; i < val.NumField(); i++ {
 
 		valueField := val.Field(i)
 		typeField := val.Type().Field(i)
 		tag := typeField.Tag
+
+		name := tag.Get("json")
+		if name == "" {
+			continue
+		}
 
 		kind := tag.Get("kind")
 		if kind == "" {
@@ -62,14 +68,14 @@ func getRefsByValue(val reflect.Value) []*Ref {
 		}
 
 		ref := &Ref{
-			Name:     tag.Get("json"),
+			Name:     name,
 			Comments: tag.Get("comments"),
 			Type:     kind,
 		}
 
 		switch kind {
 		case "struct":
-			ref.Childs = getRefsByValue(valueField)
+			ref.Childs = getRefsByValue(src+"-"+name, valueField, p)
 		case "map":
 
 			if ref.Map == nil {
@@ -85,7 +91,8 @@ func getRefsByValue(val reflect.Value) []*Ref {
 				}
 
 				mapValue := valueField.MapIndex(k).Interface()
-				ref.Map[mapKey] = getRefsByValue(reflect.ValueOf(mapValue))
+				ref.Map[mapKey] = getRefsByValue(
+					src+"-"+mapKey, reflect.ValueOf(mapValue), p)
 			}
 
 		case "bool":

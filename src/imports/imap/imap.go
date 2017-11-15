@@ -268,6 +268,7 @@ func (i *Imap) GetSearch() error {
 
 	_, err := i.cnx.Select(i.MailBox, false)
 	if err != nil {
+		i.Stop()
 		return err
 	}
 
@@ -303,6 +304,7 @@ func (i *Imap) Proceed(seqset *imap.SeqSet) error {
 	}()
 
 	if err := <-done; err != nil {
+		i.Stop()
 		return err
 	}
 
@@ -316,6 +318,7 @@ func (i *Imap) Proceed(seqset *imap.SeqSet) error {
 
 		m, err := mail.ReadMessage(rsp)
 		if err != nil {
+			i.Stop()
 			return err
 		}
 
@@ -323,6 +326,7 @@ func (i *Imap) Proceed(seqset *imap.SeqSet) error {
 
 		date, err := header.Date()
 		if err != nil {
+			i.Stop()
 			return err
 		}
 
@@ -336,6 +340,7 @@ func (i *Imap) Proceed(seqset *imap.SeqSet) error {
 		mediaType, params, err := mime.ParseMediaType(
 			m.Header.Get("Content-Type"))
 		if err != nil {
+			i.Stop()
 			return err
 		}
 
@@ -352,6 +357,7 @@ func (i *Imap) Proceed(seqset *imap.SeqSet) error {
 					break
 				}
 				if err != nil {
+					i.Stop()
 					return err
 				}
 

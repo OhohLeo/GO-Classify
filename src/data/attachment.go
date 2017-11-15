@@ -50,11 +50,13 @@ func (s *Attachment) StoreToFile(path string) error {
 	}
 
 	// Get filename
-	name := path + "/" + s.Date.Format("20060102_150405") + "_" + s.Name
+	name := s.Date.Format("20060102_150405") + "_" + s.Name
+	fullname := path + "/" + name
 
 	// Check if file already exist
-	if _, err := os.Stat(name); os.IsNotExist(err) == false {
-		return nil
+	if _, err := os.Stat(fullname); os.IsNotExist(err) == false {
+		s.File, err = NewFileFromPath(path, name)
+		return err
 	}
 
 	// Check if directory already exist
@@ -76,7 +78,7 @@ func (s *Attachment) StoreToFile(path string) error {
 		return nil
 	}
 
-	fmt.Printf("Create '%s' with size %d\n", name, len(slurp))
+	fmt.Printf("Create '%s' with size %d\n", fullname, len(slurp))
 
 	var toWrite []byte
 	switch s.Part.Header.Get("Content-Transfer-Encoding") {
@@ -92,7 +94,7 @@ func (s *Attachment) StoreToFile(path string) error {
 	}
 
 	// Write data into destination
-	f, err := os.Create(name)
+	f, err := os.Create(fullname)
 	if err != nil {
 		return err
 	}
@@ -104,7 +106,7 @@ func (s *Attachment) StoreToFile(path string) error {
 		return err
 	}
 
-	s.File, err = NewFileFromOsFile(path, f)
+	s.File, err = NewFileFromOsFile(f)
 	if err != nil {
 		return err
 	}

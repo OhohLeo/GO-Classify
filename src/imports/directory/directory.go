@@ -218,14 +218,14 @@ func (r *Directory) Eq(new imports.Import) bool {
 
 func (r *Directory) Analyse(cmdStr string, file *data.File) {
 
-	fullpath := file.FullPath
+	absolutePath := file.AbsolutePath
 
 	// Prepare command
-	cmd := exec.Command(cmdStr, fullpath)
+	cmd := exec.Command(cmdStr, absolutePath)
 	cmdReader, err := cmd.StdoutPipe()
 	if err != nil {
 		fmt.Printf("Error creating StdoutPipe for '%s' [%s]: %s\n",
-			cmdStr, fullpath, err.Error())
+			cmdStr, absolutePath, err.Error())
 		return
 	}
 
@@ -251,14 +251,14 @@ func (r *Directory) Analyse(cmdStr string, file *data.File) {
 	// Execute the command
 	err = cmd.Start()
 	if err != nil {
-		fmt.Printf("Error starting '%s' [%s]: %s\n", cmdStr, fullpath, err.Error())
+		fmt.Printf("Error starting '%s' [%s]: %s\n", cmdStr, absolutePath, err.Error())
 		return
 	}
 
 	// Wait for the answer
 	err = cmd.Wait()
 	if err != nil {
-		fmt.Printf("Error waiting '%s' [%s]: %s\n", cmdStr, fullpath, err.Error())
+		fmt.Printf("Error waiting '%s' [%s]: %s\n", cmdStr, absolutePath, err.Error())
 		return
 	}
 

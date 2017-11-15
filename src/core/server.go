@@ -116,6 +116,7 @@ func (c *Classify) CreateServer(config ServerConfig) (server *Server, err error)
 		rest.Delete("/collections/:name", c.ApiDeleteCollectionByName),
 		rest.Get("/collections/:name/config", c.ApiGetCollectionConfig),
 		rest.Patch("/collections/:name/config", c.ApiPatchCollectionConfig),
+		rest.Put("/collections/:name/config/:path/:param", c.ApiPutCollectionConfigParam),
 
 		// Handle collection buffer
 		rest.Get("/collections/:name/buffers",

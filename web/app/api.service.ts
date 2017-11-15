@@ -68,14 +68,14 @@ export class ApiService {
 
     put(path: string) {
         return this.http.put(
-            this.url + path, this.headers())
+            this.url + this.changePath(path), this.headers())
             .catch(this.handleError);
     }
 
     putWithData(path: string, data: any) {
-        console.log("PUT", data)
         return this.http.put(
-            this.url + path, JSON.stringify(data), this.headers())
+            this.url + this.changePath(path),
+            JSON.stringify(data), this.headers())
             .catch(this.handleError);
     }
 
@@ -89,6 +89,11 @@ export class ApiService {
         return this.http.delete(
             this.url + path, this.headers())
             .catch(this.handleError);
+    }
+
+    changePath(path: string): string {
+        return path.replace("collections/:name",
+            "collections/" + this.collectionSelected.name)
     }
 
     subscribeCollectionChange(cb: (collection: Collection,

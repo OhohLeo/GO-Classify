@@ -44,11 +44,32 @@ type HasDependencies interface {
 }
 
 type HasConfig interface {
-	GetConfig() Config
+	NewConfig() Config
 }
 
 type Config interface {
-	UpdateConfig(json.RawMessage) error
+	Update(*json.RawMessage) error
+}
+
+type Configs map[string]Config
+
+// Handles datas generic interface
+func (c *Configs) UnmarshalJSON(src []byte) error {
+
+	datas := make(map[string]*json.RawMessage)
+
+	err := json.Unmarshal(src, &datas)
+	if err != nil {
+		return err
+	}
+
+	for name, config := range *c {
+		if rawMsg, ok := datas[name]; ok {
+			config.Update(rawMsg)
+		}
+	}
+
+	return nil
 }
 
 type OnCollection interface {

@@ -3,20 +3,33 @@ package data
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/ohohleo/classify/params"
 	"github.com/quirkey/magick"
+	"path/filepath"
 )
 
 type IconsConfig struct {
 	Enable bool   `json:"enable"`
 	Size   string `json:"size"`
-	Path   string `json:"path" kind:"path"`
 }
 
-func (c *IconsConfig) UpdateConfig(json.RawMessage) error {
-	return nil
+func (i IconsConfig) GetParam(name string, data json.RawMessage) (result interface{}, err error) {
+
+	switch name {
+	case "path":
+		result, err = params.GetPath(data)
+	default:
+		err = fmt.Errorf("import 'directory' invalid param '%s'", name)
+	}
+
+	return
 }
 
-func (c *IconsConfig) Check() error {
+func (i IconsConfig) Update(rawMsg *json.RawMessage) error {
+	return json.Unmarshal(*rawMsg, &i)
+}
+
+func (c IconsConfig) Check() error {
 
 	// Check size has correct format
 
@@ -25,51 +38,30 @@ func (c *IconsConfig) Check() error {
 	return nil
 }
 
-type CanIcons interface {
-	HasIcon(size string) bool
-	GetIcon(size string) (path string, ok bool)
-	SetIcon(input Data, config *IconsConfig) (path string, err error)
+type Icons map[string]string
+
+func (i Icons) NewConfig() Config {
+	return new(IconsConfig)
 }
 
-type Icons struct {
-	icons  map[string]string
-	config *IconsConfig
-}
+func (i Icons) SetIcon(src string, name string, config *IconsConfig) (path string, err error) {
 
-func (i *Icons) InitIcons(config *IconsConfig) {
-	i.icons = make(map[string]string)
-	i.config = config
-}
+	if config.Enable == false {
+		fmt.Printf("MAGICK DISABLE!\n")
+		return
+	}
 
-func (i *Icons) HasIcon(size string) bool {
-	_, ok := i.icons[size]
-	return ok
-}
-
-func (i *Icons) GetIcon(size string) (path string, ok bool) {
-	path, ok = i.icons[size]
-	return
-}
-
-func (i *Icons) SetIcon(input Data, config *IconsConfig) (path string, err error) {
+	fmt.Printf("MAGICK %+v!\n", config)
 
 	// Check if the icon doesn't already exist
 	var ok bool
-	if path, ok = i.GetIcon(config.Size); ok {
+	if path, ok = i[config.Size]; ok {
+		fmt.Printf("ALREADY MAGICK %s EXIST\n", src)
 		return
 	}
 
-	// Check data compatibility
-	var absolutePath string
-	switch input.(type) {
-	case *File:
-		absolutePath = input.(*File).FullPath
-	default:
-		err = fmt.Errorf("Couldn't set icon from specified type")
-		return
-	}
-
-	icon, err := magick.NewFromFile(absolutePath)
+	fmt.Printf("MAGICK %s\n", src)
+	icon, err := magick.NewFromFile(src)
 	if err != nil {
 		return
 	}
@@ -82,18 +74,17 @@ func (i *Icons) SetIcon(input Data, config *IconsConfig) (path string, err error
 		return
 	}
 
-	dstPath := config.Path
-	if dstPath == "" {
-		dstPath = absolutePath
-	}
+	dst := filepath.Dir(src)
+
+	fmt.Printf("MAGICK %s\n", dst)
 
 	// Store file
-	path = dstPath + "/" + "/" + input.GetName() + "_" + config.Size + ".jpg"
+	path = dst + "/" + "/" + name + "_" + config.Size + ".jpg"
 	err = icon.ToFile(path)
 	if err != nil {
 		return
 	}
 
-	i.icons[config.Size] = path
+	i[config.Size] = path
 	return
 }

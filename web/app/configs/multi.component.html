@@ -1,15 +1,31 @@
-<div *ngIf="collections.length > 0"
-	 class="col s3">
-	<div class="collection">
-	  <a *ngFor="let name of collections"
-		 class="collection-item" (click)="onRef($event, name)">{{name}}</a>
+<div *ngIf="tabs.length > 0" class="card">
+    <div class="card-tabs">
+	<ul class="tabs tabs-fixed-width">
+	    <li class="tab">
+		<a *ngFor="let name of tabs"
+		   (click)="onRef($event, name)">{{name}}</a>
+	    </li>
+	</ul>
+    </div>
+</div>
+<div *ngFor="let name of structs"
+     class="card horizontal col s6">
+    <div>
+        <span class="card-title">{{name}}</span>
+	<div>
+	    <div *ngFor="let ref of refsByStruct[name]">
+		<config-ref [ref]="ref"
+			    (update)="onChange($event)">
+		</config-ref>
+	    </div>
 	</div>
+    </div>
 </div>
 <div *ngIf="refs.length > 0"
-	 class="col s12">
-	<div *ngFor="let ref of refs">
-		<config-ref [ref]="ref"
-					(update)="onChange($event)">
-		</config-ref>
-	</div>
+     class="col s12">
+    <div *ngFor="let ref of refs">
+	<config-ref [ref]="ref"
+		    (update)="onChange($event)">
+	</config-ref>
+    </div>
 </div>

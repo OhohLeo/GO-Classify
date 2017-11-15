@@ -34,9 +34,8 @@
     "jquery": "^2.2.3",
     "material-design-icons": "^3.0.1",
     "materialize-css": "^0.97.6",
-    "rxjs": "5.0.1",
+    "rxjs": "5.0.3",
     "systemjs": "0.19.40",
-    "typescript": "^2.2.2",
     "ws": "^1.1.1",
     "zone.js": "0.8.5"
   },

@@ -10,19 +10,19 @@ import { ConfigMultiComponent } from './multi.component'
 export class ConfigsComponent implements OnInit {
 
     @Input() src: string
-	@Input() name: string
+    @Input() name: string
 
-	@ViewChild(ConfigMultiComponent) multi;
+    @ViewChild(ConfigMultiComponent) multi;
 
     public collections: string[] = []
 
-	public refMulti: ConfigRef
+    public refMulti: ConfigRef
 
-	public validate: boolean = false
+    public validate: boolean = false
 
     constructor(private zone: NgZone,
-				private render: Renderer,
-				private configsService: ConfigsService) { }
+        private render: Renderer,
+        private configsService: ConfigsService) { }
 
     ngOnInit() {
         this.update()
@@ -33,26 +33,25 @@ export class ConfigsComponent implements OnInit {
         this.configsService.getConfigs(this.src, this.name)
             .subscribe((cfg: ConfigBase) => {
 
-				let refs = cfg.getRefs();
-				let refsMainList : string[] = []
+                let refs = cfg.getRefs();
+                let refsMainList: string[] = []
 
-				for (let idx in refs) {
+                for (let idx in refs) {
 
-					let ref = refs[idx]
+                    let ref = refs[idx]
 
-					switch (ref.type)
-					{
-					case "struct":
-					case "map":
-						refsMainList.push(ref.name)
-						break
-					}
+                    switch (ref.type) {
+                        case "struct":
+                        case "map":
+                            refsMainList.push(ref.name)
+                            break
+                    }
 
-				}
+                }
 
                 this.zone.run(() => {
-					this.collections = refsMainList
-					this.validate = false
+                    this.collections = refsMainList
+                    this.validate = false
                 })
             })
     }
@@ -69,33 +68,35 @@ export class ConfigsComponent implements OnInit {
 
         this.render.setElementClass(event.target, "active", true)
 
-		this.configsService.getConfigs(this.src, this.name)
+        this.configsService.getConfigs(this.src, this.name)
             .subscribe((cfg: ConfigBase) => {
 
-				let ref = cfg.getRef(refSelected)
+                let ref = cfg.getRef(refSelected)
 
-				this.zone.run(() => {
-					this.multi.onUpdate(ref)
-					this.validate = false
+                this.zone.run(() => {
+                    this.multi.onUpdate(ref)
+                    this.validate = false
                 })
-			})
-	}
-
-    onChange(event) {
-		this.zone.run(() => {
-			this.validate = true
-		})
+            })
     }
 
-	onSubmit(event) {
+    onChange(event) {
+        this.zone.run(() => {
+            this.validate = true
+        })
+    }
+
+    onSubmit(event) {
 
         event.preventDefault()
 
-		this.configsService.setConfig(this.src, this.name)
-			.subscribe((res) => {
-				this.zone.run(() => {
-					this.validate = false
+        console.log(this.src, this.name)
+
+        this.configsService.setConfig(this.src, this.name)
+            .subscribe((res) => {
+                this.zone.run(() => {
+                    this.validate = false
                 })
-			})
-	}
+            })
+    }
 }

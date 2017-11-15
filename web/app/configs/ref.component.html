@@ -1,26 +1,32 @@
 <div class="col s6 offset-s3"
-	 [ngSwitch]="inputType">
-	<div *ngSwitchCase="'stringlist'">
-		<label for={{ref.name}}>{{ref.name}}</label>
-		<stringlist [name]="ref.name"
-					[values]="ref.data"
-					(change)="onChange($event)"></stringlist>
-	</div>
-	<div *ngSwitchCase="'checkbox'">
-		<input *ngIf="isStringList == false"
-			   name={{ref.name}}
-			   type="checkbox"
-			   id={{ref.name}}
-			   [checked]="ref.data"
-			   (change)="onChange($event)"/>
-		<label for={{ref.name}}>{{ref.name}}</label>
-	</div>
-	<div *ngSwitchDefault>
-		<label for={{ref.name}}>{{ref.name}}</label>
-		<input name={{ref.name}}
-			   type={{inputType}}
-			   id={{ref.name}}
-			   [value]="ref.data"
-			   (change)="onChange($event)"/>
-	</div>
+     [ngSwitch]="inputType">
+    <params-path *ngSwitchCase="'path'"
+		 [(ngModel)]="ref.data"
+		 [type]="pathType"
+		 [name]="pathName"
+		 (change)="onChange($event)">
+    </params-path>
+    <div *ngSwitchCase="'stringlist'">
+	<label for={{ref.name}}>{{ref.name}}</label>
+	<stringlist [name]="ref.name"
+		    [values]="ref.data"
+		    (change)="onChange($event)"></stringlist>
+    </div>
+    <div *ngSwitchCase="'checkbox'">
+	<input *ngIf="isStringList == false"
+	       name={{ref.name}}
+	       type="checkbox"
+	       id={{ref.name}}
+	       [checked]="ref.data"
+	       (change)="onChange($event)"/>
+	<label for={{ref.name}}>{{ref.name}}</label>
+    </div>
+    <div *ngSwitchDefault>
+	<label for={{ref.name}}>{{ref.name}}</label>
+	<input name={{ref.name}}
+	       type={{inputType}}
+	       id={{ref.name}}
+	       [value]="ref.data"
+	       (change)="onChange($event)"/>
+    </div>
 </div>
