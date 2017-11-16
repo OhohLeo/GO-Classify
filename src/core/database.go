@@ -51,13 +51,21 @@ func (c *Classify) StartDB(config *Config) (err error) {
 		return
 	}
 
+	// Configuration cache by collections
+	configs := make(map[*Collection][]byte)
+
 	// Retreive all stored collections
 	err = collections.RetreiveDBCollections(c.database,
-		func(id uint64, name string, ref collections.Ref, params []byte) (err error) {
-			collection, err := c.AddCollection(name, ref, params)
+		func(id uint64, name string, ref collections.Ref,
+			config []byte, params []byte) (err error) {
+
+			// Handle configuration after retreiving imports & exports
+			collection, err := c.AddCollection(name, ref, nil, params)
 			if err != nil {
 				return
 			}
+
+			configs[collection] = config
 
 			// Store database id
 			collection.Id = id
@@ -109,6 +117,14 @@ func (c *Classify) StartDB(config *Config) (err error) {
 		})
 	if err != nil {
 		return
+	}
+
+	// Retreive all stored collection configurations
+	for collection, config := range configs {
+
+		if err = collection.config.Update(config); err != nil {
+			return
+		}
 	}
 
 	return

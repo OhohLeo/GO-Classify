@@ -61,7 +61,7 @@ func (c *Classify) GetCollectionsByNames(names []string) (map[string]*Collection
 	return collections, nil
 }
 
-func (c *Classify) AddCollection(name string, ref collections.Ref, params json.RawMessage) (collection *Collection, err error) {
+func (c *Classify) AddCollection(name string, ref collections.Ref, config json.RawMessage, params json.RawMessage) (collection *Collection, err error) {
 
 	// var website websites.Website
 
@@ -79,7 +79,7 @@ func (c *Classify) AddCollection(name string, ref collections.Ref, params json.R
 	// }
 
 	// Add stored collection
-	collection, err = c.addCollection(name, ref, params)
+	collection, err = c.addCollection(name, ref, config, params)
 	if err != nil {
 		return
 	}
@@ -95,7 +95,7 @@ func (c *Classify) AddCollection(name string, ref collections.Ref, params json.R
 }
 
 // Add a new collection
-func (c *Classify) addCollection(name string, ref collections.Ref, params json.RawMessage) (collection *Collection, err error) {
+func (c *Classify) addCollection(name string, ref collections.Ref, config json.RawMessage, params json.RawMessage) (collection *Collection, err error) {
 
 	// Check that the name of the collection is unique
 	if _, ok := c.collections[name]; ok {
@@ -115,8 +115,21 @@ func (c *Classify) addCollection(name string, ref collections.Ref, params json.R
 		return
 	}
 
+	eventsChannel := make(chan CollectionEvent)
+
 	collection = &Collection{
+		Name:   name,
+		items:  NewItems(),
+		config: NewCollectionConfig(),
 		engine: collectionEngine,
+	}
+
+	// Store configuration received
+	if config != nil {
+		err = json.Unmarshal(config, collection.config)
+		if err != nil {
+			return
+		}
 	}
 
 	if c.collections == nil {
@@ -125,9 +138,6 @@ func (c *Classify) addCollection(name string, ref collections.Ref, params json.R
 
 	// Store the collection
 	c.collections[name] = collection
-
-	// Associate configuration
-	eventsChannel := collection.Init(name)
 
 	go func() {
 

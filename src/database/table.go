@@ -95,6 +95,32 @@ func (t *Table) Delete(condition string) (result string) {
 	return
 }
 
+func (t *Table) Update(keys []string, condition string) (result string, err error) {
+	if len(keys) == 0 {
+		err = fmt.Errorf("db update of '%' has no keys", t.Name)
+		return
+	}
+
+	result = "UPDATE " + t.Name + " SET "
+
+	var res []string
+
+	for _, key := range keys {
+
+		if t.HasAttribute(key) == false {
+			err = fmt.Errorf("attribute '%s' not found in table '%s'",
+				key, t.Name)
+			return
+		}
+
+		res = append(res, key+" = :"+key)
+	}
+
+	result += strings.Join(res, ",") + " WHERE " + condition
+	fmt.Println(result)
+	return
+}
+
 func (t *Table) SelectAll() (result string) {
 
 	result = "SELECT * FROM " + t.Name

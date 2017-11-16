@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/ohohleo/classify/config"
 	"github.com/ohohleo/classify/data"
+	"github.com/ohohleo/classify/database"
 	"github.com/ohohleo/classify/imports"
 	"github.com/ohohleo/classify/params"
 	"log"
@@ -59,6 +60,10 @@ func (c *CollectionConfig) Get(needRefs bool) interface{} {
 	}
 
 	return c
+}
+
+func (c *CollectionConfig) Update(config []byte) error {
+	return json.Unmarshal(config, c)
 }
 
 func (c *CollectionConfig) AddParam(key string, param params.HasParam) {
@@ -137,4 +142,20 @@ func (c *CollectionConfig) updateSingleData(refParent string, d data.Data, alrea
 			c.updateSingleData(refParent, dep, alreadyExisting)
 		}
 	}
+}
+
+func (c *CollectionConfig) Store2DB(collection *Collection, db *database.Database) error {
+
+	// Convert to JSON
+	configStr, err := json.Marshal(c)
+	if err != nil {
+		return err
+	}
+
+	// Update the collection config
+	return db.Update("collections", &database.GenStruct{
+		Name:   collection.Name,
+		Ref:    uint64(collection.engine.GetRef()),
+		Config: configStr,
+	}, []string{"config"}, "name = :name AND ref = :ref")
 }

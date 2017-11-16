@@ -12,7 +12,8 @@ import (
 type ApiCollection struct {
 	Name   string          `json:"name"`
 	Ref    string          `json:"ref"`
-	params json.RawMessage `json:"params"`
+	Config json.RawMessage `json:"config"`
+	Params json.RawMessage `json:"params"`
 }
 
 // AddCollection adds new collection by API
@@ -46,7 +47,7 @@ func (c *Classify) ApiPostCollection(w rest.ResponseWriter, r *rest.Request) {
 	}
 
 	// Create new collection
-	collection, err := c.AddCollection(body.Name, ref, body.params)
+	collection, err := c.AddCollection(body.Name, ref, body.Config, body.Params)
 	if err != nil {
 		rest.Error(w, err.Error(), http.StatusBadRequest)
 		return
@@ -182,10 +183,19 @@ func (c *Classify) ApiPatchCollectionConfig(w rest.ResponseWriter, r *rest.Reque
 		return
 	}
 
+	// Store collection if enable
+	if c.database != nil {
+
+		if err := collection.StoreConfig2DB(c.database); err != nil {
+			rest.Error(w, err.Error(), http.StatusBadRequest)
+			return
+		}
+	}
+
 	w.WriteHeader(http.StatusNoContent)
 }
 
-// GET /collections/:name/config/:param
+// PUT /collections/:name/config/:param
 func (c *Classify) ApiPutCollectionConfigParam(w rest.ResponseWriter, r *rest.Request) {
 
 	// Check the collection exist

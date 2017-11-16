@@ -7,7 +7,7 @@ import (
 func INIT_DB(db *database.Database) (err error) {
 
 	err = db.AddTable("collections",
-		[]string{"id", "name", "ref", "params"})
+		[]string{"id", "name", "ref", "config", "params"})
 	if err != nil {
 		return
 	}
@@ -25,7 +25,7 @@ func INIT_REF_DB(db *database.Database) error {
 	return db.InsertRef("collections_refs", REF_IDX2STR)
 }
 
-type OnCollection func(id uint64, name string, ref Ref, params []byte) error
+type OnCollection func(id uint64, name string, ref Ref, config []byte, params []byte) error
 
 func RetreiveDBCollections(db *database.Database, onCollection OnCollection) (err error) {
 
@@ -39,7 +39,7 @@ func RetreiveDBCollections(db *database.Database, onCollection OnCollection) (er
 
 		// Add new stored collection
 		err = onCollection(dbCollection.Id, dbCollection.Name,
-			Ref(dbCollection.Ref), dbCollection.Params)
+			Ref(dbCollection.Ref), dbCollection.Config, dbCollection.Params)
 		if err != nil {
 			return
 		}

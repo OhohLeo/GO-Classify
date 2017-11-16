@@ -40,22 +40,6 @@ type CollectionParams struct {
 	Websites []string
 }
 
-func (c *Collection) Init(name string) chan CollectionEvent {
-
-	c.Name = name
-
-	// Set default Config
-	c.config = NewCollectionConfig()
-
-	// Init the items storage
-	c.items = NewItems()
-
-	// Init event handler
-	c.events = make(chan CollectionEvent)
-
-	return c.events
-}
-
 // Add new import to the collection
 func (c *Collection) AddImport(name string, i imports.Import) error {
 
@@ -114,7 +98,13 @@ func (c *Collection) Store2DB(db *database.Database) error {
 	}
 
 	// Convert to JSON
-	paramsStr, err := json.Marshal(params)
+	configJson, err := json.Marshal(c.config)
+	if err != nil {
+		return err
+	}
+
+	// Convert to JSON
+	paramsJson, err := json.Marshal(params)
 	if err != nil {
 		return err
 	}
@@ -123,12 +113,18 @@ func (c *Collection) Store2DB(db *database.Database) error {
 	lastId, err := db.Insert("collections", &database.GenStruct{
 		Name:   c.Name,
 		Ref:    uint64(c.engine.GetRef()),
-		Params: paramsStr,
+		Config: configJson,
+		Params: paramsJson,
 	})
 
 	c.Id = lastId
 
 	return err
+}
+
+// Store configuration on DataBase
+func (c *Collection) StoreConfig2DB(db *database.Database) error {
+	return c.config.Store2DB(c, db)
 }
 
 func (c *Collection) Delete2DB(db *database.Database) error {

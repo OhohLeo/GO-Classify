@@ -13,7 +13,12 @@ type GenStruct struct {
 	Id     uint64 `db:"id"`
 	Name   string `db:"name"`
 	Ref    uint64 `db:"ref"`
+	Config []byte `db:"config"`
 	Params []byte `db:"params"`
+}
+
+func (stored *GenStruct) GetConfig(config interface{}) error {
+	return json.Unmarshal(stored.Config, config)
 }
 
 func (stored *GenStruct) GetParams(params interface{}) error {
@@ -31,6 +36,9 @@ var genAttributes = map[string]*Attribute{
 	},
 	"ref": &Attribute{
 		Type: INTEGER,
+	},
+	"config": &Attribute{
+		Type: TEXT,
 	},
 	"params": &Attribute{
 		Type: TEXT,
@@ -171,7 +179,7 @@ func (d *Database) Create() error {
 	return tx.Commit()
 }
 
-func (d *Database) Delete(name string, toStore interface{}, condition string) error {
+func (d *Database) Delete(name string, toDelete interface{}, condition string) error {
 
 	table, err := d.GetTable(name)
 	if err != nil {
@@ -185,9 +193,9 @@ func (d *Database) Delete(name string, toStore interface{}, condition string) er
 
 	query := table.Delete(condition)
 
-	log.Println("DB [" + name + "] " + query + fmt.Sprintf(" [%+v]", toStore))
+	log.Println("DB [" + name + "] " + query + fmt.Sprintf(" [%+v]", toDelete))
 
-	_, err = tx.NamedExec(query, toStore)
+	_, err = tx.NamedExec(query, toDelete)
 	if err != nil {
 		tx.Rollback()
 		return err
@@ -250,6 +258,34 @@ func (d *Database) InsertRef(name string, refs []string) error {
 			tx.Rollback()
 			return err
 		}
+	}
+
+	return tx.Commit()
+}
+
+func (d *Database) Update(name string, toUpdate interface{}, keys []string, condition string) error {
+
+	table, err := d.GetTable(name)
+	if err != nil {
+		return err
+	}
+
+	tx, err := d.db.Beginx()
+	if err != nil {
+		return err
+	}
+
+	query, err := table.Update(keys, condition)
+	if err != nil {
+		return err
+	}
+
+	log.Println("DB [" + name + "] " + query + fmt.Sprintf(" [%+v]", toUpdate))
+
+	_, err = tx.NamedExec(query, toUpdate)
+	if err != nil {
+		tx.Rollback()
+		return err
 	}
 
 	return tx.Commit()
