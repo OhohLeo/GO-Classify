@@ -14,4 +14,8 @@ import 'rxjs'
 // You can import js, ts, css, sass, ...
 
 import 'jquery'
+import 'jvectormap'
+import '../include/jvectormap/jquery-jvectormap-world-mill.js'
+import 'vis'
+import 'webpack-material-design-icons'
 import 'materialize-css'

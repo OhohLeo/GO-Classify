@@ -1,8 +1,33 @@
-<div [ngSwitch]="collection.ref" class="center">
-  <div *ngSwitchCase="'simple'">
-	<simple-collection
-	   [collection]="collection"
-	   [items]="items">
-	</simple-collection>
-  </div>
+<div class="collection col s1">
+    <a *ngFor="let mode of modes; let idx = index"
+       class="collection-item"
+       (click)="onMode($event, idx)">
+	<i class="medium material-icons">{{mode}}</i></a>
+</div>
+<div [ngSwitch]="currentMode"
+     class="col s11">
+    <div *ngSwitchCase="modeStatus.HOME">
+	<div [ngSwitch]="collection.ref">
+	    <div *ngSwitchCase="'simple'">
+		<simple-collection [collection]="collection"
+				   [items]="items">
+		</simple-collection>
+	    </div>
+	</div>
+    </div>
+    <div *ngSwitchCase="modeStatus.LIST">
+	<list-collection [collection]="collection"
+			 [items]="items">
+	</list-collection>
+    </div>
+    <div *ngSwitchCase="modeStatus.WORLD">
+	<world-collection [collection]="collection"
+			  [items]="items">
+	</world-collection>
+    </div>
+    <div *ngSwitchCase="modeStatus.HISTORY">
+	<timeline-collection [collection]="collection"
+			     [items]="items">
+	</timeline-collection>
+    </div>
 </div>

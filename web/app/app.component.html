@@ -23,7 +23,7 @@
         <div *ngSwitchCase="appStatus.COLLECTION">
 	      <collection [collection]="collection">
 	      </collection>
-		</div>
+	</div>
         <div *ngSwitchCase="appStatus.IMPORTS">
             <imports></imports>
         </div>
@@ -48,7 +48,6 @@
     <div class="footer-copyright">
 	<div class="container">
 	    <i class="material-icons right">import_export</i>
-	    <i class="material-icons right" href="div#buffer">star</i>
 	    <i (click)="onBuffer()" class="material-icons right">live_help</i>
 	    <i id="imports-loop" class="material-icons right">loop</i>
 	</div>

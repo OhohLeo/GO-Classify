@@ -2,7 +2,7 @@
 	<div class="collection">
 	  <a class="collection-item" (click)="onRef($event, 'all')">all</a>
 	  <a *ngFor="let ref of refs"
-		 class="collection-item" (click)="onRef($event, ref)">{{ref}}</a>
+	     class="collection-item" (click)="onRef($event, ref)">{{ref}}</a>
 	</div>
 </div>
 <div class="col s9">
@@ -11,44 +11,42 @@
 		(ngSubmit)="onSubmit()">
 	<div [ngSwitch]="currentRef">
 	  <imap-create *ngSwitchCase="'imap'"
-				   (onCreated)="onImportCreated($event)">
+		       (onCreated)="onImportCreated($event)">
 	  </imap-create>
 	  <directory-create *ngSwitchCase="'directory'"
-						(onCreated)="onImportCreated($event)">
+			    (onCreated)="onImportCreated($event)">
 	  </directory-create>
 	</div>
 	<div class="row">
-	  <button type="submit"
-			  [disabled]="!createForm.form.valid"
-			  class="btn waves-effect waves-light">
+	    <button type="submit"
+		    [disabled]="!createForm.form.valid"
+		    class="btn waves-effect waves-light">
 		New {{currentRef}}
 		<i class="material-icons right">send</i>
-	  </button>
+	    </button>
 	</div>
-  </form>
-  <div *ngIf="imports">
+    </form>
+    <div *ngIf="imports">
 	<table *ngFor="let ref of refs2Display">
-	  <tr *ngFor="let import of imports.get(ref)">
+	    <tr *ngFor="let import of imports.get(ref)">
 		<th [ngSwitch]="ref">
-		  <imap-display *ngSwitchCase="'imap'"
-				[imap]="import">
-		  </imap-display>
-		  <directory-display *ngSwitchCase="'directory'"
-				     [directory]="import">
-		  </directory-display>
+		    <imap-display *ngSwitchCase="'imap'"
+				  [imap]="import"></imap-display>
+		    <directory-display *ngSwitchCase="'directory'"
+				       [directory]="import"></directory-display>
 		</th>
-	  	<th><i id="{{import.name}}"
+	  	<th>
+		    <i id="{{import.name}}"
 		       class="material-icons refresh"
 		       (click)="onRefresh(import)">refresh</i>
 		</th>
-		<th><i id="{{import.name}}"
-		       class="material-icons"
+		<th><i class="material-icons"
 		       (click)="onConfig(import)">settings</i>
 		</th>
 	  	<th><i class="material-icons"
 		       (click)="onDelete(import)">delete</i>
 		</th>
-	  </tr>
+	    </tr>
 	</table>
-  </div>
+    </div>
 </div>

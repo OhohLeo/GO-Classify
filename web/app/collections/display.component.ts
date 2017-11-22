@@ -1,8 +1,15 @@
-import { Component, NgZone, Input, OnInit, OnDestroy } from '@angular/core'
+import { Component, NgZone, Input, OnInit, OnDestroy, Renderer } from '@angular/core'
 import { CollectionService, ItemEvent } from './collection.service'
 import { Event } from '../api.service'
 import { Item } from './item'
 import { Collection } from './collection'
+
+enum ModeStatus {
+    HOME = 0,
+    LIST,
+    WORLD,
+    HISTORY,
+}
 
 @Component({
     selector: 'collection',
@@ -13,10 +20,14 @@ export class DisplayCollectionComponent implements OnInit, OnDestroy {
 
     @Input() collection: Collection
 
+    public modeStatus = ModeStatus
+    private modes: string[] = ["star", "list", "language", "history"]
+    private currentMode: ModeStatus
     private items: Item[] = []
     private events: any
 
     constructor(private zone: NgZone,
+        private render: Renderer,
         private collectionService: CollectionService) { }
 
     ngOnInit() {
@@ -39,6 +50,30 @@ export class DisplayCollectionComponent implements OnInit, OnDestroy {
             this.events.unsubscribe()
             this.events = undefined
         }
+    }
+
+
+    onMode(event: any, mode: ModeStatus) {
+
+        // Set collection-items as active
+        event.preventDefault()
+
+        let target
+        if (event.target.tagName === "I") {
+            target = event.target.parentElement
+        } else {
+            target = event.target
+        }
+
+        for (let item of target.parentElement.children) {
+            this.render.setElementClass(item, "active", false)
+        }
+
+        this.render.setElementClass(target, "active", true)
+
+        this.zone.run(() => {
+            this.currentMode = mode
+        })
     }
 
     // Check if item is displayed
