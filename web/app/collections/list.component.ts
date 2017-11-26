@@ -3,11 +3,11 @@ import { ApiService, CollectionStatus } from '../api.service';
 import { Collection } from '../collections/collection';
 
 @Component({
-    selector: 'collections',
-    templateUrl: './collections.component.html',
+    selector: 'collections-list',
+    templateUrl: './list.component.html',
 })
 
-export class CollectionsComponent {
+export class ListCollectionsComponent {
     @Input() title: string
 
     public collectionStatus = CollectionStatus

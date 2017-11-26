@@ -1,6 +1,6 @@
 import { Component } from '@angular/core';
-import { ApiService } from '../api.service';
-import { Collection } from './collection';
+import { ApiService } from '../../api.service';
+import { Collection } from '../collection';
 
 @Component({
     selector: 'collection-create',

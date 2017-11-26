@@ -2,28 +2,28 @@ import { NgModule } from '@angular/core'
 import { CommonModule } from '@angular/common'
 import { BrowserModule } from '@angular/platform-browser'
 import { FormsModule } from '@angular/forms'
-import { SimpleModule } from './home/simple/simple.module'
+import { SimpleModule } from './collection/home/simple/simple.module'
 
-import { CollectionService } from './collection.service'
+import { CollectionsService } from './collections.service'
 import { ApiService } from '../api.service'
 
-import { CollectionsComponent } from './collections.component'
-import { CreateCollectionComponent } from './create.component'
-import { ModifyCollectionComponent } from './modify.component'
-import { DisplayCollectionComponent } from './display.component'
-import { DeleteCollectionComponent } from './delete.component'
+import { ListCollectionsComponent } from './list.component'
+import { CreateCollectionComponent } from './collection/create.component'
+import { ModifyCollectionComponent } from './collection/modify.component'
+import { DisplayCollectionComponent } from './collection/display.component'
+import { DeleteCollectionComponent } from './collection/delete.component'
 
-import { ListCollectionComponent } from './list/list.component'
-import { WorldCollectionComponent } from './world/world.component'
-import { TimeLineCollectionComponent } from './timeline/timeline.component'
+import { ListCollectionComponent } from './collection/list/list.component'
+import { WorldCollectionComponent } from './collection/world/world.component'
+import { TimeLineCollectionComponent } from './collection/timeline/timeline.component'
 
 @NgModule({
     imports: [CommonModule,
         BrowserModule,
         FormsModule,
         SimpleModule],
-    providers: [ApiService, CollectionService],
-    declarations: [CollectionsComponent,
+    providers: [ApiService, CollectionsService],
+    declarations: [ListCollectionsComponent,
         CreateCollectionComponent,
         ModifyCollectionComponent,
         DisplayCollectionComponent,
@@ -31,7 +31,7 @@ import { TimeLineCollectionComponent } from './timeline/timeline.component'
         ListCollectionComponent,
         WorldCollectionComponent,
         TimeLineCollectionComponent],
-    exports: [CollectionsComponent, DisplayCollectionComponent],
+    exports: [ListCollectionsComponent, DisplayCollectionComponent],
 })
 
 export class CollectionsModule { }

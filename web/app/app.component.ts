@@ -3,11 +3,11 @@ import { Component, NgZone, OnInit, ViewChild } from '@angular/core'
 import { ApiService, CollectionStatus, Event } from './api.service'
 import { ImportsService } from './imports/imports.service'
 import { BufferService } from './buffer/buffer.service'
-import { CollectionService } from './collections/collection.service'
+import { CollectionsService } from './collections/collections.service'
 
 import { Collection } from './collections/collection'
 
-import { CollectionsComponent } from './collections/collections.component'
+import { ListCollectionsComponent } from './collections/list.component'
 import { BufferComponent } from './buffer/buffer.component'
 import { BufferItemComponent } from './buffer/item.component'
 import { BufferItem } from './buffer/item'
@@ -30,7 +30,7 @@ enum AppStatus {
 })
 
 export class AppComponent implements OnInit {
-    @ViewChild(CollectionsComponent) collections: CollectionsComponent
+    @ViewChild(ListCollectionsComponent) collections: ListCollectionsComponent
     @ViewChild(BufferComponent) buffer: BufferComponent
 
     public appStatus = AppStatus
@@ -53,7 +53,7 @@ export class AppComponent implements OnInit {
         private apiService: ApiService,
         private importsService: ImportsService,
         private bufferService: BufferService,
-        private collectionService: CollectionService) { }
+        private collectionsService: CollectionsService) { }
 
     ngOnInit() {
 
@@ -205,7 +205,7 @@ export class AppComponent implements OnInit {
                 this.bufferService.addEvent(collection, e, bufferItem)
                 break;
             case "items":
-                this.collectionService.addEvent(collection, e, new Item(e))
+                this.collectionsService.addEvent(collection, e, new Item(e))
                 break;
         }
     }

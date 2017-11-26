@@ -2,6 +2,7 @@ import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs/Rx';
 import { ApiService } from './../api.service';
 import { Item } from './item'
+import { Collection } from './collection'
 import { Event } from '../api.service'
 
 export class ItemEvent {
@@ -70,7 +71,7 @@ export class ItemObserver {
 }
 
 @Injectable()
-export class CollectionService {
+export class CollectionsService {
 
     enableCache: boolean
     itemsByCollection: { [collectionName: string]: CollectionItem; } = {}

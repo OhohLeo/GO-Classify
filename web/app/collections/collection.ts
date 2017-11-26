@@ -1,9 +1,14 @@
+import { Items } from './items'
+import { Item } from './item'
+
 export type Imports = { [ref: string]: { [name: string]: any }; };
 
 export class Collection {
 
     public imports: Imports
-    public websites: string[]
+    public dataRefs: { [name: string]: string } = {};
+    public items: Items
+    public websites = []
 
     constructor(public name: string, public ref: string) { }
 
@@ -37,5 +42,13 @@ export class Collection {
 
         delete this.imports[ref]
         return true
+    }
+
+    addItem(item: Item) {
+
+    }
+
+    removeItem(item: Item) {
+
     }
 }

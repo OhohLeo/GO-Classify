@@ -1,8 +1,8 @@
 import { Component, NgZone, Input, OnInit, OnDestroy, Renderer } from '@angular/core'
-import { CollectionService, ItemEvent } from './collection.service'
-import { Event } from '../api.service'
-import { Item } from './item'
-import { Collection } from './collection'
+import { CollectionsService, ItemEvent } from '../collections.service'
+import { Event } from '../../api.service'
+import { Item } from '../item'
+import { Collection } from '../collection'
 
 enum ModeStatus {
     HOME = 0,
@@ -28,14 +28,14 @@ export class DisplayCollectionComponent implements OnInit, OnDestroy {
 
     constructor(private zone: NgZone,
         private render: Renderer,
-        private collectionService: CollectionService) { }
+        private collectionsService: CollectionsService) { }
 
     ngOnInit() {
 
         this.getItems()
 
         // Subscribe to item modification
-        this.events = this.collectionService.subscribeEvents(
+        this.events = this.collectionsService.subscribeEvents(
             this.collection + "/items")
             .subscribe((event: ItemEvent) => {
 
@@ -137,7 +137,7 @@ export class DisplayCollectionComponent implements OnInit, OnDestroy {
 
 
     getItems() {
-        this.collectionService.getItems(this.collection.name)
+        this.collectionsService.getItems(this.collection.name)
             .subscribe((items: Item[]) => {
                 console.log("UPDATE", items)
                 this.zone.run(() => {

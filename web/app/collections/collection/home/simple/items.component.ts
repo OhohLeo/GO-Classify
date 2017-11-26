@@ -1,7 +1,7 @@
 import { Component, NgZone, Input, OnInit, OnDestroy } from '@angular/core'
 
-import { Item } from '../../item'
-import { Collection } from '../../collection'
+import { Item } from '../../../item'
+import { Collection } from '../../../collection'
 
 
 @Component({

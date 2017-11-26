@@ -226,8 +226,6 @@ export class ApiService {
 
         return new Observable<Collection[]>(observer => {
 
-            console.log("COLLECTIONS BEFORE !!", this.collections)
-
             if (this.collections) {
                 observer.next(this.collections)
                 return
@@ -239,9 +237,6 @@ export class ApiService {
                 .catch(this.handleError);
 
             request.subscribe(collections => {
-
-                console.log("COLLECTIONS!!", collections)
-
                 if (collections) {
                     this.collections = collections
                     observer.next(collections)

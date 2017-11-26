@@ -14,11 +14,11 @@ import { SimpleItemsComponent } from './items.component'
     ],
     declarations: [
         SimpleCollectionComponent,
-		SimpleItemsComponent
+        SimpleItemsComponent
     ],
     exports: [
         SimpleCollectionComponent
     ]
 })
 
-export class SimpleModule {}
+export class SimpleModule { }
