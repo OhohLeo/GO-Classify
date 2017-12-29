@@ -29,14 +29,12 @@ type BufferItem struct {
 	IsMatching  float32                `json:"probability"`
 }
 
-func NewBufferItem() *BufferItem {
+func NewBufferItem(id Id) *BufferItem {
 	item := &BufferItem{
 		CreatedAt: time.Now(),
 	}
 
-	item.Item.Id = getRandomId()
-
-	// Status init
+	item.Item.Id = id
 	item.Status = CREATED
 
 	return item

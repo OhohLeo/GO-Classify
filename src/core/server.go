@@ -3,19 +3,23 @@ package core
 import (
 	"encoding/json"
 	"fmt"
-	log "github.com/Sirupsen/logrus"
 	"github.com/ant0ine/go-json-rest/rest"
 	"github.com/foize/go.fifo"
 	"github.com/hydrogen18/stoppableListener"
+	"log"
 	"net"
 	"net/http"
+	"time"
 )
 
 type Server struct {
-	api       *rest.Api
-	config    *ServerConfig
-	stoppable *stoppableListener.StoppableListener
-	events    *fifo.Queue
+	api         *rest.Api
+	config      *ServerConfig
+	stoppable   *stoppableListener.StoppableListener
+	events      *fifo.Queue
+	eventStatus bool
+	onEvents    chan Event
+	onEvent     chan bool
 }
 
 type ServerConfig struct {
@@ -50,6 +54,8 @@ func (c *Classify) CreateServer(config ServerConfig) (server *Server, err error)
 
 	// Init events channel
 	server.events = fifo.NewQueue()
+	server.onEvents = make(chan Event)
+	server.onEvent = make(chan bool)
 
 	listener, err := net.Listen("tcp", config.Url)
 	if err != nil {
@@ -137,7 +143,6 @@ func (c *Classify) CreateServer(config ServerConfig) (server *Server, err error)
 			c.ApiGetCollectionItems),
 		rest.Delete("/collections/:name/items",
 			c.ApiDeleteCollectionItems),
-
 		rest.Get("/collections/:name/items/:id",
 			c.ApiGetCollectionSingleItem),
 		rest.Patch("/collections/:name/items/:id",
@@ -173,20 +178,31 @@ func (s *Server) Start() {
 // ServerStop stop web server
 func (s *Server) Stop() {
 	log.Println("Stop server")
+	s.onEvent <- false
 	s.stoppable.Stop()
 }
 
 // SendEvent add new event on the event channel
 func (s *Server) SendEvent(eventType string, status string, name string, data interface{}) {
 
-	fmt.Printf("SEND EVENT %s [%s] name:%s %+v\n", eventType, status, name, data)
+	fmt.Printf("SEND EVENT [%s] %s name:%s data:%+v\n", status, eventType, name, data)
 
-	s.events.Add(Event{
+	event := Event{
 		Event:  eventType,
 		Status: status,
 		Name:   name,
 		Data:   data,
-	})
+	}
+
+	s.events.Add(event)
+
+	// If event streamer is not emptying fifo
+	if s.eventStatus == false {
+
+		// Kick event streamer to send this new event
+		s.onEvent <- true
+		s.eventStatus = true
+	}
 }
 
 var idx int = 0
@@ -212,10 +228,18 @@ func (s *Server) HandleStream(w rest.ResponseWriter, r *rest.Request) {
 	for {
 		select {
 		case <-notify:
-			return
-		default:
-			event, ok := s.events.Next().(Event)
-			if ok {
+			continue
+		case ok := <-s.onEvent:
+
+			if ok == false {
+				continue
+			}
+
+			for {
+				event, ok := s.events.Next().(Event)
+				if ok == false {
+					break
+				}
 
 				eventJson, err := json.Marshal(event)
 				if err != nil {
@@ -227,7 +251,14 @@ func (s *Server) HandleStream(w rest.ResponseWriter, r *rest.Request) {
 
 				// Send data immediately
 				flusher.Flush()
+
+				// Wait for 500 ms
+				time.Sleep(500 * time.Millisecond)
 			}
+
+			s.onEvent <- false
+			s.eventStatus = false
+			continue
 		}
 	}
 }

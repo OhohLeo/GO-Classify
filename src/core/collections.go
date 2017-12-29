@@ -122,6 +122,7 @@ func (c *Classify) addCollection(name string, ref collections.Ref, config json.R
 		items:  NewItems(),
 		config: NewCollectionConfig(),
 		engine: collectionEngine,
+		events: eventsChannel,
 	}
 
 	// Store configuration received

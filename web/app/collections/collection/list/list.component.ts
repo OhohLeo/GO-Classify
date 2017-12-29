@@ -1,6 +1,6 @@
 import { Component, NgZone, Input, OnInit, OnDestroy } from '@angular/core'
-import { Collection } from '../../collection'
-import { Item } from '../../item'
+import { Items } from '../../../items/items'
+import { Item } from '../../../items/item'
 
 @Component({
     selector: 'list-collection',
@@ -9,15 +9,11 @@ import { Item } from '../../item'
 
 export class ListCollectionComponent implements OnInit, OnDestroy {
 
+    @Input() items: Items
 
-    @Input() collection: Collection
-    @Input() items: Item[]
+    constructor(private zone: NgZone) { }
 
-    constructor() { }
-
-    ngOnInit() {
-        console.log("HERE!")
-    }
+    ngOnInit() { }
 
     ngOnDestroy() { }
 

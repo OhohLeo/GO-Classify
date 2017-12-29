@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
-	"strings"
 )
 
 type FileConfig struct {
@@ -39,7 +38,7 @@ func NewFileFromPath(path string, name string) (*File, error) {
 		return nil, err
 	}
 
-	fmt.Printf("NEW FILE FROM PATH %s %s %s\n", path, name, f.Name())
+	//fmt.Printf("NEW FILE at %s/%s\n", path, name)
 
 	defer f.Close()
 
@@ -50,17 +49,14 @@ func NewFileFromOsFile(f *os.File) (file *File, err error) {
 
 	// Get absolutePath & extension
 	absolutePath := f.Name()
-	basename := filepath.Base(absolutePath)
 	extension := filepath.Ext(absolutePath)
 
 	file = &File{
 		file:         f,
-		Name:         strings.TrimRight(basename, extension),
-		BaseName:     basename,
+		Name:         filepath.Base(absolutePath),
 		Extension:    extension,
 		Path:         filepath.Dir(absolutePath),
 		AbsolutePath: absolutePath,
-		Icons:        make(map[string]string),
 	}
 
 	return
@@ -86,13 +82,51 @@ func (f *File) OnCollection(config Config) (err error) {
 		return
 	}
 
+	if f.Icons == nil {
+		f.Icons = NewIcons()
+	}
+
 	_, err = f.Icons.SetIcon(f.AbsolutePath, f.Name, &cfg.Icons)
-	fmt.Printf("File OnCollection %s %+v\n", f.AbsolutePath, err)
+
 	return
 }
 
 func (f *File) GetContentType() string {
 	return f.ContentType
+}
+
+func (f *File) GetContents() (contents map[string]string) {
+
+	contents = make(map[string]string)
+
+	contents[f.Name] = f.AbsolutePath
+
+	// If no icons to handle
+	if f.Icons == nil {
+		return
+	}
+
+	// Otherwise add icons
+	for size, icon := range f.Icons {
+		contents[size] = icon.GetAbsolutePath()
+	}
+
+	return
+}
+
+func (f *File) GetBlackList() (blacklist []string) {
+
+	// If no icons to handle
+	if f.Icons == nil {
+		return
+	}
+
+	// Otherwise add icons
+	for _, icon := range f.Icons {
+		blacklist = append(blacklist, icon.Name)
+	}
+
+	return
 }
 
 func (f *File) GetFileInfo() (fileInfo os.FileInfo, err error) {

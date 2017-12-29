@@ -1,18 +1,22 @@
-import { Items } from './items'
-import { Item } from './item'
+import { Items } from '../items/items'
+import { Item } from '../items/item'
+
+import { BufferItem } from '../buffer/item'
 
 export type Imports = { [ref: string]: { [name: string]: any }; };
 
 export class Collection {
 
+    public enableCache: boolean
     public imports: Imports
-    public dataRefs: { [name: string]: string } = {};
     public items: Items
-    public websites = []
+    public bufferItems: BufferItem[] = []
+    public websites: string[] = []
 
-    constructor(public name: string, public ref: string) { }
+    constructor(public name: string, public ref: string) {
+        this.items = new Items(this)
+    }
 
-    // Retourne vrai lorsqueJSON.parse( l'élément est rajouté à la liste
     addImport(ref: string, name: string, params: any): boolean {
 
         if (this.imports == undefined) {
@@ -44,11 +48,37 @@ export class Collection {
         return true
     }
 
-    addItem(item: Item) {
 
+    getItems(): Items {
+        return this.items
     }
 
-    removeItem(item: Item) {
+    addItem(item: any) {
+        this.items.addItem(item);
+    }
 
+    deleteItem(item: Item) {
+        if (this.items.removeItem(item)) {
+            this.enableCache = false
+        }
+    }
+
+    updateItem(item: Item): boolean {
+
+        if (this.items.hasItem(item) == false) {
+            this.addItem(item)
+            return true
+        }
+
+        return this.items.updateItem(item)
+    }
+
+    toApi(): any {
+        return {
+            "name": this.name,
+            "ref": this.ref,
+            "params": {},
+            "config": {},
+        }
     }
 }

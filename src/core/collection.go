@@ -11,6 +11,7 @@ import (
 	"github.com/ohohleo/classify/imports"
 	"github.com/ohohleo/classify/websites"
 	"log"
+	"strconv"
 )
 
 type Collection struct {
@@ -23,6 +24,8 @@ type Collection struct {
 
 	events chan CollectionEvent
 	engine collections.Collection
+
+	blackImports BlackList
 
 	imports  map[string]imports.Import
 	exports  []exports.Export
@@ -229,16 +232,19 @@ func (c *Collection) SearchWeb(item *BufferItem) {
 }
 
 // OnInput handle new data to classify
-func (c *Collection) OnInput(input data.Data) (*BufferItem, error) {
+func (c *Collection) OnInput(id Id, input data.Data) (item *BufferItem, err error) {
 
-	if err := c.onDataInput(input); err != nil {
-		log.Printf("OnDataInput error: %+v\n", err)
+	// Check if data is not already blacklisted
+	if c.blackImports != nil {
+
+		if c.blackImports.Match(input.GetName()) {
+			err = fmt.Errorf("blacklisted : %s", input.GetName())
+			return
+		}
 	}
 
 	// Create a new item
-	item := NewBufferItem()
-
-	// log.Printf("OnInput %+v\n", input)
+	item = NewBufferItem(id)
 
 	if c.buffer != nil {
 
@@ -253,19 +259,29 @@ func (c *Collection) OnInput(input data.Data) (*BufferItem, error) {
 
 	} else {
 
-		item.Item.Id = getRandomId()
 		item.Item.SetData(input)
 
 		// Otherwise directly store item to the items collection
-		err := c.items.Add(item.Item.Engine.GetName(), &item.Item)
-		if err != nil {
-			return nil, err
-		}
-
-		c.SendCollectionEvent("items", "add", &item.Item)
+		err = c.items.Add(id, &item.Item)
 	}
 
-	return item, nil
+	if err != nil {
+		log.Printf("[%s < %d] new input %s: %s\n", c.Name,
+			item.Item.Id, input.GetRef(), input.GetName())
+
+	}
+
+	// Handle data commands called when data is accepted by
+	// collection
+	if err = c.onDataInput(input); err != nil {
+		return
+	}
+
+	// Handle data contents
+	item.Item.LinkToData(input)
+
+	c.SendCollectionEvent("items", "add", &item.Item)
+	return
 }
 
 func (c *Collection) onDataInput(d data.Data) error {
@@ -285,6 +301,21 @@ func (c *Collection) onDataInput(d data.Data) error {
 		for _, dep := range hasDeps.GetDependencies() {
 			if err := c.onDataInput(dep); err != nil {
 				return err
+			}
+		}
+	}
+
+	// Handle blacklist data
+	if hasBlackList, ok := d.(data.HasBlackList); ok {
+
+		if blacklist := hasBlackList.GetBlackList(); blacklist != nil {
+
+			if c.blackImports == nil {
+				c.blackImports = NewBlackList()
+			}
+
+			for _, forbidden := range blacklist {
+				c.blackImports.Add(forbidden)
 			}
 		}
 	}
@@ -345,17 +376,32 @@ func (c *Collection) Validate(id string, d data.Data) (item *BufferItem, err err
 		return
 	}
 
-	// Store in definitive items
-	err = c.items.Add(id, &item.Item)
-	if err != nil {
-		return
-	}
+	// // Store in definitive items
+	// err = c.items.Add(id, &item.Item)
+	// if err != nil {
+	// 	return
+	// }
 
 	c.SendCollectionEvent("items", "add", &item.Item)
 
 	// TODO: export list
 
 	return
+}
+
+func (c *Collection) GetItemByString(idStr string) (*Item, error) {
+
+	id, err := strconv.ParseUint(idStr, 10, 64)
+	if err != nil {
+		return nil, err
+	}
+
+	return c.GetItem(Id(id))
+}
+
+func (c *Collection) GetItem(id Id) (*Item, error) {
+	fmt.Printf("ITEM:%s %+v", id, c.items)
+	return c.items.Get(id)
 }
 
 func (c *Collection) GetItems() []*Item {

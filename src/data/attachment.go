@@ -37,9 +37,13 @@ func (s *Attachment) GetDependencies() []Data {
 	}
 }
 
-func (s *Attachment) OnCollection(Config) error {
-	fmt.Println("ATTACHMENT OnCollection")
-	return nil
+func (s *Attachment) GetContents() (contents map[string]string) {
+
+	if s.File == nil {
+		return
+	}
+
+	return s.File.GetContents()
 }
 
 func (s *Attachment) StoreToFile(path string) error {

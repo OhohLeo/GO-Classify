@@ -1,6 +1,7 @@
-import { Component, Input } from '@angular/core';
-import { ApiService, CollectionStatus } from '../api.service';
-import { Collection } from '../collections/collection';
+import { Component, Input } from '@angular/core'
+import { ApiService, CollectionStatus } from '../api.service'
+import { CollectionsService } from './collections.service'
+import { Collection } from '../collections/collection'
 
 @Component({
     selector: 'collections-list',
@@ -14,11 +15,16 @@ export class ListCollectionsComponent {
     public collectionState = CollectionStatus.NONE
     public collections: Collection[] = []
 
-    constructor(private apiService: ApiService) {
+    constructor(private apiService: ApiService,
+        private collectionsService: CollectionsService) {
 
-        apiService.getCollections().subscribe(
+        collectionsService.getCollections().subscribe(
             (list) => {
-                this.collections = list
+                console.log("COLLECTIONS LIST", list)
+                if (list) {
+                    this.collections = list
+                }
+
                 this.onChooseCollection(undefined)
             })
     }

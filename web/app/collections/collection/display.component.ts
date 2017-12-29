@@ -1,7 +1,8 @@
 import { Component, NgZone, Input, OnInit, OnDestroy, Renderer } from '@angular/core'
-import { CollectionsService, ItemEvent } from '../collections.service'
+import { CollectionsService } from '../collections.service'
 import { Event } from '../../api.service'
-import { Item } from '../item'
+import { Items } from '../../items/items'
+import { Item, ItemEvent } from '../../items/item'
 import { Collection } from '../collection'
 
 enum ModeStatus {
@@ -23,7 +24,7 @@ export class DisplayCollectionComponent implements OnInit, OnDestroy {
     public modeStatus = ModeStatus
     private modes: string[] = ["star", "list", "language", "history"]
     private currentMode: ModeStatus
-    private items: Item[] = []
+    private items: Items
     private events: any
 
     constructor(private zone: NgZone,
@@ -32,17 +33,20 @@ export class DisplayCollectionComponent implements OnInit, OnDestroy {
 
     ngOnInit() {
 
-        this.getItems()
+        this.items = this.collection.items
 
-        // Subscribe to item modification
-        this.events = this.collectionsService.subscribeEvents(
-            this.collection + "/items")
-            .subscribe((event: ItemEvent) => {
+        // Update items list
+        this.initItems()
 
-                // Check if it is the expected collection
-                if (event.collection != this.collection.name)
-                    return;
-            })
+        // // Subscribe to item modification
+        // this.events = this.collectionsService.subscribeEvents(
+        //     this.collection + "/items")
+        //     .subscribe((event: ItemEvent) => {
+
+        //         // Check if it is the expected collection
+        //         if (event.collection != this.collection.name)
+        //             return;
+        //     })
     }
 
     ngOnDestroy() {
@@ -76,72 +80,11 @@ export class DisplayCollectionComponent implements OnInit, OnDestroy {
         })
     }
 
-    // Check if item is displayed
-    hasItem(id: string): number {
-
-        for (let idx in this.items) {
-            if (id === this.items[idx].id)
-                return +idx
-        }
-
-        return -1
-    }
-
-    add(item: Item) {
-
-        let id = item.id
-
-        // Check if item is already displayed
-        if (this.hasItem(id) >= 0) {
-            console.error("Add Item with id '" + id + "' already displayed")
-            return
-        }
-
-        // Add & refresh display
-        this.zone.run(() => {
-            this.items.push(item)
-        })
-    }
-
-    remove(item: Item) {
-
-        let id = item.id
-
-        // Check if item does exist
-        let idx = this.hasItem(id)
-        if (idx < 0) {
-            console.error("Remove Item with id '" + id + "' not found")
-            return;
-        }
-
-        // Delete & refresh display
-        this.zone.run(() => {
-            this.items.splice(idx, 1)
-        })
-    }
-
-    update(item: Item) {
-        let id = item.id
-
-        // Check if item does exist
-        let idx = this.hasItem(id)
-        if (idx < 0) {
-            console.error("Update item with id '" + id + "' not found")
-            return;
-        }
-
-        this.zone.run(() => {
-            this.items[idx] = item
-        })
-    }
-
-
-    getItems() {
+    initItems() {
         this.collectionsService.getItems(this.collection.name)
-            .subscribe((items: Item[]) => {
-                console.log("UPDATE", items)
+            .subscribe((items: Items) => {
                 this.zone.run(() => {
-                    this.items = items
+                    console.log("UPDATE", items)
                 })
             })
     }

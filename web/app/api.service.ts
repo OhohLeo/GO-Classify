@@ -3,6 +3,8 @@ import { Http, Response, RequestOptions, Headers } from '@angular/http';
 import { Observable } from 'rxjs/Rx';
 import { Collection, Imports } from './collections/collection';
 
+import { Item } from './items/item'
+
 export enum WebSocketStatus {
     NONE = 0,
     CONNECTING,
@@ -34,7 +36,6 @@ export class ApiService {
 
     private url = "http://localhost:1234/"
     private references: any
-    private collections: Collection[]
 
     private onCollectionChange: (collection: Collection,
         status: CollectionStatus) => void
@@ -49,7 +50,9 @@ export class ApiService {
 
     headers() {
         return new RequestOptions({
-            headers: new Headers({ 'Content-Type': 'application/json' })
+            headers: new Headers({
+                'Content-Type': 'application/json'
+            })
         })
     }
 
@@ -129,77 +132,20 @@ export class ApiService {
         return this.url + "collections/" + this.getCollectionName()
     }
 
-    // Create a new collection
-    newCollection(collection: Collection) {
-
-        return this.http.post(this.url + "collections",
-            JSON.stringify(collection),
-            this.headers())
-            .map((res: Response) => {
-                if (res.status != 204) {
-                    throw new Error('Impossible to create new collection: ' + res.status);
-                }
-
-                // Ajoute la collection nouvellement créée
-                this.collections.push(collection)
-
-                // Choisit automatiquement la nouvelle collection
-                this.setCollection(collection, CollectionStatus.CREATED)
-            })
-            .catch(this.handleError);
+    getIconUrl(item: Item, size?: string): string {
+	return this.getItemUrl(item.id, item.getIconUrl(size))
     }
+    
+    getItemUrl(id: string, content?: string): string {
 
-    // Modify an existing collection
-    modifyCollection(name: string, collection: Collection) {
+	let url =  this.getCollectionUrl() + "/items/" + id
+	if (content == "") {
+	    return url
+	}
 
-        return this.http.patch(this.url + "collections/" + name,
-            JSON.stringify(collection),
-            this.headers())
-            .map((res: Response) => {
-                if (res.status != 204) {
-                    throw new Error('Impossible to modify collection '
-                        + name + ': ' + res.status);
-                }
-
-                // Replace the collection from the list
-                for (let i in this.collections) {
-                    if (this.collections[i].name === name) {
-                        this.collections[i] = collection
-                        break
-                    }
-                }
-
-                // Choisit automatiquement la nouvelle collection
-                this.setCollection(collection, CollectionStatus.MODIFIED)
-            })
-            .catch(this.handleError);
+	return url + "?content=" + encodeURIComponent(content)
     }
-
-    // Delete an existing collection
-    deleteCollection(name: string) {
-
-        return this.http.delete(this.url + "collections/" + name,
-            this.headers())
-            .map((res: Response) => {
-                if (res.status != 204) {
-                    throw new Error('Impossible to delete collection '
-                        + name + ': ' + res.status);
-                }
-
-                // Remove the collection from the list
-                for (let i = 0; i < this.collections.length; i++) {
-                    if (this.collections[i].name === name) {
-                        this.collections.splice(i, 1)
-                        break
-                    }
-                }
-
-                // Warn about deleted collection
-                this.setCollection(undefined, CollectionStatus.DELETED)
-            })
-            .catch(this.handleError);
-    }
-
+    
     // GET /stream
     getStream() {
         return Observable.create(observer => {
@@ -216,35 +162,11 @@ export class ApiService {
                 }
 
             return () => {
+		console.error("CLOSE STREAM!")
                 eventSource.close()
             }
         })
     }
-
-    // Get the collections list
-    getCollections() {
-
-        return new Observable<Collection[]>(observer => {
-
-            if (this.collections) {
-                observer.next(this.collections)
-                return
-            }
-
-            let request = this.http.get(this.url + "collections",
-                this.headers())
-                .map(this.extractData)
-                .catch(this.handleError);
-
-            request.subscribe(collections => {
-                if (collections) {
-                    this.collections = collections
-                    observer.next(collections)
-                }
-            })
-        });
-    }
-
 
     // Get the collections references
     getReferences() {
@@ -276,8 +198,9 @@ export class ApiService {
 
         return new Observable<Imports>(observer => {
 
-            if (this.collectionSelected.imports) {
-                observer.next(this.collectionSelected.imports)
+            let imports = this.collectionSelected.imports
+            if (imports) {
+                observer.next(imports)
                 return
             }
 
@@ -285,7 +208,7 @@ export class ApiService {
                 .map(this.extractData)
                 .catch(this.handleError);
 
-            request.subscribe(imports => {
+            request.subscribe((imports) => {
                 console.log(imports)
                 this.collectionSelected.imports = imports
                 observer.next(imports)

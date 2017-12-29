@@ -1,6 +1,6 @@
 import { Component, NgZone, Input, OnInit, OnDestroy } from '@angular/core'
 import { Collection } from '../../collection'
-import { Item } from '../../item'
+import { Item } from '../../../items/item'
 
 declare var jQuery: any
 

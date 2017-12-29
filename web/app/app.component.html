@@ -1,41 +1,54 @@
+<ul id="collections" class="dropdown-content">
+    <li (click)="onNewCollection()"><a><i class="material-icons">plus_one</i></a></li>
+    <li><a>one</a></li>
+    <li><a>two</a></li>
+    <li><a>three</a></li>
+</ul>
 <nav class="nav-extended">
     <div class="nav-wrapper">
-	<a class="brand-logo" (click)="onChangeCollection()">{{title}}</a>
+	<a class="brand-logo center"
+	   (click)="onChangeCollection()">{{title}}</a>
 	<ul class="right hide-on-med-and-down">
-            <li><a><i class="material-icons right">import_export</i></a></li>
-            <li><a><i (click)="onBuffer()"
-		      class="material-icons right">live_help</i></a></li>
-            <li><a><i id="imports-loop"
-		      class="material-icons right">loop</i></a></li>
+	    <li *ngIf="bufferActive" (click)="onBuffer()">
+		<a><i class="material-icons">live_help</i></a>
+	    </li>
+	    <li *ngIf="filterEnabled"
+		id="filter" (click)="onFilter()">
+		<a><i class="material-icons">tune</i></a>
+	    </li>
+	    <li *ngIf="searchEnabled"
+		id="search" (click)="onSearch()">
+		<a><i class="material-icons">search</i></a>
+	    </li>
+	    <li><a class="dropdown-button"
+		   data-activates="collections">
+		<i class="material-icons">more_vert</i></a>
+	    </li>
 	</ul>
     </div>
     <div class="nav-content">
 	<ul class="tabs tabs-transparent">
-	    <li class="tab"><a (click)="onCollection()">Collection</a></li>
-	    <li class="tab"><a (click)="onImports()">Imports</a></li>
-	    <li class="tab"><a (click)="onExports()">Exports</a></li>
-	    <li class="tab"><a (click)="onConfigs()">Configs</a></li>
+	    <li id="collection" class="tab"><a (click)="onCollection()">Collection</a></li>
+	    <li id="imports" class="tab"><a (click)="onImports()">Imports
+		<i id="imports-loop"
+		   class="material-icons right">loop</i></a></li>
+	    <li id="exports" class="tab"><a (click)="onExports()">Exports
+		<i class="material-icons right">import_export</i></a></li>
+	    <li id="configs" class="tab"><a (click)="onConfigs()">Configs</a></li>
 	</ul>
+	<div *ngIf="filterActive" class="nav-wrapper">
+	    <filter></filter>
+	</div>
+	<div *ngIf="searchActive" class="nav-wrapper">
+	    <div id="search-bar" class="input-field">
+		<input id="search" type="search" required>
+		<label class="label-icon" for="search">
+		    <i class="material-icons">search</i></label>
+		<i (click)="onSearchClose()" class="material-icons">close</i>
+	    </div>    
+	</div>
     </div>
 </nav>
-<div class="fixed-action-btn">
-    <a class="btn-floating btn-large">
-	<i class="large material-icons">menu</i>
-    </a>
-    <ul>
-	<li><a class="btn-floating"
-	       (click)="onNewCollection()">
-	    <i class="material-icons">plus_one</i></a></li>
-	<li><a class="btn-floating">
-	    <i class="material-icons">tune</i></a></li>
-	<li><a class="btn-floating">
-	    <i class="material-icons">search</i></a></li>
-    </ul>
-</div>
-
-<div class="row">
-    <filter></filter>
-</div>
 <div class="row">
     <collections-list title="title"></collections-list>
 </div>

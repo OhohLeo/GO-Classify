@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"github.com/ohohleo/classify/data"
 	"github.com/ohohleo/classify/database"
 	"github.com/ohohleo/classify/imports"
 	"github.com/ohohleo/classify/imports/directory"
@@ -365,13 +366,16 @@ func (c *Classify) StartImports(imports map[string]*Import, collections map[stri
 			c.SendImportEvent(name, true)
 
 			for {
+
 				if input, ok := <-channel; ok {
 
 					// For each collections linked with the importation
 					for _, collection := range i.collections {
-						_, err := collection.OnInput(input)
-						if err != nil {
-							log.Printf("OnInput() failed: %s\n", err.Error())
+
+						id := data.GetId(input)
+						if _, err := collection.OnInput(Id(id), input); err != nil {
+							log.Printf("[%s x %d] %s\n",
+								collection.Name, id, err.Error())
 						}
 					}
 

@@ -1,6 +1,7 @@
-import { Component } from '@angular/core';
-import { ApiService } from '../../api.service';
-import { Collection } from '../collection';
+import { Component } from '@angular/core'
+import { ApiService } from '../../api.service'
+import { CollectionsService } from '../collections.service'
+import { Collection } from '../collection'
 
 @Component({
     selector: 'collection-delete',
@@ -11,16 +12,17 @@ export class DeleteCollectionComponent {
 
     public title: string
 
-    constructor(private apiSercice: ApiService) {
+    constructor(private apiService: ApiService,
+        private collectionsService: CollectionsService) {
 
         // Set the name of the collection to delete
-        this.title = apiSercice.collectionSelected.name
+        this.title = apiService.collectionSelected.name
     }
 
     onDelete() {
 
         // Delete the collection
-        this.apiSercice.deleteCollection(this.title)
+        this.collectionsService.deleteCollection(this.title)
             .subscribe(status => {
             })
     }

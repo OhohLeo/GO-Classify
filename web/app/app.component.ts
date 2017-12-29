@@ -11,7 +11,7 @@ import { ListCollectionsComponent } from './collections/list.component'
 import { BufferComponent } from './buffer/buffer.component'
 import { BufferItemComponent } from './buffer/item.component'
 import { BufferItem } from './buffer/item'
-import { Item } from './collections/item'
+import { Item } from './items/item'
 
 declare var jQuery: any;
 
@@ -46,6 +46,13 @@ export class AppComponent implements OnInit {
     private importsLoop: any
     private importsRunningNb: number
 
+    private searchEnabled: boolean
+    private filterEnabled: boolean
+    
+    private bufferActive: boolean
+    private searchActive: boolean
+    private filterActive: boolean    
+
     @ViewChild(BufferItemComponent) bufferItemComponent: BufferItemComponent
     public bufferItem: BufferItem
 
@@ -57,14 +64,11 @@ export class AppComponent implements OnInit {
 
     ngOnInit() {
 
-        // Initialisation de la side bar
-        jQuery(".button-collapse").sideNav();
-
-        // Logo d'importation
+        // Import loop
         this.importsLoop = jQuery("i#imports-loop")
         this.importsRunningNb = 0;
-
-        // Inscription au flux
+	
+        // Flux inscription
         this.apiService.getStream()
             .subscribe((e: Event) => {
 
@@ -128,7 +132,7 @@ export class AppComponent implements OnInit {
     onConfigs() {
         this.onNewState(AppStatus.CONFIGS)
     }
-
+    
     onBufferItem(bufferItem: BufferItem) {
         this.zone.run(() => {
             this.bufferItem = bufferItem
@@ -136,16 +140,94 @@ export class AppComponent implements OnInit {
         })
     }
 
+    onNewState(nextStatus: AppStatus) {
+
+	if (nextStatus == AppStatus.COLLECTION) {
+	    this.enableFilterAndSearch(true)
+	} else {
+	    this.enableFilterAndSearch(false)
+	}
+	
+	// Enable nav indicator
+	jQuery("li.indicator").css("height", "2px")
+	
+	this.resetCollectionState()
+        this.status = nextStatus
+    }
+    
     onBuffer() {
         this.buffer.start()
     }
 
-    onNewState(nextStatus: AppStatus) {
-        this.resetCollectionState()
-        this.status = nextStatus
+    enableFilter(status: boolean) {
+	this.zone.run(() => {
+            this.filterEnabled = status
+	    if (status == false) {
+		this.onFilterClose()
+	    }
+	})
+    }
+    
+    onFilter() {
+
+	// Toggle filtering
+	this.changeFilterState(!this.filterActive)
     }
 
-    // Gestion des nouveaux imports
+    onFilterClose() {
+	this.changeFilterState(false)
+    }
+
+    changeFilterState(newState: boolean) {
+	this.zone.run(() => {
+            this.filterActive = newState
+	    this.class2toggle("li#filter", "active", newState)
+	})
+    }
+    
+    enableSearch(status: boolean) {
+	
+	this.zone.run(() => {
+
+	    this.searchEnabled = status
+
+	    if (status == false) {
+		this.onSearchClose()
+	    }
+        })
+    }
+
+    onSearch() {
+	
+	// Toggle search
+	this.changeSearchState(!this.searchActive)
+    }
+    
+    onSearchClose() {
+	this.changeSearchState(false)
+    }
+    
+    changeSearchState(newState: boolean) {
+	this.zone.run(() => {
+            this.searchActive = newState
+	    this.class2toggle("li#search", "active", newState)
+	})
+    }
+
+    class2toggle(item: string, className: string, toggle: boolean) {
+
+	if (toggle) {
+	    jQuery(item).addClass(className)
+	} else {
+	    jQuery(item).removeClass(className)
+	}
+    }
+
+    enableFilterAndSearch(status: boolean) {
+	this.enableFilter(status)
+	this.enableSearch(status)
+    }
+    
     handleImport(e: Event) {
 
         console.log("IMPORT?", e)
@@ -185,7 +267,8 @@ export class AppComponent implements OnInit {
             return;
         }
 
-        let collection = names[1];
+        let collection = this.collectionsService.getCollection(names[1])
+
         let destination: string
         if (size > 2) {
             destination = names[2];
@@ -193,20 +276,26 @@ export class AppComponent implements OnInit {
 
         // Send notifications to the imports list
         switch (destination) {
-            case "buffer":
+            case "buffers":
 
-                let bufferItem = new BufferItem(e.data)
+            let bufferItem = new BufferItem(e.data)
 
-                if (this.bufferItem != undefined && this.bufferItem.id == bufferItem.id) {
-                    this.bufferItemComponent.onUpdate(bufferItem)
-                    this.bufferItem = bufferItem
-                }
+            if (this.bufferItem != undefined
+                && this.bufferItem.id == bufferItem.id) {
 
-                this.bufferService.addEvent(collection, e, bufferItem)
-                break;
-            case "items":
-                this.collectionsService.addEvent(collection, e, new Item(e))
-                break;
+                this.bufferItemComponent.onUpdate(bufferItem)
+                this.bufferItem = bufferItem
+            }
+            // collection.addBufferItem(new BufferItem(e.data))
+	    
+            break;
+
+        case "items":
+            collection.addItem(e.data)
+            break;
+
+	default:
+	    console.error("Unhandled collection destination '" + destination + "'")
         }
     }
 
@@ -223,19 +312,40 @@ export class AppComponent implements OnInit {
         jQuery('#modal').closeModal()
     }
 
-    // Affiche la création d'une nouvelle collection
+    selectNav(name: string) {
+	jQuery("li#"+name).children().click()
+    }
+    
+    disableNav() {
+
+	// Unbold nav title
+	jQuery("li.tab").children().removeClass("active")
+
+	// Disable nav indicator
+	jQuery("li.indicator").css("height", "0px")	    
+    }
+    
+    // Display new collection
     onNewCollection() {
-        if (this.collections) {
-            this.collections.onNewCollection()
+	
+	if (this.collections) {
+	    this.disableNav()
+	    this.status = AppStatus.NONE
+	    this.collections.onNewCollection()
         }
     }
 
-    // Affiche la liste des collections à sélectionner
+    // Display collections list
     onChangeCollection() {
-        if (this.collections
-            && this.collections.onChooseCollection(undefined)) {
-            this.status = AppStatus.NONE
+
+	// If collections list exist
+	if (this.collections) {
+	    this.collections.onChooseCollection(undefined)
         }
+	
+	// Select nav collection
+	this.selectNav("collection")
+	this.onCollection()
     }
 
     // Affiche la liste des collections à sélectionner si aucune

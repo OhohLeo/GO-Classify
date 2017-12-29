@@ -99,6 +99,22 @@ func (c *Classify) getCollectionByName(w rest.ResponseWriter, r *rest.Request) *
 	return collection
 }
 
+func (c *Classify) getItemById(w rest.ResponseWriter, r *rest.Request) *Item {
+
+	collection := c.getCollectionByName(w, r)
+	if collection == nil {
+		return nil
+	}
+
+	item, err := collection.GetItemByString(r.PathParam("id"))
+	if err != nil {
+		rest.Error(w, err.Error(), http.StatusBadRequest)
+		return nil
+	}
+
+	return item
+}
+
 // GetCollectionByName returns the content of each collection
 // GET /collections/:name
 func (c *Classify) ApiGetCollectionByName(w rest.ResponseWriter, r *rest.Request) {
@@ -328,14 +344,31 @@ func (c *Classify) ApiDeleteCollectionItems(w rest.ResponseWriter, r *rest.Reque
 	w.WriteHeader(http.StatusNoContent)
 }
 
-// GET /collections/:name/items/:id
+// GET /collections/:name/items/:id?content="..."
 func (c *Classify) ApiGetCollectionSingleItem(w rest.ResponseWriter, r *rest.Request) {
 
-	// Check the collection exist
-	collection := c.getCollectionByName(w, r)
-	if collection == nil {
+	// Check the collection and item exist
+	item := c.getItemById(w, r)
+	if item == nil {
 		return
 	}
+
+	// Ask for specific item data (image, ...)
+	contentName := r.URL.Query().Get("content")
+
+	if contentName != "" {
+
+		contentPath := item.GetContent(contentName)
+		if contentPath == "" {
+			w.WriteHeader(http.StatusNotFound)
+			return
+		}
+
+		http.ServeFile(w.(http.ResponseWriter), r.Request, contentPath)
+		return
+	}
+
+	w.WriteHeader(http.StatusNoContent)
 }
 
 // PATCH /collections/:name/items/:id

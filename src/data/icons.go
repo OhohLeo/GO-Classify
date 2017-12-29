@@ -3,25 +3,20 @@ package data
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/ohohleo/classify/params"
 	"github.com/quirkey/magick"
+	"log"
+	"os"
 	"path/filepath"
 )
 
 type IconsConfig struct {
-	Enable bool   `json:"enable"`
-	Size   string `json:"size"`
+	Enable  bool   `json:"enable"`
+	Size    string `json:"size"`
+	SubPath string `json:"subPath"`
 }
 
 func (i IconsConfig) GetParam(name string, data json.RawMessage) (result interface{}, err error) {
-
-	switch name {
-	case "path":
-		result, err = params.GetPath(data)
-	default:
-		err = fmt.Errorf("import 'directory' invalid param '%s'", name)
-	}
-
+	err = fmt.Errorf("import 'icons' invalid param '%s'", name)
 	return
 }
 
@@ -38,7 +33,20 @@ func (c IconsConfig) Check() error {
 	return nil
 }
 
-type Icons map[string]string
+type Icon struct {
+	Name string
+	Path string
+}
+
+func (i *Icon) GetAbsolutePath() string {
+	return i.Path + "/" + i.Name
+}
+
+type Icons map[string]*Icon
+
+func NewIcons() Icons {
+	return make(map[string]*Icon)
+}
 
 func (i Icons) NewConfig() Config {
 	return new(IconsConfig)
@@ -47,44 +55,64 @@ func (i Icons) NewConfig() Config {
 func (i Icons) SetIcon(src string, name string, config *IconsConfig) (path string, err error) {
 
 	if config.Enable == false {
-		fmt.Printf("MAGICK DISABLE!\n")
 		return
 	}
 
-	fmt.Printf("MAGICK %+v!\n", config)
-
-	// Check if the icon doesn't already exist
-	var ok bool
-	if path, ok = i[config.Size]; ok {
-		fmt.Printf("ALREADY MAGICK %s EXIST\n", src)
-		return
-	}
-
-	fmt.Printf("MAGICK %s\n", src)
-	icon, err := magick.NewFromFile(src)
-	if err != nil {
-		return
-	}
-
-	defer icon.Destroy()
-
-	// Resize icon with specified size
-	err = icon.Resize(config.Size)
-	if err != nil {
+	// Check if the icon doesn't already referenced
+	if _, ok := i[config.Size]; ok {
 		return
 	}
 
 	dst := filepath.Dir(src)
 
-	fmt.Printf("MAGICK %s\n", dst)
+	// Handle configuration sub-path
+	if config.SubPath != "" {
+		dst += "/" + config.SubPath
+	}
 
-	// Store file
-	path = dst + "/" + "/" + name + "_" + config.Size + ".jpg"
-	err = icon.ToFile(path)
+	// Otherwise create icon
+	icon := &Icon{
+		Name: name + "_" + config.Size + ".jpg",
+		Path: dst,
+	}
+
+	path = icon.GetAbsolutePath()
+
+	// Check if the icon file doesn't already exist
+	if _, err = os.Stat(icon.GetAbsolutePath()); err == nil {
+		i[config.Size] = icon
+		return
+	}
+
+	// Create destination path if it doesn't exist
+	if _, err = os.Stat(dst); os.IsNotExist(err) {
+		err = os.MkdirAll(dst, os.ModePerm)
+		if err != nil {
+			return
+		}
+	}
+
+	iconMagick, err := magick.NewFromFile(src)
 	if err != nil {
 		return
 	}
 
-	i[config.Size] = path
+	defer iconMagick.Destroy()
+
+	// Resize iconMagick with specified size
+	err = iconMagick.Resize(config.Size)
+	if err != nil {
+		return
+	}
+
+	// Store file
+	err = iconMagick.ToFile(path)
+	if err != nil {
+		return
+	}
+
+	log.Printf("Create icon at '%s'\n", icon.GetAbsolutePath())
+
+	i[config.Size] = icon
 	return
 }

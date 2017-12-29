@@ -2,6 +2,13 @@ a, i {
     cursor: pointer;
 }
 
+nav .input-field {
+    height: 64px !important;
+}
+
+input[type="search"] {
+  height: 64px !important;
+}
 
 @-webkit-keyframes rotating {
 	from {
@@ -44,3 +51,4 @@ a, i {
 	-o-animation: rotating 1s linear infinite;
 	animation: rotating 1s linear infinite;
 }
+

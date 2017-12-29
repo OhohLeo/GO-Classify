@@ -9,15 +9,13 @@
     <div *ngSwitchCase="modeStatus.HOME">
 	<div [ngSwitch]="collection.ref">
 	    <div *ngSwitchCase="'simple'">
-		<simple-collection [collection]="collection"
-				   [items]="items">
+		<simple-collection [items]="items">
 		</simple-collection>
 	    </div>
 	</div>
     </div>
     <div *ngSwitchCase="modeStatus.LIST">
-	<list-collection [collection]="collection"
-			 [items]="items">
+	<list-collection [items]="items">
 	</list-collection>
     </div>
     <div *ngSwitchCase="modeStatus.WORLD">
@@ -26,8 +24,7 @@
 	</world-collection>
     </div>
     <div *ngSwitchCase="modeStatus.HISTORY">
-	<timeline-collection [collection]="collection"
-			     [items]="items">
+	<timeline-collection [items]="items">
 	</timeline-collection>
     </div>
 </div>

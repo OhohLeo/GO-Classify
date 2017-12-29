@@ -1,7 +1,6 @@
 import { Component, NgZone, Input, OnInit, OnDestroy } from '@angular/core'
 
-import { Item } from '../../../item'
-import { Collection } from '../../../collection'
+import { Item } from '../../../../items/item'
 
 
 @Component({
@@ -10,8 +9,12 @@ import { Collection } from '../../../collection'
 })
 
 export class SimpleItemsComponent implements OnInit, OnDestroy {
+
     @Input() items: Item[]
 
-    ngOnInit() { }
+    ngOnInit() {
+	console.log("SIMPLE ITEMS", this.items)
+    }
+    
     ngOnDestroy() { }
 }

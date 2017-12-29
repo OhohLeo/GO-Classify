@@ -1,7 +1,9 @@
 package data
 
 import (
+	"crypto/md5"
 	"encoding/json"
+	"math/big"
 )
 
 const (
@@ -39,6 +41,14 @@ type Data interface {
 	GetRef() Ref
 }
 
+func GetId(d Data) uint64 {
+	res := big.NewInt(0)
+	hash := md5.New()
+	hash.Write([]byte(d.GetRef().String() + d.GetName()))
+	res.SetBytes(hash.Sum(nil))
+	return res.Uint64()
+}
+
 type HasDependencies interface {
 	GetDependencies() []Data
 }
@@ -70,6 +80,14 @@ func (c *Configs) UnmarshalJSON(src []byte) error {
 	}
 
 	return nil
+}
+
+type HasContents interface {
+	GetContents() map[string]string
+}
+
+type HasBlackList interface {
+	GetBlackList() []string
 }
 
 type OnCollection interface {
