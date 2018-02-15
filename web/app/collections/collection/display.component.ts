@@ -25,11 +25,12 @@ export class DisplayCollectionComponent implements OnInit, OnDestroy {
     private modes: string[] = ["star", "list", "language", "history"]
     private currentMode: ModeStatus
     private items: Items
+    private item: Item
     private events: any
 
     constructor(private zone: NgZone,
-        private render: Renderer,
-        private collectionsService: CollectionsService) { }
+		private render: Renderer,
+		private collectionsService: CollectionsService) { }
 
     ngOnInit() {
 
@@ -80,6 +81,18 @@ export class DisplayCollectionComponent implements OnInit, OnDestroy {
         })
     }
 
+    onItem(item: Item) {
+	this.zone.run(() => {
+            this.item = item
+        })
+    }
+
+    onCloseItem() {
+	this.zone.run(() => {
+            this.item = undefined
+        })
+    }
+    
     initItems() {
         this.collectionsService.getItems(this.collection.name)
             .subscribe((items: Items) => {

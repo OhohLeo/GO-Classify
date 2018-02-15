@@ -1,5 +1,7 @@
 <div class="row" *ngFor="let ref of items.refList">
   <p>{{ref.name}}</p>
-  <simple-items [items]="items.getList({'ref': ref.name})">
+  <simple-items
+     [items]="items.getList({'ref': ref.name})"
+     (open)="onItem($event)">
   </simple-items>
 </div>

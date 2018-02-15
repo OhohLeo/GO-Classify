@@ -38,7 +38,7 @@ export class BufferComponent implements OnInit, OnDestroy {
     }
 
     ngOnDestroy() {
-        this.stop
+        this.stop()
     }
 
     start() {

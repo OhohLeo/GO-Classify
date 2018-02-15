@@ -9,22 +9,33 @@
     <div *ngSwitchCase="modeStatus.HOME">
 	<div [ngSwitch]="collection.ref">
 	    <div *ngSwitchCase="'simple'">
-		<simple-collection [items]="items">
-		</simple-collection>
+	      <simple-collection
+		 [items]="items"
+		 (open)="onItem($event)">
+	      </simple-collection>
 	    </div>
 	</div>
     </div>
     <div *ngSwitchCase="modeStatus.LIST">
-	<list-collection [items]="items">
-	</list-collection>
+      <list-collection
+	 [items]="items"
+	 (open)="onItem($event)">
+      </list-collection>
     </div>
     <div *ngSwitchCase="modeStatus.WORLD">
-	<world-collection [collection]="collection"
-			  [items]="items">
-	</world-collection>
+      <world-collection
+	 [collection]="collection"
+	 [items]="items"
+	 (open)="onItem($event)">
+      </world-collection>
     </div>
     <div *ngSwitchCase="modeStatus.HISTORY">
-	<timeline-collection [items]="items">
-	</timeline-collection>
+      <timeline-collection
+	 [items]="items"
+	 (open)="onItem($event)">
+      </timeline-collection>
     </div>
 </div>
+<item *ngIf="item !== undefined"
+      [item]="item"
+      (close)="onCloseItem()"></item>

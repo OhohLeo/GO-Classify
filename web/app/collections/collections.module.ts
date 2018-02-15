@@ -2,6 +2,7 @@ import { NgModule } from '@angular/core'
 import { CommonModule } from '@angular/common'
 import { BrowserModule } from '@angular/platform-browser'
 import { FormsModule } from '@angular/forms'
+import { ItemsModule } from '../items/items.module'
 import { SimpleModule } from './collection/home/simple/simple.module'
 
 import { CollectionsService } from './collections.service'
@@ -19,18 +20,19 @@ import { TimeLineCollectionComponent } from './collection/timeline/timeline.comp
 
 @NgModule({
     imports: [CommonModule,
-        BrowserModule,
-        FormsModule,
-        SimpleModule],
+              BrowserModule,
+              FormsModule,
+	      ItemsModule,
+              SimpleModule],
     providers: [ApiService, CollectionsService],
     declarations: [ListCollectionsComponent,
-        CreateCollectionComponent,
-        ModifyCollectionComponent,
-        DisplayCollectionComponent,
-        DeleteCollectionComponent,
-        ListCollectionComponent,
-        WorldCollectionComponent,
-        TimeLineCollectionComponent],
+		   CreateCollectionComponent,
+		   ModifyCollectionComponent,
+		   DisplayCollectionComponent,
+		   DeleteCollectionComponent,
+		   ListCollectionComponent,
+		   WorldCollectionComponent,
+		   TimeLineCollectionComponent],
     exports: [ListCollectionsComponent, DisplayCollectionComponent],
 })
 

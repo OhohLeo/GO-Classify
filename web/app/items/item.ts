@@ -36,7 +36,7 @@ export class Item {
 	let icons = this.data["icons"]
 	if (icons !== undefined) {
 	    for (let size in icons) {  
-		this.icons[size] = icons[size]["Name"]
+		this.icons[size] = icons[size]["name"]
 	    }
 	    this.hasIcon = true
         }

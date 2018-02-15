@@ -16,16 +16,15 @@ func (c *FileConfig) Update(rawMsg *json.RawMessage) error {
 }
 
 type File struct {
-	Type         string            `json:"type"`
-	Name         string            `json:"name"`
-	BaseName     string            `json:"basename"`
-	Extension    string            `json:"extension"`
-	Path         string            `json:"path"`
-	AbsolutePath string            `json:"absolutePath"`
-	ContentType  string            `json:"contentType"`
-	Icons        Icons             `json:"icons,omitempty"`
-	Infos        map[string]string `json:"infos"`
-	FileInfo     os.FileInfo       `json:"-"`
+	Name        string            `json:"name"`
+	Extension   string            `json:"extension"`
+	ContentType string            `json:"contentType"`
+	Icons       Icons             `json:"icons"`
+	Infos       map[string]string `json:"infos"`
+
+	Path         string      `json:"-"`
+	AbsolutePath string      `json:"-"`
+	FileInfo     os.FileInfo `json:"-"`
 
 	file *os.File
 }

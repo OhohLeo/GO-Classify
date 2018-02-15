@@ -1,7 +1,5 @@
-import { Component, NgZone, Input, OnInit, OnDestroy } from '@angular/core'
-
+import { Component, NgZone, Input, Output, EventEmitter, OnInit, OnDestroy } from '@angular/core'
 import { Item } from '../../../../items/item'
-
 
 @Component({
     selector: 'simple-items',
@@ -11,10 +9,13 @@ import { Item } from '../../../../items/item'
 export class SimpleItemsComponent implements OnInit, OnDestroy {
 
     @Input() items: Item[]
+    @Output() open: EventEmitter<Item> = new EventEmitter<Item>()
 
-    ngOnInit() {
-	console.log("SIMPLE ITEMS", this.items)
-    }
+    ngOnInit() { }
     
     ngOnDestroy() { }
+
+    onItem(item: Item) {
+	this.open.emit(item)
+    }
 }

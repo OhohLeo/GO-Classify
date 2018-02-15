@@ -10,11 +10,12 @@
 	</thead>
 
 	<tbody>
-	    <tr *ngFor="let item of items.getList({'ref': ref.name})">
-		<td *ngFor="let value of ref.getValues(item)">
-		    {{value}}
-		</td>
-	    </tr>
+	  <tr *ngFor="let item of items.getList({'ref': ref.name})"
+	      (click)="onOpen(item)">
+	    <td *ngFor="let value of ref.getValues(item)">
+	      {{value}}
+	    </td>
+	  </tr>
 	</tbody>
     </table>
 </div>

@@ -1,4 +1,4 @@
-import { Component, NgZone, Input, OnInit, OnDestroy } from '@angular/core'
+import { Component, NgZone, Input, Output, EventEmitter, OnInit, OnDestroy } from '@angular/core'
 import { ApiService } from '../../../../api.service'
 import { Item } from '../../../../items/item'
 
@@ -10,6 +10,8 @@ import { Item } from '../../../../items/item'
 export class SimpleIconItemComponent implements OnInit, OnDestroy {
 
     @Input() item: Item
+    @Output() open: EventEmitter<Item> = new EventEmitter<Item>()
+
     public iconUrl: string
 
     constructor(private apiService: ApiService) {
@@ -23,4 +25,8 @@ export class SimpleIconItemComponent implements OnInit, OnDestroy {
     }
     
     ngOnDestroy() { }
+
+    onOpen() {
+	this.open.emit(this.item)
+    }
 }

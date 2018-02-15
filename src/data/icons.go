@@ -34,8 +34,8 @@ func (c IconsConfig) Check() error {
 }
 
 type Icon struct {
-	Name string
-	Path string
+	Name string `json:"name"`
+	Path string `json:"-"`
 }
 
 func (i *Icon) GetAbsolutePath() string {

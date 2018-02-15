@@ -1,5 +1,6 @@
-import { Component, NgZone, Input, OnInit, OnDestroy } from '@angular/core'
+import { Component, NgZone, Input, Output, EventEmitter, OnInit, OnDestroy } from '@angular/core'
 import { Collection } from '../../collection'
+import { Items } from '../../../items/items'
 import { Item } from '../../../items/item'
 
 declare var jQuery: any
@@ -13,8 +14,9 @@ export class WorldCollectionComponent implements OnInit, OnDestroy {
 
 
     @Input() collection: Collection
-    @Input() items: Item[]
-
+    @Input() items: Items
+    @Output() open: EventEmitter<Item> = new EventEmitter<Item>()
+    
     constructor() { }
 
     ngOnInit() {
@@ -23,4 +25,7 @@ export class WorldCollectionComponent implements OnInit, OnDestroy {
 
     ngOnDestroy() { }
 
+    onItem(item: Item) {
+	this.open.emit(item)
+    }
 }
