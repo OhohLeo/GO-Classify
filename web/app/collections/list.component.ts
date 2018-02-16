@@ -1,4 +1,4 @@
-import { Component, Input } from '@angular/core'
+import { Component, NgZone, Input } from '@angular/core'
 import { ApiService, CollectionStatus } from '../api.service'
 import { CollectionsService } from './collections.service'
 import { Collection } from '../collections/collection'
@@ -13,22 +13,48 @@ export class ListCollectionsComponent {
 
     public collectionStatus = CollectionStatus
     public collectionState = CollectionStatus.NONE
+    public collection: Collection
     public collections: Collection[] = []
 
-    constructor(private apiService: ApiService,
-        private collectionsService: CollectionsService) {
+    constructor(private zone: NgZone,
+		private apiService: ApiService,
+		private collectionsService: CollectionsService) {
+	this.refresh(true)
+    }
 
-        collectionsService.getCollections().subscribe(
+    refresh(display: boolean) {
+	console.log("COLLECTION LIST REFRESH")
+        this.collectionsService.getCollections().subscribe(
             (list) => {
-                console.log("COLLECTIONS LIST", list)
+		 
                 if (list) {
                     this.collections = list
                 }
 
-                this.onChooseCollection(undefined)
+		if (display) {
+                    this.onChooseCollection(undefined)
+		}
             })
     }
+    
+    nb() : number {
+	return this.collections.length
+    }
 
+    getCollections(avoid?: Collection): Collection[] {
+
+	let collections: Collection[] = []
+
+	for (let collection of this.collections)
+	{
+	    if (collection != avoid) {  
+		collections.push(collection)
+	    }
+	}
+
+	return collections
+    }
+    
     onNewCollection() {
         this.collectionState = CollectionStatus.CREATED
     }
@@ -64,13 +90,19 @@ export class ListCollectionsComponent {
     }
 
     onModifyCollection(collection: Collection) {
-        this.onSelectCollection(collection, CollectionStatus.MODIFIED)
-        this.collectionState = CollectionStatus.MODIFIED
+        this.zone.run(() => {
+	    this.collection = collection
+            this.collectionState = CollectionStatus.MODIFIED
+	})
     }
 
     onDeleteCollection(collection: Collection) {
-        this.onSelectCollection(collection, CollectionStatus.DELETED)
-        this.collectionState = CollectionStatus.DELETED
+	console.log(collection)
+
+	this.zone.run(() => {
+	    this.collection = collection
+	    this.collectionState = CollectionStatus.DELETED
+	})
     }
 
     resetCollectionState() {

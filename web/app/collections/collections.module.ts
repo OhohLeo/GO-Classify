@@ -33,7 +33,8 @@ import { TimeLineCollectionComponent } from './collection/timeline/timeline.comp
 		   ListCollectionComponent,
 		   WorldCollectionComponent,
 		   TimeLineCollectionComponent],
-    exports: [ListCollectionsComponent, DisplayCollectionComponent],
+    exports: [ListCollectionsComponent,
+	      DisplayCollectionComponent],
 })
 
 export class CollectionsModule { }

@@ -77,8 +77,8 @@ export class Collection {
         return {
             "name": this.name,
             "ref": this.ref,
-            "params": {},
-            "config": {},
+            // "params": {},
+            // "config": {},
         }
     }
 }

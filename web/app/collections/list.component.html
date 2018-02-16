@@ -13,6 +13,10 @@
         </li>
     </ul>
     <collection-create *ngSwitchCase="collectionStatus.CREATED"></collection-create>
-    <collection-modify *ngSwitchCase="collectionStatus.MODIFIED"></collection-modify>
-    <collection-delete *ngSwitchCase="collectionStatus.DELETED"></collection-delete>
+    <collection-modify *ngSwitchCase="collectionStatus.MODIFIED"
+		       [collection]="collection">
+    </collection-modify>
+    <collection-delete *ngSwitchCase="collectionStatus.DELETED"
+		       [collection]="collection">
+    </collection-delete>
 </div>

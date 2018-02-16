@@ -18,8 +18,7 @@ export class CollectionsService {
     // Create a new collection
     newCollection(collection: Collection) {
 
-        return this.apiService.post("collections",
-            JSON.stringify(collection.toApi()))
+        return this.apiService.post("collections", collection.toApi())
             .map((rsp: Response) => {
                 if (rsp.status != 204) {
                     throw new Error('Impossible to create new collection: ' + rsp.status);
@@ -36,8 +35,7 @@ export class CollectionsService {
     // Modify an existing collection
     modifyCollection(name: string, collection: Collection) {
 
-        return this.apiService.patch("collections/" + name,
-            JSON.stringify(collection.toApi()))
+        return this.apiService.patch("collections/" + name, collection.toApi())
             .map((rsp: Response) => {
                 if (rsp.status != 204) {
                     throw new Error('Impossible to modify collection '
@@ -65,6 +63,8 @@ export class CollectionsService {
                 // Remove the collection from the list
                 delete this.collections[name]
 
+		console.log("DELETED!")
+		
                 // Warn about deleted collection
                 this.apiService.setCollection(undefined, CollectionStatus.DELETED)
             })

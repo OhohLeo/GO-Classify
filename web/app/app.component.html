@@ -1,8 +1,8 @@
 <ul id="collections" class="dropdown-content">
     <li (click)="onNewCollection()"><a><i class="material-icons">plus_one</i></a></li>
-    <li><a>one</a></li>
-    <li><a>two</a></li>
-    <li><a>three</a></li>
+    <li *ngFor="let collection of otherCollections"
+	(click)="onCollection(collection)"><a>{{collection.name}}</a>
+    </li>
 </ul>
 <nav class="nav-extended">
     <div class="nav-wrapper">
@@ -20,13 +20,18 @@
 		id="search" (click)="onSearch()">
 		<a><i class="material-icons">search</i></a>
 	    </li>
-	    <li><a class="dropdown-button"
+	    <li *ngIf="addCollectionActive"
+		(click)="onNewCollection()">
+	      <a><i class="material-icons">plus_one</i></a>
+	    </li>
+	    <li *ngIf="!addCollectionActive">
+	      <a class="dropdown-button"
 		   data-activates="collections">
 		<i class="material-icons">more_vert</i></a>
 	    </li>
 	</ul>
     </div>
-    <div class="nav-content">
+    <div *ngIf="menuActive" class="nav-content">
 	<ul class="tabs tabs-transparent">
 	    <li id="collection" class="tab"><a (click)="onCollection()">Collection</a></li>
 	    <li id="imports" class="tab"><a (click)="onImports()">Imports
@@ -55,8 +60,8 @@
 <div class="row">
     <div [ngSwitch]="status" class="center">
         <div *ngSwitchCase="appStatus.COLLECTION">
-	      <collection [collection]="collection">
-	      </collection>
+            <collection [collection]="collection">
+            </collection>
 	</div>
         <div *ngSwitchCase="appStatus.IMPORTS">
             <imports></imports>

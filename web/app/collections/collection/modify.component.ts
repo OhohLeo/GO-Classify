@@ -1,4 +1,4 @@
-import { Component } from '@angular/core'
+import { Component, Input } from '@angular/core'
 import { ApiService } from '../../api.service'
 import { CollectionsService } from '../collections.service'
 import { Collection } from '../collection'
@@ -10,15 +10,11 @@ import { Collection } from '../collection'
 
 export class ModifyCollectionComponent {
 
-    public title: string
-    public collection: Collection
+    @Input() collection: Collection
     private websites: string[]
 
     constructor(private apiService: ApiService,
         private collectionsService: CollectionsService) {
-
-        this.collection = apiService.collectionSelected
-        this.title = this.collection.name
 
         apiService.getReferences()
             .subscribe(
@@ -32,7 +28,7 @@ export class ModifyCollectionComponent {
         // Check that the parameters of the collection differ
 
         // Modify the collection
-        this.collectionsService.modifyCollection(this.title, this.collection)
+        this.collectionsService.modifyCollection(this.collection.name, this.collection)
             .subscribe(status => {
 
                 // Reset the collection

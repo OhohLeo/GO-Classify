@@ -15,7 +15,7 @@ export class SimpleIconItemComponent implements OnInit, OnDestroy {
     public iconUrl: string
 
     constructor(private apiService: ApiService) {
-
+	console.log("SimpleIconItem")
     }
     
     ngOnInit() {
