@@ -39,7 +39,6 @@ export class AppComponent implements OnInit {
     public title = "Classify"
 
     public collection: Collection
-    private otherCollections: Collection[] = []
 
     public modalTitle: string
     public modalMsg: string
@@ -54,7 +53,6 @@ export class AppComponent implements OnInit {
     private bufferActive: boolean
     private searchActive: boolean
     private filterActive: boolean    
-    private addCollectionActive: boolean = true
     
     @ViewChild(BufferItemComponent) bufferItemComponent: BufferItemComponent
     public bufferItem: BufferItem
@@ -98,8 +96,6 @@ export class AppComponent implements OnInit {
 
         this.apiService.subscribeCollectionChange(
             (collection: Collection, status: CollectionStatus) => {
-
-		console.log("SUBSCRIBE API", collection, status)
 		
 		switch (status) {
 		case CollectionStatus.CREATED:
@@ -110,12 +106,10 @@ export class AppComponent implements OnInit {
 		
                 if (status == CollectionStatus.DELETED
 		    || collection === undefined) {
-		    console.log("ON COLLECTION CHANGE")
 		    this.onChangeCollection()
                     return
                 }
 
-		console.log("COLLECTION HANDLE")
 		this.onCollection(collection)
             })
     }
@@ -130,24 +124,12 @@ export class AppComponent implements OnInit {
 	
 	// Reset title name
 	this.setTitle("")
-
-	// Add collection icon
-	this.zone.run(() => {
-	    this.addCollectionActive = true
-	})
     }
     
     onCollection(collection: Collection) {
 
-	console.log("ON COLLECTION:", collection)
-	
         this.title = collection.name
         this.collection = collection
-
-	// Ignore current collection
-	let otherCollections = this.collections.getCollections(collection)
-	this.addCollectionActive = (otherCollections.length == 0)
-	this.otherCollections = otherCollections
 	    
 	// Activate collection menu
 	this.enableMenu(true)
@@ -396,8 +378,6 @@ export class AppComponent implements OnInit {
     // Display collections list
     onChangeCollection() {
 
-	console.log("CHANGE COLLECTION??")
-	
 	// Get collection nb
 	let collectionNb = this.collections.nb()
 
