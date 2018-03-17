@@ -128,7 +128,12 @@ export class AppComponent implements OnInit {
     
     onCollection(collection: Collection) {
 
-        this.title = collection.name
+	if (collection == undefined) {
+	    console.error("onCollection() failure: no collection given")
+	    return
+	}
+
+	this.setTitle(collection.name)
         this.collection = collection
 	    
 	// Activate collection menu

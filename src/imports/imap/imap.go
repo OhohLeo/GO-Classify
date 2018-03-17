@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"github.com/emersion/go-imap"
 	"github.com/emersion/go-imap/client"
-	"github.com/jhillyerd/go.enmime"
+	// "github.com/jhillyerd/go.enmime"
 	"github.com/ohohleo/classify/data"
 	"github.com/ohohleo/classify/imports"
 	"io"
@@ -362,7 +362,7 @@ func (i *Imap) Proceed(seqset *imap.SeqSet) error {
 					return err
 				}
 
-				name := Convert2Utf8()
+				name := Convert2Utf8(p.FileName())
 				if name == "" {
 					name = fmt.Sprintf("Part%d", idx)
 				}

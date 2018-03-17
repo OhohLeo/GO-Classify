@@ -391,12 +391,12 @@ func (c *Collection) Validate(id string, d data.Data) (item *BufferItem, err err
 
 func (c *Collection) GetItemByString(idStr string) (*Item, error) {
 
-	id, err := strconv.ParseUint(idStr, 10, 64)
+	id, err := GetIdFromString(idStr)
 	if err != nil {
 		return nil, err
 	}
 
-	return c.GetItem(Id(id))
+	return c.GetItem(idx)
 }
 
 func (c *Collection) GetItem(id Id) (*Item, error) {
@@ -407,6 +407,14 @@ func (c *Collection) GetItem(id Id) (*Item, error) {
 func (c *Collection) GetItems() []*Item {
 
 	return c.items.GetCurrentList()
+}
+
+func (c *Collection) ModifyItem() {
+
+}
+
+func (c *Collection) RemoveItem(id Id) error {
+	return c.items.Remove(id)
 }
 
 func (c *Collection) SetExports(exports []exports.Export) {

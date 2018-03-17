@@ -21,13 +21,15 @@
     </div>
     <div *ngIf="menuActive" class="nav-content">
 	<ul class="tabs tabs-transparent">
-	    <li id="collection" class="tab"><a (click)="onCollection()">Collection</a></li>
-	    <li id="imports" class="tab"><a (click)="onImports()">Imports
-		<i id="imports-loop"
-		   class="material-icons right">loop</i></a></li>
-	    <li id="exports" class="tab"><a (click)="onExports()">Exports
-		<i class="material-icons right">import_export</i></a></li>
-	    <li id="configs" class="tab"><a (click)="onConfigs()">Configs</a></li>
+	  <li id="collection" class="tab">
+	    <a (click)="onCollection(collection)">Collection</a>
+	  </li>
+	  <li id="imports" class="tab"><a (click)="onImports()">Imports
+	      <i id="imports-loop"
+		 class="material-icons right">loop</i></a></li>
+	  <li id="exports" class="tab"><a (click)="onExports()">Exports
+	      <i class="material-icons right">import_export</i></a></li>
+	  <li id="configs" class="tab"><a (click)="onConfigs()">Configs</a></li>
 	</ul>
 	<div *ngIf="filterActive" class="nav-wrapper">
 	    <filter></filter>
@@ -65,7 +67,7 @@
 	    <buffer-item *ngIf="bufferItem"
 		  [collection]="collection.name"
 		  [bufferItem]="bufferItem"
-		  (close)="onCollection()">
+		  (close)="onCollection(collection)">
 	    </buffer-item>
 	</div>
         <div *ngSwitchCase="appStatus.NONE"></div>

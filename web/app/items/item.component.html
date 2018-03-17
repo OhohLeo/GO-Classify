@@ -1,16 +1,15 @@
 <div id="item" class="modal">
     <div class="modal-content">
-	<p>ITEM!</p>
+	<h5 class="left-align">{{item.name}}</h5>
     </div>
     <div class="modal-footer">
-	<a class="waves-effect waves-light btn red">
-	    <i class="material-icons right">delete_forever</i>Delete
-	</a>
-	<a class="waves-effect waves-light btn yellow">
+	<a class="waves-effect waves-light btn yellow"
+	   (click)="onModify()">
 	    <i class="material-icons right">edit</i>Modify
 	</a>
-	<a class="waves-effect waves-light btn green">
-	    <i class="material-icons right">done</i>Validate
+	<a class="waves-effect waves-light btn red"
+	   (click)="onDelete()">
+	    <i class="material-icons right">delete_forever</i>Delete
 	</a>
     </div>
 </div>

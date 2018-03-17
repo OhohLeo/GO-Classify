@@ -12,8 +12,8 @@ import (
 type ApiCollection struct {
 	Name   string          `json:"name"`
 	Ref    string          `json:"ref"`
-	Config json.RawMessage `json:"config"`
-	Params json.RawMessage `json:"params"`
+	Config json.RawMessage `json:"config,omitempty" `
+	Params json.RawMessage `json:"params,omitempty"`
 }
 
 // AddCollection adds new collection by API
@@ -97,22 +97,6 @@ func (c *Classify) getCollectionByName(w rest.ResponseWriter, r *rest.Request) *
 	}
 
 	return collection
-}
-
-func (c *Classify) getItemById(w rest.ResponseWriter, r *rest.Request) *Item {
-
-	collection := c.getCollectionByName(w, r)
-	if collection == nil {
-		return nil
-	}
-
-	item, err := collection.GetItemByString(r.PathParam("id"))
-	if err != nil {
-		rest.Error(w, err.Error(), http.StatusBadRequest)
-		return nil
-	}
-
-	return item
 }
 
 // GetCollectionByName returns the content of each collection
@@ -334,57 +318,6 @@ func (c *Classify) ApiGetCollectionItems(w rest.ResponseWriter, r *rest.Request)
 
 // DELETE /collections/:name/items
 func (c *Classify) ApiDeleteCollectionItems(w rest.ResponseWriter, r *rest.Request) {
-
-	// Check the collection exist
-	collection := c.getCollectionByName(w, r)
-	if collection == nil {
-		return
-	}
-
-	w.WriteHeader(http.StatusNoContent)
-}
-
-// GET /collections/:name/items/:id?content="..."
-func (c *Classify) ApiGetCollectionSingleItem(w rest.ResponseWriter, r *rest.Request) {
-
-	// Check the collection and item exist
-	item := c.getItemById(w, r)
-	if item == nil {
-		return
-	}
-
-	// Ask for specific item data (image, ...)
-	contentName := r.URL.Query().Get("content")
-
-	if contentName != "" {
-
-		contentPath := item.GetContent(contentName)
-		if contentPath == "" {
-			w.WriteHeader(http.StatusNotFound)
-			return
-		}
-
-		http.ServeFile(w.(http.ResponseWriter), r.Request, contentPath)
-		return
-	}
-
-	w.WriteHeader(http.StatusNoContent)
-}
-
-// PATCH /collections/:name/items/:id
-func (c *Classify) ApiPatchCollectionSingleItem(w rest.ResponseWriter, r *rest.Request) {
-
-	// Check the collection exist
-	collection := c.getCollectionByName(w, r)
-	if collection == nil {
-		return
-	}
-
-	w.WriteHeader(http.StatusNoContent)
-}
-
-// DELETE /collections/:name/items/:id
-func (c *Classify) ApiDeleteCollectionSingleItem(w rest.ResponseWriter, r *rest.Request) {
 
 	// Check the collection exist
 	collection := c.getCollectionByName(w, r)
