@@ -4,12 +4,14 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"log"
+
 	"github.com/ohohleo/classify/data"
 	"github.com/ohohleo/classify/database"
 	"github.com/ohohleo/classify/imports"
 	"github.com/ohohleo/classify/imports/directory"
 	"github.com/ohohleo/classify/imports/imap"
-	"log"
+	"github.com/ohohleo/classify/tweak"
 )
 
 // Type of imports
@@ -19,9 +21,12 @@ var newImports = map[string]imports.Build{
 }
 
 type Import struct {
-	Id          uint64 `json:"id"`
-	Name        string `json:"name"`
-	engine      imports.Import
+	Id   uint64 `json:"id"`
+	Name string `json:"name"`
+
+	engine imports.Import
+	tweak  tweak.Tweak
+
 	collections map[string]*Collection
 }
 

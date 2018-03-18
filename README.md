@@ -17,17 +17,33 @@ Go Rest API and Angular 4 Website to classify all kind of datas
 
 ## Getting Started
 
-To launch the server :
-
 ```
+# To launch classify server
 go run src/main.go
-```
 
-To launch the website :
-
-```
+# To launch classify website
 cd web
+npm install
 npm start
+```
+
+## How to develop
+
+### Installation
+
+```bash
+# Install go
+ln -s {path/to/classify}/src $GOPATH/src/github.com/ohohleo/classify
+sudo apt-get install libmagick-dev libmagickwand-dev
+go get github.com/ant0ine/go-json-rest/rest github.com/emersion/go-imap github.com/emersion/go-imap/client github.com/foize/go.fifo github.com/hydrogen18/stoppableListener github.com/jmoiron/sqlx github.com/mattn/go-sqlite3 github.com/quirkey/magick github.com/ryanbradynd05/go-tmdb golang.org/x/net/websocket
+
+# Install nvm
+curl -o- https://raw.githubusercontent.com/creationix/nvm/v0.33.8/install.sh | zsh
+rehash
+exec zsh
+nvm install v8.10.0
+nvm use v8.10.0
+
 ```
 
 ## Current API

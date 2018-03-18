@@ -297,11 +297,13 @@ func (i *Imap) GetSearch() error {
 
 func (i *Imap) Proceed(seqset *imap.SeqSet) error {
 
-	messages := make(chan *imap.Message, 10)
 	done := make(chan error)
+	messages := make(chan *imap.Message, 1)
+	section := &imap.BodySectionName{}
+	items := []imap.FetchItem{section.FetchItem()}
 
 	go func() {
-		done <- i.cnx.Fetch(seqset, []string{"BODY[]"}, messages)
+		done <- i.cnx.Fetch(seqset, items, messages)
 	}()
 
 	if err := <-done; err != nil {
@@ -311,7 +313,7 @@ func (i *Imap) Proceed(seqset *imap.SeqSet) error {
 
 	for msg := range messages {
 
-		rsp := msg.GetBody("BODY[]")
+		rsp := msg.GetBody(section)
 		if rsp == nil {
 			fmt.Println("Server didn't returned message body")
 			continue

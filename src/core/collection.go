@@ -11,7 +11,6 @@ import (
 	"github.com/ohohleo/classify/imports"
 	"github.com/ohohleo/classify/websites"
 	"log"
-	"strconv"
 )
 
 type Collection struct {
@@ -289,9 +288,9 @@ func (c *Collection) onDataInput(d data.Data) error {
 	// Get data ref name
 	refName := d.GetRef().String()
 
-	// Call method OnCollection if it exists
-	if inputData, ok := d.(data.OnCollection); ok {
-		if err := inputData.OnCollection(c.config.Datas[refName]); err != nil {
+	// Call method ApplyConfig if it exists
+	if inputData, ok := d.(data.DataConfig); ok {
+		if err := inputData.ApplyConfig(c.config.Datas[refName]); err != nil {
 			return err
 		}
 	}
@@ -301,21 +300,6 @@ func (c *Collection) onDataInput(d data.Data) error {
 		for _, dep := range hasDeps.GetDependencies() {
 			if err := c.onDataInput(dep); err != nil {
 				return err
-			}
-		}
-	}
-
-	// Handle blacklist data
-	if hasBlackList, ok := d.(data.HasBlackList); ok {
-
-		if blacklist := hasBlackList.GetBlackList(); blacklist != nil {
-
-			if c.blackImports == nil {
-				c.blackImports = NewBlackList()
-			}
-
-			for _, forbidden := range blacklist {
-				c.blackImports.Add(forbidden)
 			}
 		}
 	}
@@ -396,7 +380,7 @@ func (c *Collection) GetItemByString(idStr string) (*Item, error) {
 		return nil, err
 	}
 
-	return c.GetItem(idx)
+	return c.GetItem(id)
 }
 
 func (c *Collection) GetItem(id Id) (*Item, error) {

@@ -69,7 +69,13 @@ func (c *Classify) ApiDeleteCollectionSingleItem(w rest.ResponseWriter, r *rest.
 		return
 	}
 
-	if err := collection.RemoveItem(r.PathParam("id")); err != nil {
+	id, err := GetIdFromString(r.PathParam("id"))
+	if err != nil {
+		rest.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	if err = collection.RemoveItem(id); err != nil {
 		rest.Error(w, err.Error(), http.StatusNotFound)
 		return
 	}

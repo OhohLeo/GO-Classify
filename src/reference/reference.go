@@ -1,4 +1,4 @@
-package config
+package reference
 
 import (
 	"github.com/ohohleo/classify/params"
@@ -9,16 +9,23 @@ import (
 type Ref struct {
 	Name     string            `json:"name"`
 	Type     string            `json:"type"`
-	Key      string            `json:"key,omitempty"`
-	Default  interface{}       `json:"default,omitempty"`
 	Comments string            `json:"comments,omitempty"`
 	Childs   []*Ref            `json:"childs,omitempty"`
 	Map      map[string][]*Ref `json:"map,omitempty"`
+	Key      string            `json:"key,omitempty"`
 }
 
-type Config struct {
+type Reference struct {
 	Refs []*Ref      `json:"refs"`
 	Data interface{} `json:"data"`
+}
+
+func New(refs []*Ref, data interface{}) *Reference {
+
+	return &Reference{
+		Refs: refs,
+		Data: data,
+	}
 }
 
 func GetRefs(prefix string, data interface{}) ([]*Ref, map[string]params.HasParam) {

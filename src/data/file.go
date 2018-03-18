@@ -17,14 +17,13 @@ func (c *FileConfig) Update(rawMsg *json.RawMessage) error {
 
 type File struct {
 	Name        string            `json:"name"`
+	Path        string            `json:"path"`
 	Extension   string            `json:"extension"`
 	ContentType string            `json:"contentType"`
 	Icons       Icons             `json:"icons"`
 	Infos       map[string]string `json:"infos"`
 
-	Path         string      `json:"-"`
-	AbsolutePath string      `json:"-"`
-	FileInfo     os.FileInfo `json:"-"`
+	FileInfo os.FileInfo `json:"-"`
 
 	file *os.File
 }
@@ -51,11 +50,10 @@ func NewFileFromOsFile(f *os.File) (file *File, err error) {
 	extension := filepath.Ext(absolutePath)
 
 	file = &File{
-		file:         f,
-		Name:         filepath.Base(absolutePath),
-		Extension:    extension,
-		Path:         filepath.Dir(absolutePath),
-		AbsolutePath: absolutePath,
+		file:      f,
+		Name:      filepath.Base(absolutePath),
+		Extension: extension,
+		Path:      absolutePath,
 	}
 
 	return
@@ -73,7 +71,7 @@ func (f *File) NewConfig() Config {
 	return new(FileConfig)
 }
 
-func (f *File) OnCollection(config Config) (err error) {
+func (f *File) ApplyConfig(config Config) (err error) {
 
 	cfg, ok := config.(*FileConfig)
 	if ok == false {
@@ -85,7 +83,7 @@ func (f *File) OnCollection(config Config) (err error) {
 		f.Icons = NewIcons()
 	}
 
-	_, err = f.Icons.SetIcon(f.AbsolutePath, f.Name, &cfg.Icons)
+	_, err = f.Icons.SetIcon(f.Path, f.Name, &cfg.Icons)
 
 	return
 }
@@ -98,7 +96,7 @@ func (f *File) GetContents() (contents map[string]string) {
 
 	contents = make(map[string]string)
 
-	contents[f.Name] = f.AbsolutePath
+	contents[f.Name] = f.Path
 
 	// If no icons to handle
 	if f.Icons == nil {
@@ -113,21 +111,6 @@ func (f *File) GetContents() (contents map[string]string) {
 	return
 }
 
-func (f *File) GetBlackList() (blacklist []string) {
-
-	// If no icons to handle
-	if f.Icons == nil {
-		return
-	}
-
-	// Otherwise add icons
-	for _, icon := range f.Icons {
-		blacklist = append(blacklist, icon.Name)
-	}
-
-	return
-}
-
 func (f *File) GetFileInfo() (fileInfo os.FileInfo, err error) {
 
 	if f.FileInfo != nil {
@@ -136,7 +119,7 @@ func (f *File) GetFileInfo() (fileInfo os.FileInfo, err error) {
 	}
 
 	if f.file == nil {
-		f.file, err = os.Open(f.AbsolutePath)
+		f.file, err = os.Open(f.Path)
 		if err != nil {
 			return
 		}

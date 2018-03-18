@@ -3,11 +3,11 @@ package core
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/ohohleo/classify/config"
 	"github.com/ohohleo/classify/data"
 	"github.com/ohohleo/classify/database"
 	"github.com/ohohleo/classify/imports"
 	"github.com/ohohleo/classify/params"
+	"github.com/ohohleo/classify/reference"
 	"log"
 )
 
@@ -22,14 +22,14 @@ type CollectionConfig struct {
 	} `json:"buffer"`
 
 	Import struct {
-		Filters    config.StringList `json:"filters" kind:"stringlist"`
-		Separators config.StringList `json:"separators" kind:"stringlist"`
-		Banned     config.StringList `json:"banned" kind:"stringlist"`
+		Filters    reference.StringList `json:"filters" kind:"stringlist"`
+		Separators reference.StringList `json:"separators" kind:"stringlist"`
+		Banned     reference.StringList `json:"banned" kind:"stringlist"`
 	} `json:"import"`
 
 	Datas data.Configs `json:"datas"`
 
-	refs   []*config.Ref
+	refs   []*reference.Ref
 	params map[string]params.HasParam
 }
 
@@ -50,13 +50,10 @@ func (c *CollectionConfig) Get(needRefs bool) interface{} {
 	if needRefs {
 
 		if c.refs == nil {
-			c.refs, c.params = config.GetRefs("datas", c)
+			c.refs, c.params = reference.GetRefs("datas", c)
 		}
 
-		return &config.Config{
-			Refs: c.refs,
-			Data: c,
-		}
+		return reference.New(c.refs, c)
 	}
 
 	return c

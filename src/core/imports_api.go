@@ -175,6 +175,15 @@ func (c *Classify) ApiStopImport(w rest.ResponseWriter, r *rest.Request) {
 	w.WriteHeader(http.StatusNoContent)
 }
 
+func (c *Classify) ApiGetImportReferences(w rest.ResponseWriter, r *rest.Request) {
+}
+
+func (c *Classify) ApiGetImportTweaks(w rest.ResponseWriter, r *rest.Request) {
+}
+
+func (c *Classify) ApiPatchImportTweaks(w rest.ResponseWriter, r *rest.Request) {
+}
+
 // List all config imports
 // GET /imports/:name/config
 func (c *Classify) ApiGetImportConfig(w rest.ResponseWriter, r *rest.Request) {

@@ -4,15 +4,15 @@ import (
 	"time"
 )
 
-type Simple struct {
+type Generic struct {
 	Name string    `json:"name"`
 	Time time.Time `json:"time"`
 }
 
-func (s *Simple) GetName() string {
+func (s *Generic) GetName() string {
 	return s.Name
 }
 
-func (s *Simple) GetRef() Ref {
-	return SIMPLE
+func (s *Generic) GetRef() Ref {
+	return GENERIC
 }

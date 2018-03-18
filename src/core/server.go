@@ -100,9 +100,12 @@ func (c *Classify) CreateServer(config ServerConfig) (server *Server, err error)
 		rest.Delete("/imports", c.ApiDeleteImport),
 		rest.Put("/imports/start", c.ApiStartImport),
 		rest.Put("/imports/stop", c.ApiStopImport),
+		rest.Get("/imports/:name/references", c.ApiGetImportReferences),
+		rest.Put("/imports/:name/:param", c.ApiPutImportParam),
 		rest.Get("/imports/:name/config", c.ApiGetImportConfig),
 		rest.Patch("/imports/:name/config", c.ApiPatchImportConfig),
-		rest.Put("/imports/:name/:param", c.ApiPutImportParam),
+		rest.Get("/imports/:name/tweaks", c.ApiGetImportTweaks),
+		rest.Patch("/imports/:name/tweaks", c.ApiPatchImportTweaks),
 
 		// Handle exports
 		rest.Post("/exports", c.ApiAddExport),

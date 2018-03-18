@@ -1,22 +1,31 @@
 package core
 
 import (
-	//	"encoding/json"
 	"fmt"
-	"github.com/ohohleo/classify/data"
 	"os"
+	"time"
+
+	"github.com/ohohleo/classify/data"
+	"github.com/pariz/gountries"
 )
 
 type Item struct {
-	Id       Id        `json:"id,string"`
-	Ref      string    `json:"ref"`
-	Engine   data.Data `json:"data"`
-	Contents []string  `json:"contents"`
+	Id       Id                `json:"id,string"`
+	Ref      string            `json:"ref"`
+	Name     string            `json:"name"`
+	Date     time.Time         `json:"date"`
+	DateEnd  time.Time         `json:"dateEnd"`
+	Country  gountries.Country `json:"country"`
+	Engine   data.Data         `json:"data"`
+	Contents []string          `json:"contents"`
 	contents map[string]string
 }
 
 func (i *Item) SetData(input data.Data) {
 	i.Ref = input.GetRef().String()
+	// i.Name = input.GetName()
+	// i.Date = input.GetDate()
+	// i.Country = input.GetCountry()
 	i.Engine = input
 }
 

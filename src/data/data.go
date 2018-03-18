@@ -4,10 +4,12 @@ import (
 	"crypto/md5"
 	"encoding/json"
 	"math/big"
+	//"time"
+	//"github.com/pariz/gountries"
 )
 
 const (
-	SIMPLE Ref = iota
+	GENERIC Ref = iota
 	FILE
 	MOVIE
 	EMAIL
@@ -21,7 +23,7 @@ func (t Ref) String() string {
 }
 
 var REF_IDX2STR = []string{
-	"simple",
+	"generic",
 	"file",
 	"movie",
 	"email",
@@ -29,7 +31,7 @@ var REF_IDX2STR = []string{
 }
 
 var REF_STR2IDX = map[string]Ref{
-	REF_IDX2STR[SIMPLE]:     SIMPLE,
+	REF_IDX2STR[GENERIC]:    GENERIC,
 	REF_IDX2STR[FILE]:       FILE,
 	REF_IDX2STR[MOVIE]:      MOVIE,
 	REF_IDX2STR[EMAIL]:      EMAIL,
@@ -38,6 +40,8 @@ var REF_STR2IDX = map[string]Ref{
 
 type Data interface {
 	GetName() string
+	// GetDate() time.Time
+	// GetCountry() gountries.Country
 	GetRef() Ref
 }
 
@@ -49,18 +53,34 @@ func GetId(d Data) uint64 {
 	return res.Uint64()
 }
 
+// Optional link between datas
 type HasDependencies interface {
 	GetDependencies() []Data
 }
 
+// Optional data contents (icons)
+type HasContents interface {
+	GetContents() map[string]string
+}
+
+// Add data functionalities
+// - IconsConfig
+// - FileConfig
 type HasConfig interface {
 	NewConfig() Config
 }
 
+// Update configuration (IconsConfig, FileConfig...)
 type Config interface {
 	Update(*json.RawMessage) error
 }
 
+// Apply data configuration (FileConfig)
+type DataConfig interface {
+	ApplyConfig(config Config) error
+}
+
+// List of data configs
 type Configs map[string]Config
 
 // Handles datas generic interface
@@ -80,16 +100,4 @@ func (c *Configs) UnmarshalJSON(src []byte) error {
 	}
 
 	return nil
-}
-
-type HasContents interface {
-	GetContents() map[string]string
-}
-
-type HasBlackList interface {
-	GetBlackList() []string
-}
-
-type OnCollection interface {
-	OnCollection(Config) error
 }

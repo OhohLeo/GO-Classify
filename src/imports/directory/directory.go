@@ -218,7 +218,7 @@ func (r *Directory) Eq(new imports.Import) bool {
 
 func (r *Directory) Analyse(cmdStr string, file *data.File) {
 
-	absolutePath := file.AbsolutePath
+	absolutePath := file.Path
 
 	// Prepare command
 	cmd := exec.Command(cmdStr, absolutePath)
