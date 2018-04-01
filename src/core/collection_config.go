@@ -50,7 +50,7 @@ func (c *CollectionConfig) Get(needRefs bool) interface{} {
 	if needRefs {
 
 		if c.refs == nil {
-			c.refs, c.params = reference.GetRefs("datas", c)
+			c.refs, c.params = reference.GetParamRefs("datas", c)
 		}
 
 		return reference.New(c.refs, c)

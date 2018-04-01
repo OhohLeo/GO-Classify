@@ -3,10 +3,12 @@ package tweak
 import (
 	"encoding/json"
 	"fmt"
+	"log"
 	"regexp"
-	//"sort"
+	"strconv"
+	"strings"
 
-	"github.com/ohohleo/classify/data"
+	"github.com/ohohleo/classify/reference"
 )
 
 type Value struct {
@@ -76,38 +78,88 @@ func (v *Value) UnmarshalJSON(src []byte) (err error) {
 // Fields is relation between field and value/regex
 type Fields map[string]*Value
 
-func (f Fields) Check(dst bool) (err error) {
+func (f Fields) Check(data interface{}, dst bool) (err error) {
 
-	for _, value := range f {
+	fieldCompatible := make(map[string]struct{})
+
+	for _, ref := range reference.GetRefs(data) {
+
+		// Handle string only
+		if ref.Type != "string" {
+			continue
+		}
+
+		fieldCompatible[ref.Name] = struct{}{}
+	}
+
+	for key, value := range f {
 
 		// Reject destination value with regexp
 		if dst && value.Regexp != nil {
-			err = fmt.Errorf("destination value can't handle regexp")
+			err = fmt.Errorf("destination '%s' value can't handle regexp", key)
 			return
 		}
 
 		// Check field presence
-
-		// Check value
-
-		// Check format
-
+		if _, ok := fieldCompatible[key]; ok == false {
+			err = fmt.Errorf("field not found '%s'", key)
+			return
+		}
 	}
 
 	return
 }
 
-// func (f Fields) GetValue(key string, ref data.Ref) (value string, err error) {
+func (f Fields) GetRawDatas(data interface{}) (results map[string][]string, err error) {
 
-// 	var ok bool
-// 	value, ok = f[key]
-// 	if ok == false {
-// 		err = fmt.Errorf("invalid field '%s' of data ref '%s'", key, ref.String())
-// 		return
-// 	}
+	results = make(map[string][]string)
 
-// 	return
-// }
+	for _, ref := range reference.GetRefs(data) {
+
+		// TODO: Handle time.Time
+
+		// Handle string only
+		if ref.Type != "string" {
+			continue
+		}
+
+		// Search matching field name
+		v, ok := f[ref.Name]
+		if ok == false {
+			continue
+		}
+
+		// Convert into string
+		raw, ok := ref.Value.(string)
+		if ok == false {
+			err = fmt.Errorf("source expected 'string' on data field '%s'", ref.Name)
+			return
+		}
+
+		// Check if regexp is handled
+		if v.Regexp != nil {
+
+			// Invalid regexp : nothing stored
+			if v.Regexp.MatchString(raw) == false {
+				log.Printf("source regexp '%s' not matching raw '%s'", v.Regexp.String(), raw)
+				results[ref.Name] = make([]string, v.Regexp.NumSubexp())
+				continue
+			}
+
+			if nb := v.Regexp.NumSubexp(); nb > 0 {
+				results[ref.Name] = v.Regexp.FindStringSubmatch(raw)[1:]
+			} else {
+				results[ref.Name] = []string{raw}
+			}
+
+		} else {
+			// Otherwise store raw data
+			results[ref.Name] = []string{raw}
+		}
+	}
+
+	return
+}
 
 type Tweak struct {
 
@@ -125,62 +177,152 @@ func New(src []byte) (*Tweak, error) {
 	return &t, err
 }
 
-// Check keys compatibility
-func (t *Tweak) Check(d data.Data) error {
+func (t *Tweak) check(raw map[string]interface{}, expected map[string]Fields, dst bool) (err error) {
 
-	ref := d.GetRef()
+	// For each data
+	for key, data := range raw {
 
-	var listFields []Fields
+		// Check if data is handled by tweak
+		if fields, ok := expected[key]; ok {
 
-	// Check data presence
-	if f, ok := t.Source[ref.String()]; ok {
-		listFields = append(listFields, f)
-	}
-
-	if f, ok := t.Destination[ref.String()]; ok {
-		listFields = append(listFields, f)
-	}
-
-	// No field matching data : nothing to do
-	if len(listFields) == 0 {
-		return nil
-	}
-
-	// Get data reference content
-
-	for idx, fields := range listFields {
-
-		// Check each fields
-		if err := fields.Check(idx > 0); err != nil {
-			return err
+			// Check fields compatibility
+			if err = fields.Check(data, dst); err != nil {
+				err = fmt.Errorf("invalid data %s: %s", key, err.Error())
+				return
+			}
 		}
 	}
 
-	return nil
+	return
 }
 
-type Results map[string]string
+// Check source compatibility
+func (t *Tweak) Check(sourceRaw map[string]interface{}, destinationRaw map[string]interface{}) (err error) {
 
-func (t *Tweak) Tweak(src map[string]data.Data) (results map[string]Results, err error) {
+	if err = t.check(sourceRaw, t.Source, false); err != nil {
+		return
+	}
 
-	// Get values based on regexp
-	// var values [][]string
+	if err = t.check(destinationRaw, t.Destination, true); err != nil {
+		return
+	}
 
-	// // Sort keys by name
-	// keys := make([]string, len(t.Source))
+	return
+}
 
-	// i := 0
-	// for key, _ := range t.Source {
-	// 	keys[i] = key
-	// 	i++
-	// }
+var dataIdReg = regexp.MustCompile(`:([a-z0-9]+)-([a-z0-9]+)(-(\d+))?`)
 
-	// sort.Strings(keys)
+func SetResult(format string, raw map[string]map[string][]string) (result string, err error) {
 
-	// // Based on values : determined results for each field
-	// for name, fields := range t.Destination {
+	// Get all ids from format
+	submatches := dataIdReg.FindAllStringSubmatch(format, -1)
 
-	// }
+	// No submatch : nothing to do
+	if len(submatches) == 0 {
+		return
+	}
+
+	toReplace := make(map[string]string)
+
+	for _, submatch := range submatches {
+
+		if len(submatch) != 5 {
+			err = fmt.Errorf("invalid submatch size ' from '%s', expected:5 get:%q", format, submatch)
+			return
+		}
+
+		// Get all importants data
+		key := submatch[0]
+		dataKey := submatch[1]
+		fieldKey := submatch[2]
+
+		var index int
+		if submatch[4] != "" {
+			index, err = strconv.Atoi(submatch[4])
+			if err != nil {
+				err = fmt.Errorf("invalid atoi with '%s' from '%s'", submatch[4], format)
+				return
+			}
+		}
+
+		// Search into raw data
+		fields, ok := raw[dataKey]
+		if ok == false {
+			err = fmt.Errorf("data key '%s' not found into raw %+v", dataKey, raw)
+			return
+		}
+
+		// Get all values
+		values, ok := fields[fieldKey]
+		if ok == false {
+			err = fmt.Errorf("field key '%s' from data '%s' not found into raw %+v", fieldKey, dataKey, raw)
+			return
+		}
+
+		// Check index validity
+		if index >= len(values) {
+			err = fmt.Errorf("invalid index %d into max %d field key '%s' from data '%s' in raw %+v",
+				index, len(values), fieldKey, dataKey, raw)
+			return
+		}
+
+		toReplace[key] = values[index]
+	}
+
+	// Replace everything
+	for old, new := range toReplace {
+		format = strings.Replace(format, old, new, -1)
+	}
+
+	result = format
+	return
+}
+
+// Tweak does the transformations between received data and data/field results
+func (t *Tweak) Tweak(src map[string]interface{}) (results map[string]map[string]string, err error) {
+
+	raw := make(map[string]map[string][]string)
+
+	// Get selected from data sources
+	for key, getters := range t.Source {
+
+		// Check if we specified data are handled
+		source, ok := src[key]
+		if ok == false {
+			continue
+		}
+
+		// Check field names & get raw datas & apply regexp
+		raw[key], err = getters.GetRawDatas(source)
+		if err != nil {
+			return
+		}
+	}
+
+	// No data : no tweak to do!
+	if len(raw) == 0 {
+		return
+	}
+
+	// Based on ordered values : determined results for each result field
+	results = make(map[string]map[string]string)
+
+	for name, fields := range t.Destination {
+
+		if results[name] == nil {
+			results[name] = make(map[string]string)
+		}
+
+		for key, v := range fields {
+
+			results[name][key], err = SetResult(v.Value, raw)
+			if err != nil {
+				err = fmt.Errorf("invalid destination name '%s' key '%s' %s",
+					name, key, err.Error())
+				return
+			}
+		}
+	}
 
 	return
 }

@@ -22,8 +22,7 @@ type File struct {
 	ContentType string            `json:"contentType"`
 	Icons       Icons             `json:"icons"`
 	Infos       map[string]string `json:"infos"`
-
-	FileInfo os.FileInfo `json:"-"`
+	FileInfo    os.FileInfo       `json:"-"`
 
 	file *os.File
 }

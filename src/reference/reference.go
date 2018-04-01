@@ -1,9 +1,10 @@
 package reference
 
 import (
-	"github.com/ohohleo/classify/params"
 	"log"
 	"reflect"
+
+	"github.com/ohohleo/classify/params"
 )
 
 type Ref struct {
@@ -13,6 +14,12 @@ type Ref struct {
 	Childs   []*Ref            `json:"childs,omitempty"`
 	Map      map[string][]*Ref `json:"map,omitempty"`
 	Key      string            `json:"key,omitempty"`
+	Value    interface{}       `json:"-"`
+}
+
+type GetRefOptions struct {
+	Src    string
+	Params map[string]params.HasParam
 }
 
 type Reference struct {
@@ -28,13 +35,17 @@ func New(refs []*Ref, data interface{}) *Reference {
 	}
 }
 
-func GetRefs(prefix string, data interface{}) ([]*Ref, map[string]params.HasParam) {
-
-	params := make(map[string]params.HasParam)
-	return getRefsByValue(prefix, reflect.ValueOf(data).Elem(), params), params
+func GetRefs(data interface{}) []*Ref {
+	return getRefsByValue(reflect.ValueOf(data).Elem(), nil)
 }
 
-func getRefsByValue(src string, val reflect.Value, p map[string]params.HasParam) []*Ref {
+func GetParamRefs(prefix string, data interface{}) ([]*Ref, map[string]params.HasParam) {
+
+	params := make(map[string]params.HasParam)
+	return getRefsByValue(reflect.ValueOf(data).Elem(), &GetRefOptions{prefix, params}), params
+}
+
+func getRefsByValue(val reflect.Value, opt *GetRefOptions) []*Ref {
 
 	refs := make([]*Ref, 0)
 
@@ -54,8 +65,14 @@ func getRefsByValue(src string, val reflect.Value, p map[string]params.HasParam)
 	}
 
 	// Store structure handling params
-	if param, ok := val.Interface().(params.HasParam); ok {
-		p[src] = param
+	if opt != nil {
+
+		// Handle HasParam interface
+		if opt.Params != nil {
+			if param, ok := val.Interface().(params.HasParam); ok {
+				opt.Params[opt.Src] = param
+			}
+		}
 	}
 
 	for i := 0; i < val.NumField(); i++ {
@@ -65,7 +82,7 @@ func getRefsByValue(src string, val reflect.Value, p map[string]params.HasParam)
 		tag := typeField.Tag
 
 		name := tag.Get("json")
-		if name == "" {
+		if name == "" || name == "-" {
 			continue
 		}
 
@@ -78,13 +95,19 @@ func getRefsByValue(src string, val reflect.Value, p map[string]params.HasParam)
 			Name:     name,
 			Comments: tag.Get("comments"),
 			Type:     kind,
+			Value:    valueField.Interface(),
 		}
 
 		switch kind {
-		case "struct":
-			ref.Childs = getRefsByValue(src+"-"+name, valueField, p)
-		case "map":
 
+		case "struct":
+			if opt != nil {
+				opt.Src = opt.Src + "-" + name
+			}
+
+			ref.Childs = getRefsByValue(valueField, opt)
+
+		case "map":
 			if ref.Map == nil {
 				ref.Map = make(map[string][]*Ref)
 			}
@@ -98,14 +121,23 @@ func getRefsByValue(src string, val reflect.Value, p map[string]params.HasParam)
 				}
 
 				mapValue := valueField.MapIndex(k).Interface()
+				if opt != nil {
+					opt.Src = opt.Src + "-" + mapKey
+				}
+
 				ref.Map[mapKey] = getRefsByValue(
-					src+"-"+mapKey, reflect.ValueOf(mapValue), p)
+					reflect.ValueOf(mapValue), opt)
 			}
 
+		case "interface":
+		case "slice":
+		case "stringlist":
+		case "string":
 		case "bool":
 		case "int":
-		case "stringlist":
+		case "uint64":
 			// nothing to do
+
 		default:
 			log.Printf("Unhandled kind '%s'\n", kind)
 		}
