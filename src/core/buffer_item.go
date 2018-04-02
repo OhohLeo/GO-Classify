@@ -106,5 +106,5 @@ func (i *BufferItem) RemoveWebsiteData(d data.Data) {
 }
 
 func (i *BufferItem) String() string {
-	return fmt.Sprintf("id: %s", i.Id)
+	return fmt.Sprintf("id: %d", i.Id)
 }

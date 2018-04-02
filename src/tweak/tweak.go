@@ -212,7 +212,7 @@ func (t *Tweak) Check(sourceRaw map[string]interface{}, destinationRaw map[strin
 
 var dataIdReg = regexp.MustCompile(`:([a-z0-9]+)-([a-z0-9]+)(-(\d+))?`)
 
-func SetResult(format string, raw map[string]map[string][]string) (result string, err error) {
+func setResult(format string, raw map[string]map[string][]string) (result string, err error) {
 
 	// Get all ids from format
 	submatches := dataIdReg.FindAllStringSubmatch(format, -1)
@@ -315,7 +315,7 @@ func (t *Tweak) Tweak(src map[string]interface{}) (results map[string]map[string
 
 		for key, v := range fields {
 
-			results[name][key], err = SetResult(v.Value, raw)
+			results[name][key], err = setResult(v.Value, raw)
 			if err != nil {
 				err = fmt.Errorf("invalid destination name '%s' key '%s' %s",
 					name, key, err.Error())

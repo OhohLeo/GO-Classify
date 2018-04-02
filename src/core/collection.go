@@ -42,6 +42,12 @@ type CollectionParams struct {
 	Websites []string
 }
 
+func (c *Collection) GetDatas() map[string]interface{} {
+	return map[string]interface{}{
+		"item": &Item{},
+	}
+}
+
 // Add new import to the collection
 func (c *Collection) AddImport(name string, i imports.Import) error {
 
@@ -384,7 +390,7 @@ func (c *Collection) GetItemByString(idStr string) (*Item, error) {
 }
 
 func (c *Collection) GetItem(id Id) (*Item, error) {
-	fmt.Printf("ITEM:%s %+v", id, c.items)
+	fmt.Printf("ITEM[%d] %+v", id, c.items)
 	return c.items.Get(id)
 }
 

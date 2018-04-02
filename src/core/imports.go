@@ -25,9 +25,20 @@ type Import struct {
 	Name string `json:"name"`
 
 	engine imports.Import
-	tweak  tweak.Tweak
 
+	tweaks      map[string]*tweak.Tweak // by collections
 	collections map[string]*Collection
+}
+
+func (i *Import) GetDatas() map[string]interface{} {
+
+	res := make(map[string]interface{})
+
+	for _, data := range i.engine.GetDataList() {
+		res[data.GetRef().String()] = data
+	}
+
+	return res
 }
 
 func (i *Import) HasCollection(name string) (ok bool) {
@@ -120,6 +131,37 @@ func (i *Import) Delete2DB(db *database.Database) error {
 		Id:  i.Id,
 		Ref: uint64(i.engine.GetRef()),
 	}, "id = :id AND ref = :ref")
+}
+
+func (i *Import) GetTweak(collection *Collection) (t *tweak.Tweak) {
+
+	if i.tweaks == nil {
+		return nil
+	}
+
+	t, _ = i.tweaks[collection.Name]
+	return
+}
+
+func (i *Import) SetTweak(collection *Collection, t *tweak.Tweak) error {
+
+	// Check collection existence
+	var ok bool
+	if i.collections != nil {
+		_, ok = i.collections[collection.Name]
+	}
+
+	if ok == false {
+		return fmt.Errorf("no collection '%s' found", collection.Name)
+	}
+
+	// Store tweak by collection name otherwise
+	if i.tweaks == nil {
+		i.tweaks = make(map[string]*tweak.Tweak)
+	}
+
+	i.tweaks[collection.Name] = t
+	return nil
 }
 
 // Check imports configuration
@@ -286,8 +328,13 @@ func (c *Classify) DeleteImports(importList map[string]*Import, collections map[
 			// Unlink in the collection
 			collection.DeleteImport(importName)
 
-			// and in the import collection list
+			// in the import collection list
 			delete(i.collections, collectionName)
+
+			// and in the import tweaks list
+			if i.tweaks != nil {
+				delete(i.tweaks, collectionName)
+			}
 		}
 
 		// If no collection are linked with specified import

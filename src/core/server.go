@@ -67,6 +67,17 @@ func (c *Classify) CreateServer(config ServerConfig) (server *Server, err error)
 		return
 	}
 
+	// Store api
+	server.api, err = c.GetApi(server)
+	if err != nil {
+		return
+	}
+
+	return
+}
+
+func (c *Classify) GetApi(server *Server) (*rest.Api, error) {
+
 	api := rest.NewApi()
 
 	api.Use(rest.DefaultDevStack...)
@@ -86,10 +97,14 @@ func (c *Classify) CreateServer(config ServerConfig) (server *Server, err error)
 		AccessControlMaxAge:           3600,
 	})
 
-	router, err := rest.MakeRouter(
+	var streamRoute *rest.Route
+	if server != nil {
+		streamRoute = rest.Get("/stream", server.HandleStream)
+	} else {
+		streamRoute = rest.Get("/stream", nil)
+	}
 
-		// Establish connection to the web-services
-		rest.Get("/stream", server.HandleStream),
+	router, err := rest.MakeRouter(
 
 		// Handle references
 		rest.Get("/references", c.ApiGetReferences),
@@ -101,11 +116,11 @@ func (c *Classify) CreateServer(config ServerConfig) (server *Server, err error)
 		rest.Put("/imports/start", c.ApiStartImport),
 		rest.Put("/imports/stop", c.ApiStopImport),
 		rest.Get("/imports/:name/references", c.ApiGetImportReferences),
-		rest.Put("/imports/:name/:param", c.ApiPutImportParam),
 		rest.Get("/imports/:name/config", c.ApiGetImportConfig),
 		rest.Patch("/imports/:name/config", c.ApiPatchImportConfig),
-		rest.Get("/imports/:name/tweaks", c.ApiGetImportTweaks),
-		rest.Patch("/imports/:name/tweaks", c.ApiPatchImportTweaks),
+		rest.Put("/imports/:name/:param", c.ApiPutImportParam),
+		rest.Put("/imports/:name/tweak", c.ApiPutImportTweaks),
+		rest.Get("/imports/:name/tweak", c.ApiGetImportTweaks),
 
 		// Handle exports
 		rest.Post("/exports", c.ApiAddExport),
@@ -128,42 +143,31 @@ func (c *Classify) CreateServer(config ServerConfig) (server *Server, err error)
 		rest.Put("/collections/:name/config/:path/:param", c.ApiPutCollectionConfigParam),
 
 		// Handle collection buffer
-		rest.Get("/collections/:name/buffers",
-			c.ApiGetCollectionBuffers),
-		rest.Delete("/collections/:name/buffers",
-			c.ApiDeleteCollectionBuffers),
-		rest.Get("/collections/:name/buffers/:id",
-			c.ApiGetCollectionSingleBuffer),
-		rest.Patch("/collections/:name/buffers/:id",
-			c.ApiPatchCollectionSingleBuffer),
-		rest.Delete("/collections/:name/buffers/:id",
-			c.ApiDeleteCollectionSingleBuffer),
-		rest.Post("/collections/:name/buffers/:id/validate",
-			c.ApiValidateCollectionSingleBuffer),
+		rest.Get("/collections/:name/buffers", c.ApiGetCollectionBuffers),
+		rest.Delete("/collections/:name/buffers", c.ApiDeleteCollectionBuffers),
+		rest.Get("/collections/:name/buffers/:id", c.ApiGetCollectionSingleBuffer),
+		rest.Patch("/collections/:name/buffers/:id", c.ApiPatchCollectionSingleBuffer),
+		rest.Delete("/collections/:name/buffers/:id", c.ApiDeleteCollectionSingleBuffer),
+		rest.Post("/collections/:name/buffers/:id/validate", c.ApiValidateCollectionSingleBuffer),
 
 		// Handle collection items
-		rest.Get("/collections/:name/items",
-			c.ApiGetCollectionItems),
-		rest.Delete("/collections/:name/items",
-			c.ApiDeleteCollectionItems),
-		rest.Get("/collections/:name/items/:id",
-			c.ApiGetCollectionSingleItem),
-		rest.Patch("/collections/:name/items/:id",
-			c.ApiPatchCollectionSingleItem),
-		rest.Delete("/collections/:name/items/:id",
-			c.ApiDeleteCollectionSingleItem),
+		rest.Get("/collections/:name/items", c.ApiGetCollectionItems),
+		rest.Delete("/collections/:name/items", c.ApiDeleteCollectionItems),
+		rest.Get("/collections/:name/items/:id", c.ApiGetCollectionSingleItem),
+		rest.Patch("/collections/:name/items/:id", c.ApiPatchCollectionSingleItem),
+		rest.Delete("/collections/:name/items/:id", c.ApiDeleteCollectionSingleItem),
+
+		// Establish connection to the web-services
+		streamRoute,
 	)
 
 	if err != nil {
-		return
+		return nil, err
 	}
 
 	api.SetApp(router)
 
-	// Store api
-	server.api = api
-
-	return
+	return api, nil
 }
 
 func (c *Classify) SendEvent(event string, status string, name string, data interface{}) {

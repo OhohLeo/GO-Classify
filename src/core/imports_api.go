@@ -3,9 +3,11 @@ package core
 import (
 	"encoding/json"
 	"fmt"
+	"net/http"
+
 	"github.com/ant0ine/go-json-rest/rest"
 	"github.com/ohohleo/classify/imports"
-	"net/http"
+	"github.com/ohohleo/classify/tweak"
 )
 
 // getImportByName get from Url parameters import
@@ -44,6 +46,27 @@ func (c *Classify) getImportNamesAndCollections(r *rest.Request) (imports map[st
 	}
 
 	return
+}
+
+// getImportNamesAndCollections get from Url parameters imports and the collections
+func (c *Classify) getSingleCollectionByQuery(w rest.ResponseWriter, r *rest.Request) *Collection {
+
+	// From the url query list
+	values := r.URL.Query()
+
+	if len(values["collection"]) != 1 {
+		rest.Error(w, "one (and only one) collection expected", http.StatusBadRequest)
+		return nil
+	}
+
+	// Check and get the collection list
+	collection, err := c.GetCollection(values["collection"][0])
+	if err != nil {
+		rest.Error(w, err.Error(), http.StatusBadRequest)
+		return nil
+	}
+
+	return collection
 }
 
 type ApiAddImportsBody struct {
@@ -178,10 +201,54 @@ func (c *Classify) ApiStopImport(w rest.ResponseWriter, r *rest.Request) {
 func (c *Classify) ApiGetImportReferences(w rest.ResponseWriter, r *rest.Request) {
 }
 
-func (c *Classify) ApiGetImportTweaks(w rest.ResponseWriter, r *rest.Request) {
+// PUT /imports/name/tweak?collection=COLLECTION_NAME
+func (c *Classify) ApiPutImportTweaks(w rest.ResponseWriter, r *rest.Request) {
+
+	// Get import tweak
+	var tweak tweak.Tweak
+	err := r.DecodeJsonPayload(&tweak)
+	if err != nil {
+		rest.Error(w, "invalid json body", http.StatusBadRequest)
+		return
+	}
+
+	// Récupération de l'importation
+	i := c.getImportByName(w, r)
+	if i == nil {
+		return
+	}
+
+	// Récupération de la collection
+	collection := c.getSingleCollectionByQuery(w, r)
+	if collection == nil {
+		return
+	}
+
+	// Set import tweak
+	if err := c.SetInputTweak(i, collection, &tweak); err != nil {
+		rest.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	w.WriteHeader(http.StatusNoContent)
 }
 
-func (c *Classify) ApiPatchImportTweaks(w rest.ResponseWriter, r *rest.Request) {
+// GET /imports/name/tweak?collection=COLLECTION_NAME
+func (c *Classify) ApiGetImportTweaks(w rest.ResponseWriter, r *rest.Request) {
+
+	// Récupération de l'importation
+	i := c.getImportByName(w, r)
+	if i == nil {
+		return
+	}
+
+	// Récupération de la collection
+	collection := c.getSingleCollectionByQuery(w, r)
+	if collection == nil {
+		return
+	}
+
+	w.WriteJson(c.GetTweak(i, collection))
 }
 
 // List all config imports
