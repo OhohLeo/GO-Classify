@@ -84,7 +84,7 @@ func (c *Classify) ApiAddImport(w rest.ResponseWriter, r *rest.Request) {
 	var body ApiAddImportsBody
 	err := r.DecodeJsonPayload(&body)
 	if err != nil {
-		rest.Error(w, "invalid json body", http.StatusBadRequest)
+		rest.Error(w, fmt.Sprintf("invalid json body: %s", err.Error()), http.StatusBadRequest)
 		return
 	}
 
@@ -204,17 +204,17 @@ func (c *Classify) ApiGetImportReferences(w rest.ResponseWriter, r *rest.Request
 // PUT /imports/name/tweak?collection=COLLECTION_NAME
 func (c *Classify) ApiPutImportTweaks(w rest.ResponseWriter, r *rest.Request) {
 
+	// Récupération de l'importation
+	i := c.getImportByName(w, r)
+	if i == nil {
+		return
+	}
+
 	// Get import tweak
 	var tweak tweak.Tweak
 	err := r.DecodeJsonPayload(&tweak)
 	if err != nil {
 		rest.Error(w, "invalid json body", http.StatusBadRequest)
-		return
-	}
-
-	// Récupération de l'importation
-	i := c.getImportByName(w, r)
-	if i == nil {
 		return
 	}
 
@@ -264,32 +264,29 @@ func (c *Classify) ApiPatchImportConfig(w rest.ResponseWriter, r *rest.Request) 
 }
 
 // Handle import params
-// PUT /imports/:name/:param
+// PUT /imports/:name/param/:param
 func (c *Classify) ApiPutImportParam(w rest.ResponseWriter, r *rest.Request) {
 
-	param := r.PathParam("param")
-	name := r.PathParam("name")
-
-	// Récupération du type de l'importation
-	i, err := c.GetImportByName(name)
-	if err == nil {
-		name = i.engine.GetRef().String()
+	i := c.getImportByName(w, r)
+	if i == nil {
+		return
 	}
 
-	newImport, ok := newImports[name]
+	newImport, ok := newImports[i.engine.GetRef().String()]
 	if ok == false {
-		rest.Error(w, err.Error(), http.StatusBadRequest)
+		rest.Error(w,
+			fmt.Sprintf("unexpected type '%s' not handled", i.engine.GetRef().String()),
+			http.StatusInternalServerError)
 		return
 	}
 
 	var body json.RawMessage
-	err = r.DecodeJsonPayload(&body)
-	if err != nil {
+	if err := r.DecodeJsonPayload(&body); err != nil {
 		rest.Error(w, "invalid json body", http.StatusBadRequest)
 		return
 	}
 
-	res, err := newImport.GetParam(param, body)
+	res, err := newImport.GetParam(r.PathParam("param"), body)
 	if err != nil {
 		rest.Error(w, err.Error(), http.StatusBadRequest)
 		return
