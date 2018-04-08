@@ -3,50 +3,14 @@ import { Observable } from 'rxjs/Rx';
 import { ApiService, Event } from './../api.service';
 import { BufferService } from './../buffer/buffer.service';
 import { Response } from '@angular/http';
-import { Md5 } from 'ts-md5/dist/md5';
-
-export class ImportBase {
-
-    public isRunning: boolean
-
-    constructor(private ref: string, public name: string) { }
-
-	getName(): string {
-		return String(Md5.hashStr(JSON.stringify(this.getParams())))
-	}
-
-    getRef(): string {
-        if (this.ref === undefined)
-            throw new Error("attribute 'ref' should be defined!")
-
-        return this.ref
-    }
-
-    getParams(): any {
-        throw new Error("method 'getParams' should be defined!")
-    }
-
-    display(): string {
-        throw new Error("method 'display' should be defined!")
-    }
-
-    compare(i: ImportBase): boolean {
-        if (this.ref === undefined)
-            throw new Error("attribute 'ref' should be defined!")
-
-        if (this.ref != i.getRef())
-            return false
-
-        return true
-    }
-}
+import { BaseElement } from '../base'
 
 @Injectable()
 export class ImportsService {
 
     enableCache: boolean
-    imports: Map<string, ImportBase[]> = new Map<string, ImportBase[]>()
-    importsByName: Map<string, ImportBase> = new Map<string, ImportBase>()
+    imports: Map<string, BaseElement[]> = new Map<string, BaseElement[]>()
+    importsByName: Map<string, BaseElement> = new Map<string, BaseElement>()
     configs: any
     updateList: any
 
@@ -72,7 +36,7 @@ export class ImportsService {
     }
 
     // Check if import does exist
-    hasImport(search: ImportBase): boolean {
+    hasImport(search: BaseElement): boolean {
         return this.hasSameImportName(search.name)
     }
 
@@ -82,7 +46,7 @@ export class ImportsService {
     }
 
     // Check if import does exist
-    hasSameImport(search: ImportBase): boolean {
+    hasSameImport(search: BaseElement): boolean {
         let imports = this.imports.get(search.getRef())
         if (imports === undefined) {
             return false
@@ -97,7 +61,7 @@ export class ImportsService {
         return false
     }
 
-    private add(i: ImportBase) {
+    private add(i: BaseElement) {
 
         // Store imports by name
         this.importsByName.set(i.name, i)
@@ -110,7 +74,7 @@ export class ImportsService {
         this.imports.get(i.getRef()).push(i)
     }
 
-    addImport(i: ImportBase, onParams: any, onSuccess: any) {
+    addImport(i: BaseElement, onParams: any, onSuccess: any) {
 
         // Disable cache
         this.enableCache = false
@@ -159,7 +123,7 @@ export class ImportsService {
             })
     }
 
-    private delete(i: ImportBase) {
+    private delete(i: BaseElement) {
 
         // Delete import by name
         this.importsByName.delete(i.name)
@@ -180,7 +144,7 @@ export class ImportsService {
         }
     }
 
-    deleteImport(i: ImportBase) {
+    deleteImport(i: BaseElement) {
 
         // Disable cache
         this.enableCache = false
@@ -207,15 +171,15 @@ export class ImportsService {
             })
     }
 
-    startImport(i: ImportBase) {
+    startImport(i: BaseElement) {
         return this.actionImport(true, i)
     }
 
-    stopImport(i: ImportBase) {
+    stopImport(i: BaseElement) {
         return this.actionImport(false, i)
     }
 
-    actionImport(isStart: boolean, i: ImportBase) {
+    actionImport(isStart: boolean, i: BaseElement) {
 
         if (this.hasImport(i) === false) {
             console.error("No existing " + i.getRef())
@@ -251,8 +215,8 @@ export class ImportsService {
             this.apiService.get("imports").subscribe(rsp => {
 
                 // Init the import lists
-                this.imports = new Map<string, ImportBase[]>()
-                this.importsByName = new Map<string, ImportBase>()
+                this.imports = new Map<string, BaseElement[]>()
+                this.importsByName = new Map<string, BaseElement>()
 
                 for (let importRef in rsp) {
 

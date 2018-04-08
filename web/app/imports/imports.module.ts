@@ -2,6 +2,7 @@ import { NgModule } from '@angular/core'
 import { CommonModule } from '@angular/common'
 import { BrowserModule } from '@angular/platform-browser'
 import { FormsModule } from '@angular/forms'
+import { ConfigsModule } from '../configs/configs.module'
 import { ToolsModule } from '../tools/tools.module'
 import { ParamsModule } from '../params/params.module'
 
@@ -20,6 +21,7 @@ import { ImapDisplayComponent } from './imap/display.component'
         CommonModule,
         BrowserModule,
         FormsModule,
+		ConfigsModule,
         ToolsModule,
         ParamsModule
     ],

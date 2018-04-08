@@ -1,14 +1,16 @@
 import {
     Component, NgZone, OnInit, AfterViewInit, OnDestroy,
-    ViewChildren, QueryList, Renderer
+    ViewChild, Renderer
 } from '@angular/core'
 import { NgSwitch } from '@angular/common'
 import { ApiService, Event } from './../api.service'
-import { ImportsService, ImportBase } from './imports.service'
+import { ConfigComponent } from './../configs/config.component'
+import { ImportsService } from './imports.service'
 import { ImportCreateComponent } from './create.component'
 import { Convert2Imap } from './imap/imap';
 import { Convert2Directory } from './directory/directory';
 import { DirectoryCreateComponent } from './directory/create.component';
+import { BaseElement } from '../base'
 
 declare var jQuery: any;
 
@@ -19,9 +21,11 @@ declare var jQuery: any;
 
 export class ImportsComponent implements OnInit, OnDestroy {
 
+	@ViewChild(ConfigComponent) config: ConfigComponent
+
     public refs: Array<string> = []
     public refs2Display: Array<string> = []
-    public imports: Map<string, ImportBase[]>
+    public imports: Map<string, BaseElement[]>
     public currentRef: string = "all"
 
     public createComponent: ImportCreateComponent
@@ -92,7 +96,7 @@ export class ImportsComponent implements OnInit, OnDestroy {
 
     update() {
         this.importsService.getImports()
-            .subscribe((imports: Map<string, ImportBase[]>) => {
+            .subscribe((imports: Map<string, BaseElement[]>) => {
                 this.zone.run(() => {
                     this.imports = imports
                 })
@@ -138,7 +142,7 @@ export class ImportsComponent implements OnInit, OnDestroy {
             })
     }
 
-    onRefresh(item: ImportBase) {
+    onRefresh(item: BaseElement) {
         if (item.isRunning) {
             this.importsService.stopImport(item)
         } else {
@@ -146,10 +150,12 @@ export class ImportsComponent implements OnInit, OnDestroy {
         }
     }
 
-    onConfig(item: ImportBase) {
+    onConfig(item: BaseElement) {
+		console.log(item)
+		this.config.start()
     }
 
-    onDelete(item: ImportBase) {
+    onDelete(item: BaseElement) {
         this.importsService.deleteImport(item)
     }
 }

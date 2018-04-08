@@ -1,6 +1,6 @@
-import { ImportBase } from '../imports.service';
+import { BaseElement } from '../../base';
 
-export class Imap extends ImportBase {
+export class Imap extends BaseElement {
 
     public host: string
     public port: number
@@ -11,7 +11,7 @@ export class Imap extends ImportBase {
     public search: Search = new Search()
 
     constructor(public name: string) {
-        super("imap", name);
+        super("imports", "imap", name);
     }
 
     getParams(): any {
@@ -67,7 +67,7 @@ export class Search {
     }
 }
 
-export function Convert2Imap(name: string, params): ImportBase {
+export function Convert2Imap(name: string, params): BaseElement {
 
     let imap = new Imap(name)
 

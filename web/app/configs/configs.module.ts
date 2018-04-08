@@ -6,6 +6,7 @@ import { ToolsModule } from '../tools/tools.module'
 import { ParamsModule } from '../params/params.module'
 
 import { ConfigsComponent } from './configs.component'
+import { ConfigComponent } from './config.component'
 import { ConfigMultiComponent } from './multi.component'
 import { ConfigRefComponent } from './ref.component'
 import { ConfigsService } from './configs.service'
@@ -18,9 +19,9 @@ import { ConfigsService } from './configs.service'
         ToolsModule,
         ParamsModule
     ],
-    declarations: [ConfigsComponent, ConfigMultiComponent, ConfigRefComponent],
+    declarations: [ConfigsComponent, ConfigMultiComponent, ConfigRefComponent, ConfigComponent] ,
     providers: [ConfigsService],
-    exports: [ConfigsComponent]
+    exports: [ConfigsComponent, ConfigComponent]
 })
 
 export class ConfigsModule { }

@@ -1,5 +1,5 @@
 import { Component, NgZone } from '@angular/core'
-import { ImportsService, ImportBase } from '../imports.service'
+import { ImportsService } from '../imports.service'
 import { ApiService } from '../../api.service'
 import { ImportCreateComponent } from './../create.component'
 import { Directory } from './directory'

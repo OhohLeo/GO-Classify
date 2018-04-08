@@ -1,12 +1,12 @@
-import { ImportBase } from '../imports.service'
+import { BaseElement } from '../../base'
 
-export class Directory extends ImportBase {
+export class Directory extends BaseElement {
 
     public path: string = ""
     public isRecursive: boolean = false
 
     constructor(public name: string) {
-        super("directory", name);
+        super("imports", "directory", name);
     }
 
     getParams(): any {
@@ -27,7 +27,7 @@ export class Directory extends ImportBase {
     }
 }
 
-export function Convert2Directory(name: string, params): ImportBase {
+export function Convert2Directory(name: string, params): BaseElement {
 
     if (typeof params != 'object') {
         console.error("Unsupported directory parameters!")
