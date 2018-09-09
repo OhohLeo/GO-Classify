@@ -11,6 +11,7 @@ import (
 	"github.com/ohohleo/classify/imports"
 	"github.com/ohohleo/classify/imports/directory"
 	"github.com/ohohleo/classify/imports/imap"
+	"github.com/ohohleo/classify/reference"
 	"github.com/ohohleo/classify/tweak"
 )
 
@@ -36,6 +37,17 @@ func (i *Import) GetDatas() map[string]interface{} {
 
 	for _, data := range i.engine.GetDataList() {
 		res[data.GetRef().String()] = data
+	}
+
+	return res
+}
+
+func (i *Import) GetDatasReference() map[string]map[string]string {
+
+	res := make(map[string]map[string]string)
+
+	for _, data := range i.engine.GetDataList() {
+		res[data.GetRef().String()] = reference.GetFieldTypes(data)
 	}
 
 	return res

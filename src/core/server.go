@@ -118,9 +118,9 @@ func (c *Classify) GetApi(server *Server) (*rest.Api, error) {
 		rest.Get("/imports/:name/references", c.ApiGetImportReferences),
 		rest.Get("/imports/:name/config", c.ApiGetImportConfig),
 		rest.Patch("/imports/:name/config", c.ApiPatchImportConfig),
-		rest.Put("/imports/:name/param/:param", c.ApiPutImportParam),
-		rest.Put("/imports/:name/tweak", c.ApiPutImportTweaks),
-		rest.Get("/imports/:name/tweak", c.ApiGetImportTweaks),
+		rest.Put("/imports/:name/params/:param", c.ApiPutImportParams),
+		rest.Put("/imports/:name/tweaks", c.ApiPutImportTweaks),
+		rest.Get("/imports/:name/tweaks", c.ApiGetImportTweaks),
 
 		// Handle exports
 		rest.Post("/exports", c.ApiAddExport),
@@ -130,7 +130,7 @@ func (c *Classify) GetApi(server *Server) (*rest.Api, error) {
 		rest.Put("/exports/stop", c.ApiStopExport),
 		rest.Get("/exports/:name/config", c.ApiGetExportConfig),
 		rest.Patch("/exports/:name/config", c.ApiPatchExportConfig),
-		rest.Put("/exports/:name/:param", c.ApiPutExportParam),
+		rest.Put("/exports/:name/params/:param", c.ApiPutExportParams),
 
 		// Handle collections
 		rest.Post("/collections", c.ApiPostCollection),
@@ -138,6 +138,7 @@ func (c *Classify) GetApi(server *Server) (*rest.Api, error) {
 		rest.Get("/collections/:name", c.ApiGetCollectionByName),
 		rest.Patch("/collections/:name", c.ApiPatchCollection),
 		rest.Delete("/collections/:name", c.ApiDeleteCollectionByName),
+		rest.Get("/collections/:name/references", c.ApiGetCollectionReferences),
 		rest.Get("/collections/:name/config", c.ApiGetCollectionConfig),
 		rest.Patch("/collections/:name/config", c.ApiPatchCollectionConfig),
 		rest.Put("/collections/:name/config/:path/:param", c.ApiPutCollectionConfigParam),

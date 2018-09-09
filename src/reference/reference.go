@@ -3,6 +3,7 @@ package reference
 import (
 	"log"
 	"reflect"
+	"strings"
 
 	"github.com/ohohleo/classify/params"
 )
@@ -37,6 +38,38 @@ func New(refs []*Ref, data interface{}) *Reference {
 
 func GetRefs(data interface{}) []*Ref {
 	return getRefsByValue(reflect.ValueOf(data).Elem(), nil)
+}
+
+func GetFieldTypes(data interface{}) map[string]string {
+
+	result := make(map[string]string)
+
+	for _, ref := range getRefsByValue(reflect.ValueOf(data).Elem(), nil) {
+
+		// Reject unused fields
+		switch ref.Name {
+		case "id":
+			fallthrough
+		case "ref":
+			continue
+		}
+
+		// Reject unused types
+		switch ref.Type {
+		case "interface":
+			fallthrough
+		case "slice":
+			fallthrough
+		case "map":
+			fallthrough
+		case "struct":
+			continue
+		}
+
+		result[ref.Name] = ref.Type
+	}
+
+	return result
 }
 
 func GetParamRefs(prefix string, data interface{}) ([]*Ref, map[string]params.HasParam) {
@@ -82,6 +115,13 @@ func getRefsByValue(val reflect.Value, opt *GetRefOptions) []*Ref {
 		tag := typeField.Tag
 
 		name := tag.Get("json")
+
+		// Get name until ','
+		comaIdx := strings.Index(name, ",")
+		if comaIdx >= 0 {
+			name = name[0:comaIdx]
+		}
+
 		if name == "" || name == "-" {
 			continue
 		}
@@ -89,6 +129,15 @@ func getRefsByValue(val reflect.Value, opt *GetRefOptions) []*Ref {
 		kind := tag.Get("kind")
 		if kind == "" {
 			kind = typeField.Type.Kind().String()
+		}
+
+		switch kind {
+		case "struct":
+			if strings.HasPrefix(name, "date") {
+				kind = "datetime"
+			} else if name == "country" {
+				kind = name
+			}
 		}
 
 		ref := &Ref{
@@ -136,6 +185,11 @@ func getRefsByValue(val reflect.Value, opt *GetRefOptions) []*Ref {
 		case "bool":
 		case "int":
 		case "uint64":
+			// nothing to do
+
+		case "datetime":
+		case "country":
+		case "string[]":
 			// nothing to do
 
 		default:

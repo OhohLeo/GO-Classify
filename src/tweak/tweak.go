@@ -94,9 +94,9 @@ func (f Fields) Check(data interface{}, dst bool) (err error) {
 
 	for key, value := range f {
 
-		// Reject destination value with regexp
+		// Reject output value with regexp
 		if dst && value.Regexp != nil {
-			err = fmt.Errorf("destination '%s' value can't handle regexp", key)
+			err = fmt.Errorf("output '%s' value can't handle regexp", key)
 			return
 		}
 
@@ -132,7 +132,7 @@ func (f Fields) GetRawDatas(data interface{}) (results map[string][]string, err 
 		// Convert into string
 		raw, ok := ref.Value.(string)
 		if ok == false {
-			err = fmt.Errorf("source expected 'string' on data field '%s'", ref.Name)
+			err = fmt.Errorf("input expected 'string' on data field '%s'", ref.Name)
 			return
 		}
 
@@ -141,7 +141,7 @@ func (f Fields) GetRawDatas(data interface{}) (results map[string][]string, err 
 
 			// Invalid regexp : nothing stored
 			if v.Regexp.MatchString(raw) == false {
-				log.Printf("source regexp '%s' not matching raw '%s'", v.Regexp.String(), raw)
+				log.Printf("input regexp '%s' not matching raw '%s'", v.Regexp.String(), raw)
 				results[ref.Name] = make([]string, v.Regexp.NumSubexp())
 				continue
 			}
@@ -164,10 +164,10 @@ func (f Fields) GetRawDatas(data interface{}) (results map[string][]string, err 
 type Tweak struct {
 
 	// Ref => Field => Regex/Value
-	Source map[string]Fields `json:"source"`
+	Input map[string]Fields `json:"input"`
 
 	// [ ComputedData/Item/Export ] => Field => Value
-	Destination map[string]Fields `json:"destination"`
+	Output map[string]Fields `json:"output"`
 }
 
 func New(src []byte) (*Tweak, error) {
@@ -196,14 +196,14 @@ func (t *Tweak) check(raw map[string]interface{}, expected map[string]Fields, ds
 	return
 }
 
-// Check source compatibility
-func (t *Tweak) Check(sourceRaw map[string]interface{}, destinationRaw map[string]interface{}) (err error) {
+// Check input compatibility
+func (t *Tweak) Check(inputRaw map[string]interface{}, outputRaw map[string]interface{}) (err error) {
 
-	if err = t.check(sourceRaw, t.Source, false); err != nil {
+	if err = t.check(inputRaw, t.Input, false); err != nil {
 		return
 	}
 
-	if err = t.check(destinationRaw, t.Destination, true); err != nil {
+	if err = t.check(outputRaw, t.Output, true); err != nil {
 		return
 	}
 
@@ -283,17 +283,17 @@ func (t *Tweak) Tweak(src map[string]interface{}) (results map[string]map[string
 
 	raw := make(map[string]map[string][]string)
 
-	// Get selected from data sources
-	for key, getters := range t.Source {
+	// Get selected from data inputs
+	for key, getters := range t.Input {
 
 		// Check if we specified data are handled
-		source, ok := src[key]
+		input, ok := src[key]
 		if ok == false {
 			continue
 		}
 
 		// Check field names & get raw datas & apply regexp
-		raw[key], err = getters.GetRawDatas(source)
+		raw[key], err = getters.GetRawDatas(input)
 		if err != nil {
 			return
 		}
@@ -307,7 +307,7 @@ func (t *Tweak) Tweak(src map[string]interface{}) (results map[string]map[string
 	// Based on ordered values : determined results for each result field
 	results = make(map[string]map[string]string)
 
-	for name, fields := range t.Destination {
+	for name, fields := range t.Output {
 
 		if results[name] == nil {
 			results[name] = make(map[string]string)
@@ -317,7 +317,7 @@ func (t *Tweak) Tweak(src map[string]interface{}) (results map[string]map[string
 
 			results[name][key], err = setResult(v.Value, raw)
 			if err != nil {
-				err = fmt.Errorf("invalid destination name '%s' key '%s' %s",
+				err = fmt.Errorf("invalid output name '%s' key '%s' %s",
 					name, key, err.Error())
 				return
 			}

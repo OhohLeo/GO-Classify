@@ -199,9 +199,19 @@ func (c *Classify) ApiStopImport(w rest.ResponseWriter, r *rest.Request) {
 }
 
 func (c *Classify) ApiGetImportReferences(w rest.ResponseWriter, r *rest.Request) {
+
+	// Récupération de l'importation
+	i := c.getImportByName(w, r)
+	if i == nil {
+		return
+	}
+
+	w.WriteJson(References{
+		Datas: i.GetDatasReference(),
+	})
 }
 
-// PUT /imports/name/tweak?collection=COLLECTION_NAME
+// PUT /imports/:name/tweak?collection=COLLECTION_NAME
 func (c *Classify) ApiPutImportTweaks(w rest.ResponseWriter, r *rest.Request) {
 
 	// Récupération de l'importation
@@ -233,7 +243,7 @@ func (c *Classify) ApiPutImportTweaks(w rest.ResponseWriter, r *rest.Request) {
 	w.WriteHeader(http.StatusNoContent)
 }
 
-// GET /imports/name/tweak?collection=COLLECTION_NAME
+// GET /imports/:name/tweak?collection=COLLECTION_NAME
 func (c *Classify) ApiGetImportTweaks(w rest.ResponseWriter, r *rest.Request) {
 
 	// Récupération de l'importation
@@ -264,18 +274,25 @@ func (c *Classify) ApiPatchImportConfig(w rest.ResponseWriter, r *rest.Request) 
 }
 
 // Handle import params
-// PUT /imports/:name/param/:param
-func (c *Classify) ApiPutImportParam(w rest.ResponseWriter, r *rest.Request) {
+// PUT /imports/:name/params/:param
+func (c *Classify) ApiPutImportParams(w rest.ResponseWriter, r *rest.Request) {
 
-	i := c.getImportByName(w, r)
-	if i == nil {
-		return
+	name := r.PathParam("name")
+
+	var newImport imports.Build
+	var ok bool
+
+	// If no import name are found, try to search directly using imports builder
+	i, err := c.GetImportByName(name)
+	if err == nil {
+		newImport, ok = newImports[i.engine.GetRef().String()]
+	} else {
+		newImport, ok = newImports[name]
 	}
 
-	newImport, ok := newImports[i.engine.GetRef().String()]
 	if ok == false {
 		rest.Error(w,
-			fmt.Sprintf("unexpected type '%s' not handled", i.engine.GetRef().String()),
+			fmt.Sprintf("unexpected type '%s' not handled", name),
 			http.StatusInternalServerError)
 		return
 	}

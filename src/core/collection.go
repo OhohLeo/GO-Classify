@@ -9,6 +9,7 @@ import (
 	"github.com/ohohleo/classify/database"
 	"github.com/ohohleo/classify/exports"
 	"github.com/ohohleo/classify/imports"
+	"github.com/ohohleo/classify/reference"
 	"github.com/ohohleo/classify/websites"
 	"log"
 )
@@ -42,9 +43,19 @@ type CollectionParams struct {
 	Websites []string
 }
 
+type References struct {
+	Datas map[string]map[string]string `json:"datas"`
+}
+
 func (c *Collection) GetDatas() map[string]interface{} {
 	return map[string]interface{}{
 		"item": &Item{},
+	}
+}
+
+func (c *Collection) GetDatasReferences() map[string]map[string]string {
+	return map[string]map[string]string{
+		"item": reference.GetFieldTypes(&Item{}),
 	}
 }
 

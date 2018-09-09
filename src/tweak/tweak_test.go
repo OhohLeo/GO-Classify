@@ -10,8 +10,8 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-var tweakJson = `{
-  "source": {
+var TWEAK_JSON = `{
+  "input": {
     "file": {
       "name": {
         "regexp": "([a-z]+)([0-9]+)"
@@ -21,7 +21,7 @@ var tweakJson = `{
       }
     }
   },
-  "destination": {
+  "output": {
     "item": {
       "name": {
         "value": ":file-name-0 :file-name-1 :file-path"
@@ -34,13 +34,13 @@ func TestTweakJson(t *testing.T) {
 
 	assert := assert.New(t)
 
-	tweak, err := New([]byte(tweakJson))
+	tweak, err := New([]byte(TWEAK_JSON))
 	assert.Nil(err)
 
 	jsonRes, err := json.MarshalIndent(tweak, "", "  ")
 	assert.Nil(err)
 
-	assert.Equal(tweakJson, string(jsonRes))
+	assert.Equal(TWEAK_JSON, string(jsonRes))
 }
 
 func TestCheck(t *testing.T) {
@@ -49,14 +49,14 @@ func TestCheck(t *testing.T) {
 
 	tweakJson := `
 {
-  "source": {
+  "input": {
     "file": {
       "name": {
         "regexp": "([a-z]+)([0-9]+)"
       }
     }
   },
-  "destination": {
+  "output": {
     "item": {
       "name": {
         "value": ":file-name-0 :file-name-1 :file-path"
@@ -69,32 +69,32 @@ func TestCheck(t *testing.T) {
 	assert.Nil(err)
 
 	type check struct {
-		Source      map[string]interface{}
-		Destination map[string]interface{}
-		Error       string
+		Input  map[string]interface{}
+		Output map[string]interface{}
+		Error  string
 	}
 
 	checks := []check{
 		check{
-			Source: map[string]interface{}{
+			Input: map[string]interface{}{
 				"file": &data.File{
 					Name: "abcd1234",
 					Path: "/path/// TODO: o/test/(2017-01-02) test",
 				},
 			},
-			Destination: map[string]interface{}{
+			Output: map[string]interface{}{
 				"item": &core.Item{
 					Name: "test",
 				},
 			},
 		},
 		check{
-			Source: map[string]interface{}{
+			Input: map[string]interface{}{
 				"file": &data.Email{
 					Subject: "abcd1234",
 				},
 			},
-			Destination: map[string]interface{}{
+			Output: map[string]interface{}{
 				"item": &core.Item{
 					Name: "test",
 				},
@@ -105,7 +105,7 @@ func TestCheck(t *testing.T) {
 
 	for idx, check := range checks {
 
-		err = tweak.Check(check.Source, check.Destination)
+		err = tweak.Check(check.Input, check.Output)
 		if err != nil && check.Error == "" {
 			assert.Fail(fmt.Sprintf("error not expected but get error '%s' at %d", err.Error(), idx))
 			return
@@ -127,7 +127,7 @@ func TestTweak(t *testing.T) {
 
 	assert := assert.New(t)
 
-	tweak, err := New([]byte(tweakJson))
+	tweak, err := New([]byte(TWEAK_JSON))
 	assert.Nil(err)
 
 	type check struct {

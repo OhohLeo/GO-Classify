@@ -181,8 +181,8 @@ func (c *Classify) ApiPatchExportConfig(w rest.ResponseWriter, r *rest.Request) 
 }
 
 // Handle export params
-// PUT /exports/:name/:param
-func (c *Classify) ApiPutExportParam(w rest.ResponseWriter, r *rest.Request) {
+// PUT /exports/:name/params/:params
+func (c *Classify) ApiPutExportParams(w rest.ResponseWriter, r *rest.Request) {
 
 	param := r.PathParam("param")
 	name := r.PathParam("name")

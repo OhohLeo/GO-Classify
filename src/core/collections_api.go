@@ -364,6 +364,19 @@ func (c *Classify) ApiStopCollection(w rest.ResponseWriter, r *rest.Request) {
 	w.WriteHeader(http.StatusNoContent)
 }
 
+func (c *Classify) ApiGetCollectionReferences(w rest.ResponseWriter, r *rest.Request) {
+
+	// Récupération de l'collectionation
+	collection := c.getCollectionByName(w, r)
+	if collection == nil {
+		return
+	}
+
+	w.WriteJson(References{
+		Datas: collection.GetDatasReferences(),
+	})
+}
+
 type Websocket interface {
 	Handle(ws *websocket.Conn) error
 }
