@@ -4,7 +4,7 @@ import { BrowserModule } from '@angular/platform-browser'
 import { FormsModule } from '@angular/forms'
 import { PdfViewerModule } from 'ng2-pdf-viewer'
 
-import { ApiService } from '../../../../api.service'
+import { ApiService } from '../../../api.service'
 
 import { SimpleCollectionComponent } from './collection.component'
 import { SimpleItemsComponent } from './items.component'
@@ -15,13 +15,13 @@ import { SimpleIconItemComponent } from './iconItem.component'
         CommonModule,
         BrowserModule,
         FormsModule,
-	PdfViewerModule
+		PdfViewerModule
     ],
     providers: [ApiService],
     declarations: [
         SimpleCollectionComponent,
         SimpleItemsComponent,
-	SimpleIconItemComponent
+		SimpleIconItemComponent
     ],
     exports: [
         SimpleCollectionComponent

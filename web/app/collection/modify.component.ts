@@ -1,7 +1,7 @@
 import { Component, Input } from '@angular/core'
-import { ApiService } from '../../api.service'
-import { CollectionsService } from '../collections.service'
-import { Collection } from '../collection'
+import { ApiService } from '../api.service'
+import { CollectionsService } from '../collections/collections.service'
+import { Collection } from './collection'
 
 @Component({
     selector: 'collection-modify',
@@ -14,13 +14,13 @@ export class ModifyCollectionComponent {
     private websites: string[]
 
     constructor(private apiService: ApiService,
-        private collectionsService: CollectionsService) {
+				private collectionsService: CollectionsService) {
 
         apiService.getReferences()
             .subscribe(
-            references => {
-                this.websites = references["websites"]
-            });
+				references => {
+					this.websites = references["websites"]
+				});
     }
 
     onSubmit() {

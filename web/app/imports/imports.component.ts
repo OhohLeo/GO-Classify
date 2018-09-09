@@ -152,7 +152,7 @@ export class ImportsComponent implements OnInit, OnDestroy {
 
     onConfig(item: BaseElement) {
 		console.log(item)
-		this.config.start()
+		this.config.start(item)
     }
 
     onDelete(item: BaseElement) {

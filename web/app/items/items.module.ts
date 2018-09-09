@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common'
 import { BrowserModule } from '@angular/platform-browser'
 import { FormsModule } from '@angular/forms'
 
-import { ItemsService } from './items.service'
+import { ItemService } from './item.service'
 import { ApiService } from '../api.service'
 
 import  { ItemComponent } from './item.component'
@@ -12,7 +12,7 @@ import  { ItemComponent } from './item.component'
     imports: [CommonModule,
               BrowserModule,
               FormsModule],
-    providers: [ApiService, ItemsService],
+    providers: [ApiService, ItemService],
     declarations: [ItemComponent],
     exports: [ItemComponent],
 })

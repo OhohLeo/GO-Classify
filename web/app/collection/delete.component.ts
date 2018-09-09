@@ -1,7 +1,7 @@
 import { Component, Input } from '@angular/core'
-import { ApiService } from '../../api.service'
-import { CollectionsService } from '../collections.service'
-import { Collection } from '../collection'
+import { ApiService } from '../api.service'
+import { CollectionsService } from '../collections/collections.service'
+import { Collection } from './collection'
 
 @Component({
     selector: 'collection-delete',

@@ -1,11 +1,12 @@
 import { Items } from '../items/items'
 import { Item } from '../items/item'
+import { BaseElement } from '../base'
 
 import { BufferItem } from '../buffer/item'
 
 export type Imports = { [ref: string]: { [name: string]: any }; };
 
-export class Collection {
+export class Collection extends BaseElement {
 
     public enableCache: boolean
     public imports: Imports
@@ -13,7 +14,9 @@ export class Collection {
     public bufferItems: BufferItem[] = []
     public websites: string[] = []
 
-    constructor(public name: string, public ref: string) {
+
+    constructor(public name: string, ref: string) {
+		super("collection", ref, name)
         this.items = new Items(this)
     }
 
@@ -76,7 +79,7 @@ export class Collection {
     toApi(): any {
         return {
             "name": this.name,
-            "ref": this.ref,
+            "ref": this.getRef(),
             // "params": {},
             // "config": {},
         }

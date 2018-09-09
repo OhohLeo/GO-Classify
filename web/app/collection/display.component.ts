@@ -1,9 +1,9 @@
 import { Component, NgZone, Input, OnInit, OnDestroy, Renderer } from '@angular/core'
-import { CollectionsService } from '../collections.service'
-import { Event } from '../../api.service'
-import { Items } from '../../items/items'
-import { Item, ItemEvent } from '../../items/item'
-import { Collection } from '../collection'
+import { CollectionsService } from '../collections/collections.service'
+import { Event } from '../api.service'
+import { Items } from '../items/items'
+import { Item, ItemEvent } from '../items/item'
+import { Collection } from './collection'
 
 enum ModeStatus {
     HOME = 0,
@@ -92,7 +92,7 @@ export class DisplayCollectionComponent implements OnInit, OnDestroy {
             this.item = undefined
         })
     }
-    
+
     initItems() {
         this.collectionsService.getItems(this.collection.name)
             .subscribe((items: Items) => {

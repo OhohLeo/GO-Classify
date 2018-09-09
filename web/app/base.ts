@@ -6,7 +6,11 @@ export class BaseElement {
 
     constructor(private typ: string, private ref: string, public name: string) { }
 
-	getKey(): string {
+	getType(): string {
+		return this.typ
+	}
+
+	getTypeRef(): string {
 		return this.typ + "/" + this.ref
 	}
 
@@ -22,7 +26,7 @@ export class BaseElement {
     }
 
     getParams(): any {
-        throw new Error("method 'getParams' should be defined!")
+        console.error("[BASE] method 'getParams' should be defined!")
     }
 
     display(): string {

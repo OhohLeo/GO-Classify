@@ -14,10 +14,10 @@ export class ParamsService {
         return new Observable(observer => {
 
             return this.apiService.putWithData(
-                type + "/" + name + "/" + param, data)
+                type + "/" + name + "/params/" + param, data)
                 .subscribe(rsp => {
                     if (rsp.status != 200) {
-                        throw new Error('Error when ' + name + '/' + param
+                        throw new Error('Error when ' + name + '/params/' + param
                             + ' ' + type + ': '
                             + rsp.status)
                     }

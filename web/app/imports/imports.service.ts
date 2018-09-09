@@ -1,8 +1,12 @@
 import { Injectable } from '@angular/core';
-import { Observable } from 'rxjs/Rx';
-import { ApiService, Event } from './../api.service';
-import { BufferService } from './../buffer/buffer.service';
 import { Response } from '@angular/http';
+
+import { Observable } from 'rxjs/Rx';
+
+import { ApiService, Event } from '../api.service';
+import { BufferService } from '../buffer/buffer.service';
+import { ReferencesService } from '../references/references.service'
+
 import { BaseElement } from '../base'
 
 @Injectable()
@@ -18,7 +22,8 @@ export class ImportsService {
     private convertToImport = {}
 
     constructor(private apiService: ApiService,
-        private bufferService: BufferService) { }
+				private bufferService: BufferService,
+				private referencesService: ReferencesService) { }
 
     // Set update import list function
     setUpdateList(updateList: any) {
@@ -171,6 +176,29 @@ export class ImportsService {
             })
     }
 
+    getUrl(i: BaseElement): string {
+		return "imports/" + i.name
+    }
+
+	getReferences(i: BaseElement) {
+        return new Observable(observer => {
+
+			let references = this.referencesService.getReferences(i)
+			if (references != null) {
+				observer.next(references)
+				return
+			}
+
+			this.apiService.get(this.getUrl(i) + "/references")
+				.subscribe((src) => {
+					let references = this.referencesService.setReferences(i, src)
+					console.log("[IMPORTS REFERENCES] OK", references)
+					observer.next(references)
+				})
+		})
+    }
+
+
     startImport(i: BaseElement) {
         return this.actionImport(true, i)
     }
@@ -179,14 +207,14 @@ export class ImportsService {
         return this.actionImport(false, i)
     }
 
-    actionImport(isStart: boolean, i: BaseElement) {
+    actionImport(start: boolean, i: BaseElement) {
 
         if (this.hasImport(i) === false) {
             console.error("No existing " + i.getRef())
             return
         }
 
-        let action = isStart ? "start" : "stop"
+        let action = start ? "start" : "stop"
         let urlParams = "?name=" + i.name
             + "&collection=" + this.apiService.getCollectionName();
 
@@ -196,7 +224,7 @@ export class ImportsService {
                     throw new Error('Error when ' + action + ' import: ' + rsp.status)
                 }
 
-                if (isStart)
+                if (start)
                     this.bufferService.disableCache();
             })
     }

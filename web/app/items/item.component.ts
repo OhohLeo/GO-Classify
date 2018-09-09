@@ -1,5 +1,5 @@
 import { Component, NgZone, Input, Output, EventEmitter, OnInit, OnDestroy } from '@angular/core'
-import { ItemsService } from './items.service'
+import { ItemService } from './item.service'
 import { Item } from './item'
 
 declare var jQuery: any
@@ -16,40 +16,39 @@ export class ItemComponent implements OnInit, OnDestroy {
 
     private action: any
 
-    constructor(private itemsService: ItemsService) {
-    }
-    
+    constructor(private itemService: ItemService) {}
+
     ngOnInit() {
-	
+
         this.action = jQuery('div#item').modal({
             complete: () => {
                 this.stop()
             }
         })
 
-	this.start()
+		this.start()
 
-	console.log(this.item)
+		console.log(this.item)
     }
-    
+
     ngOnDestroy() {}
 
     start() {
         // If has buffer items : open modal
-	this.action.modal("open")	
+		this.action.modal("open")
     }
 
     stop() {
-	this.close.emit()
+		this.close.emit()
     }
 
     onModify() {
-	console.log("Modify")
+		console.log("Modify")
     }
 
     onDelete() {
-	console.log("Delete")
-	this.itemsService.deleteItem(this.item)
-	    .subscribe(status => {})
+		console.log("Delete")
+		this.itemService.deleteItem(this.item)
+			.subscribe(status => {})
     }
 }

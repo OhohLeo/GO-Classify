@@ -1,6 +1,6 @@
 import { Component, NgZone, Input, Output, EventEmitter, OnInit, OnDestroy } from '@angular/core'
-import { Items } from '../../../items/items'
-import { Item } from '../../../items/item'
+import { Items } from '../../items/items'
+import { Item } from '../../items/item'
 import * as Vis from 'vis'
 
 @Component({
@@ -12,7 +12,7 @@ export class TimeLineCollectionComponent implements OnInit, OnDestroy {
 
     @Input() items: Items
     @Output() open: EventEmitter<Item> = new EventEmitter<Item>()
-    
+
     constructor() { }
 
     ngOnInit() {

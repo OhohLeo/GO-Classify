@@ -1,8 +1,10 @@
 import { Injectable, NgZone } from '@angular/core';
 import { Http, Response, RequestOptions, Headers } from '@angular/http';
 import { Observable } from 'rxjs/Rx';
-import { Collection, Imports } from './collections/collection';
 
+import { ReferencesService } from './references/references.service'
+
+import { Collection, Imports } from './collection/collection';
 import { Item } from './items/item'
 
 export enum WebSocketStatus {
@@ -38,7 +40,7 @@ export class ApiService {
     private references: any
 
     private onCollectionChange: (collection: Collection,
-        status: CollectionStatus) => void
+								 status: CollectionStatus) => void
 
     private zone = new NgZone({ enableLongStackTrace: false })
 
@@ -46,7 +48,8 @@ export class ApiService {
 
     public collectionSelected: Collection
 
-    constructor(private http: Http) { }
+    constructor(private http: Http,
+				private referencesService: ReferencesService) { }
 
     headers() {
         return new RequestOptions({
@@ -96,11 +99,11 @@ export class ApiService {
 
     changePath(path: string): string {
         return path.replace("collections/:name",
-            "collections/" + this.collectionSelected.name)
+							"collections/" + this.collectionSelected.name)
     }
 
     subscribeCollectionChange(cb: (collection: Collection,
-        status: CollectionStatus) => void) {
+								   status: CollectionStatus) => void) {
         this.onCollectionChange = cb
     }
 
@@ -129,64 +132,34 @@ export class ApiService {
     }
 
     getCollectionUrl(): string {
-        return this.url + "collections/" + this.getCollectionName()
+		return this.url + "collections/" + this.getCollectionName()
     }
 
-    getIconUrl(item: Item, size?: string): string {
-	return this.getItemUrl(item.id, item.getIconUrl(size))
-    }
-    
-    getItemUrl(id: string, content?: string): string {
+    getCollectionReferences() {
 
-	let url =  this.getCollectionUrl() + "/items/" + id
-	if (content == "") {
-	    return url
-	}
+		let collectionUrl = this.getCollectionUrl()
+        if (collectionUrl == undefined) {
+            return
+        }
 
-	return url + "?content=" + encodeURIComponent(content)
-    }
-    
-    // GET /stream
-    getStream() {
-        return Observable.create(observer => {
-
-            let eventSource = new EventSource(this.url + "stream")
-
-            eventSource.onmessage =
-                event => observer.next(JSON.parse(
-                    event.data))
-
-            eventSource.onerror =
-                error => {
-                    console.error("EVENT SOURCE", error)
-                }
-
-            return () => {
-		console.error("CLOSE STREAM!")
-                eventSource.close()
-            }
-        })
-    }
-
-    // Get the collections references
-    getReferences() {
-
-        // Setup cache on the references
         return new Observable(observer => {
-            if (this.references) {
-                observer.next(this.references)
-                return
-            }
 
-            let request = this.http.get(this.url + "references")
+			let references = this.referencesService.getReferences(this.collectionSelected)
+			if (references != undefined) {
+				observer.next(references)
+				return
+			}
+
+			let request = this.http.get(collectionUrl + "/references")
                 .map(this.extractData)
                 .catch(this.handleError);
 
-            request.subscribe(references => {
-                this.references = references
-                observer.next(references)
-            })
-        })
+			request.subscribe((src) => {
+				let references = this.referencesService.setReferences(this.collectionSelected, src)
+				console.log("[COLLECTION REFERENCES] OK", references)
+				observer.next(references)
+			})
+        });
     }
 
     getCollectionImport() {
@@ -225,16 +198,73 @@ export class ApiService {
         }
 
         return this.http.delete(collectionUrl + "/imports/" + name,
-            this.headers())
+								this.headers())
             .map((res: Response) => {
                 if (res.status != 204) {
                     throw new Error('Impossible to delete import collection '
-                        + name + ': ' + res.status);
+									+ name + ': ' + res.status);
                 }
             })
             .catch(this.handleError);
     }
 
+    getIconUrl(item: Item, size?: string): string {
+		return this.getItemUrl(item.id, item.getIconUrl(size))
+    }
+
+    getItemUrl(id: string, content?: string): string {
+
+		let url =  this.getCollectionUrl() + "/items/" + id
+		if (content == "") {
+			return url
+		}
+
+		return url + "?content=" + encodeURIComponent(content)
+    }
+
+    // GET /stream
+    getStream() {
+
+        return Observable.create(observer => {
+
+            let eventSource = new EventSource(this.url + "stream")
+
+            eventSource.onmessage =
+                event => observer.next(JSON.parse(
+                    event.data))
+
+            eventSource.onerror =
+                error => {
+                    console.error("EVENT SOURCE", error)
+                }
+
+            return () => {
+				console.error("CLOSE STREAM!")
+                eventSource.close()
+            }
+        })
+    }
+
+    // Get the collections references
+    getReferences() {
+
+        // Setup cache on the references
+        return new Observable(observer => {
+            if (this.references) {
+                observer.next(this.references)
+                return
+            }
+
+            let request = this.http.get(this.url + "references")
+                .map(this.extractData)
+                .catch(this.handleError);
+
+            request.subscribe(references => {
+                this.references = references
+                observer.next(references)
+            })
+        })
+    }
 
     private extractData(res: Response) {
 

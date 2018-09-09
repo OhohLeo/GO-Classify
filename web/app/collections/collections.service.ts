@@ -4,7 +4,7 @@ import { Observable } from 'rxjs/Rx'
 import { ApiService, CollectionStatus } from './../api.service'
 import { Items } from '../items/items'
 import { Item, ItemObserver, ItemEvent } from '../items/item'
-import { Collection } from './collection'
+import { Collection } from '../collection/collection'
 import { Event } from '../api.service'
 
 @Injectable()
@@ -64,7 +64,7 @@ export class CollectionsService {
                 delete this.collections[name]
 
 		console.log("DELETED!")
-		
+
                 // Warn about deleted collection
                 this.apiService.setCollection(undefined, CollectionStatus.DELETED)
             })
@@ -138,7 +138,7 @@ export class CollectionsService {
                 .subscribe((rsp: Item[]) => {
 
 		    console.log(rsp)
-		    
+
                     for (let item of rsp) {
                         collection.addItem(item)
                     }

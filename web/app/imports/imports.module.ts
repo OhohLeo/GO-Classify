@@ -1,10 +1,11 @@
-import { NgModule } from '@angular/core'
-import { CommonModule } from '@angular/common'
 import { BrowserModule } from '@angular/platform-browser'
-import { FormsModule } from '@angular/forms'
+import { CommonModule } from '@angular/common'
 import { ConfigsModule } from '../configs/configs.module'
-import { ToolsModule } from '../tools/tools.module'
+import { FormsModule } from '@angular/forms'
+import { NgModule } from '@angular/core'
 import { ParamsModule } from '../params/params.module'
+import { ReferencesModule } from '../references/references.module'
+import { ToolsModule } from '../tools/tools.module'
 
 import { ImportsService } from './imports.service'
 
@@ -18,20 +19,23 @@ import { ImapDisplayComponent } from './imap/display.component'
 
 @NgModule({
     imports: [
-        CommonModule,
         BrowserModule,
-        FormsModule,
+        CommonModule,
 		ConfigsModule,
+        FormsModule,
+        ParamsModule,
         ToolsModule,
-        ParamsModule
+		ReferencesModule
     ],
     providers: [ImportsService],
-    declarations: [ImportsComponent,
+    declarations: [
+		ImportsComponent,
         DirectoryCreateComponent,
         DirectoryDisplayComponent,
         ImapCreateComponent,
         ImapSearchComponent,
-        ImapDisplayComponent],
+        ImapDisplayComponent
+	],
     exports: [ImportsComponent]
 })
 

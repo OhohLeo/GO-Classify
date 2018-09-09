@@ -9,7 +9,13 @@ import { ConfigsComponent } from './configs.component'
 import { ConfigComponent } from './config.component'
 import { ConfigMultiComponent } from './multi.component'
 import { ConfigRefComponent } from './ref.component'
+
+import { TweaksComponent } from './tweaks/tweaks.component'
+import { TweaksDatasComponent } from './tweaks/datas.component'
+import { TweaksFieldsComponent } from './tweaks/fields.component'
+
 import { ConfigsService } from './configs.service'
+import { TweaksService } from './tweaks/tweaks.service'
 
 @NgModule({
     imports: [
@@ -19,9 +25,17 @@ import { ConfigsService } from './configs.service'
         ToolsModule,
         ParamsModule
     ],
-    declarations: [ConfigsComponent, ConfigMultiComponent, ConfigRefComponent, ConfigComponent] ,
-    providers: [ConfigsService],
-    exports: [ConfigsComponent, ConfigComponent]
+    declarations: [
+		ConfigsComponent,
+		ConfigMultiComponent,
+		ConfigRefComponent,
+		ConfigComponent,
+		TweaksComponent,
+		TweaksDatasComponent,
+		TweaksFieldsComponent
+	],
+    providers: [ConfigsService, TweaksService],
+    exports: [ConfigsComponent, ConfigComponent, TweaksComponent]
 })
 
 export class ConfigsModule { }

@@ -1,17 +1,15 @@
 import { Observable } from 'rxjs/Rx'
-import { Collection } from '../collections/collection'
 import { Ref } from './ref'
 
 export class ItemEvent {
 
-    constructor(public collection: string,
-        public status: string,
-        public item: Item) { }
+    constructor(public status: string,
+				public item: Item) { }
 }
 
 export class ItemObserver {
     public observable: Observable<ItemEvent>
-    public observer: any
+		public observer: any
 }
 
 export class Item {
@@ -27,34 +25,33 @@ export class Item {
 
     private eventObservers: { [key: string]: ItemObserver } = {}
 
-    constructor(public collection: Collection, item: any) {
+    constructor(item: any) {
 
         this.id = item["id"]
         this.data = item["data"]
         this.name = this.data["name"]
 
-	let icons = this.data["icons"]
-	if (icons !== undefined) {
-	    for (let size in icons) {  
-		this.icons[size] = icons[size]["name"]
-	    }
-	    this.hasIcon = true
+		let icons = this.data["icons"]
+		if (icons !== undefined) {
+			for (let size in icons) {
+				this.icons[size] = icons[size]["name"]
+			}
+			this.hasIcon = true
         }
     }
 
     getIconUrl(size?: string): string {
 
-	// If size does exist : take it
-        if (size == undefined
-	    || this.icons[size] == undefined) {
+		// If size does exist : take it
+        if (size == undefined || this.icons[size] == undefined) {
 
-	    // Otherwise take 1st size found
+			// Otherwise take 1st size found
             for (let size in this.icons) {
-		return size
+				return size
             }
-	}
+		}
 
-	return size
+		return size
     }
 
     setRef(ref: Ref) {
@@ -63,6 +60,11 @@ export class Item {
 
     getRef() {
         return this.ref.name
+    }
+
+    getPath() : string {
+		console.error("item " + this.getRef() + " should defined getPath()")
+		return ""
     }
 
     match(criterious: any): boolean {
@@ -96,5 +98,9 @@ export class Item {
         this.eventObservers[name].observable = observable
 
         return observable
+    }
+
+	delete() {
+		console.error("item " + this.getRef() + " should defined delete()")
     }
 }

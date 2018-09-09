@@ -1,5 +1,6 @@
-import { Collection } from '../collections/collection'
+import { Collection } from '../collection/collection'
 import { Item } from './item'
+import { CollectionItem } from './collection_item'
 import { Ref } from './ref'
 
 export class Items {
@@ -14,13 +15,13 @@ export class Items {
 
     constructor(public collection: Collection) {
     }
-    
+
     init(items: any) {
 
         this.items = {}
 
         for (let item of items) {
-            this.addItem(new Item(this.collection, item))
+            this.addItem(new CollectionItem(this.collection, item))
         }
     }
 
@@ -53,13 +54,13 @@ export class Items {
     }
 
     addItem(data: any) {
-	
-        let item = new Item(this.collection, data)
+
+        let item = new CollectionItem(this.collection, data)
 
         // Do not store already existing item
         if (this.hasItem(item))
             return
-	    
+
         // Check
         let refType = data["ref"]
         if (refType == undefined) {

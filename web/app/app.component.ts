@@ -5,7 +5,7 @@ import { ImportsService } from './imports/imports.service'
 import { BufferService } from './buffer/buffer.service'
 import { CollectionsService } from './collections/collections.service'
 
-import { Collection } from './collections/collection'
+import { Collection } from './collection/collection'
 
 import { ListCollectionsComponent } from './collections/list.component'
 import { BufferComponent } from './buffer/buffer.component'
@@ -52,23 +52,23 @@ export class AppComponent implements OnInit {
     private menuActive: boolean
     private bufferActive: boolean
     private searchActive: boolean
-    private filterActive: boolean    
-    
+    private filterActive: boolean
+
     @ViewChild(BufferItemComponent) bufferItemComponent: BufferItemComponent
     public bufferItem: BufferItem
 
     constructor(private zone: NgZone,
-        private apiService: ApiService,
-        private importsService: ImportsService,
-        private bufferService: BufferService,
-        private collectionsService: CollectionsService) { }
+				private apiService: ApiService,
+				private importsService: ImportsService,
+				private bufferService: BufferService,
+				private collectionsService: CollectionsService) { }
 
     ngOnInit() {
 
         // Import loop
         this.importsLoop = jQuery("i#imports-loop")
         this.importsRunningNb = 0;
-	
+
         // Flux inscription
         this.apiService.getStream()
             .subscribe((e: Event) => {
@@ -96,52 +96,52 @@ export class AppComponent implements OnInit {
 
         this.apiService.subscribeCollectionChange(
             (collection: Collection, status: CollectionStatus) => {
-		
-		switch (status) {
-		case CollectionStatus.CREATED:
-		case CollectionStatus.DELETED:
-		    this.collections.refresh(false)
-		    break
-		}		
-		
+
+				switch (status) {
+				case CollectionStatus.CREATED:
+				case CollectionStatus.DELETED:
+					this.collections.refresh(false)
+					break
+				}
+
                 if (status == CollectionStatus.DELETED
-		    || collection === undefined) {
-		    this.onChangeCollection()
+					|| collection === undefined) {
+					this.onChangeCollection()
                     return
                 }
 
-		this.onCollection(collection)
+				this.onCollection(collection)
             })
     }
 
     onReset() {
-    
-	// Reset display first
+
+		// Reset display first
         this.onNewState(AppStatus.NONE)
-	
-	// Disable collection menu
-	this.enableMenu(false)
-	
-	// Reset title name
-	this.setTitle("")
+
+		// Disable collection menu
+		this.enableMenu(false)
+
+		// Reset title name
+		this.setTitle("")
     }
-    
+
     onCollection(collection: Collection) {
 
-	if (collection == undefined) {
-	    console.error("onCollection() failure: no collection given")
-	    return
-	}
+		if (collection == undefined) {
+			console.error("onCollection() failure: no collection given")
+			return
+		}
 
-	this.setTitle(collection.name)
+		this.setTitle(collection.name)
         this.collection = collection
-	    
-	// Activate collection menu
-	this.enableMenu(true)
 
-	// Select collection nav
-	this.selectNav("collection")
-	
+		// Activate collection menu
+		this.enableMenu(true)
+
+		// Select collection nav
+		this.selectNav("collection")
+
         this.onNewState(AppStatus.COLLECTION)
     }
 
@@ -156,7 +156,7 @@ export class AppComponent implements OnInit {
     onConfigs() {
         this.onNewState(AppStatus.CONFIGS)
     }
-    
+
     onBufferItem(bufferItem: BufferItem) {
         this.zone.run(() => {
             this.bufferItem = bufferItem
@@ -166,113 +166,113 @@ export class AppComponent implements OnInit {
 
     onNewState(nextStatus: AppStatus) {
 
-	if (nextStatus == AppStatus.COLLECTION) {
-	    this.enableFilterAndSearch(true)
-	} else {
-	    this.enableFilterAndSearch(false)
-	}
-	
-	// Enable nav indicator
-	jQuery("li.indicator").css("height", "2px")
-	
-	this.resetCollectionState()
+		if (nextStatus == AppStatus.COLLECTION) {
+			this.enableFilterAndSearch(true)
+		} else {
+			this.enableFilterAndSearch(false)
+		}
+
+		// Enable nav indicator
+		jQuery("li.indicator").css("height", "2px")
+
+		this.resetCollectionState()
         this.status = nextStatus
     }
-    
+
     onBuffer() {
         this.buffer.start()
     }
 
     setTitle(name: string) {
 
-	if (name == "") {
-	    name = "Classify"
-	}
-	
-	this.zone.run(() => {
-	    this.title = name
-	})
+		if (name == "") {
+			name = "Classify"
+		}
+
+		this.zone.run(() => {
+			this.title = name
+		})
     }
 
     enableMenu(status: boolean) {
 
-	if (this.menuActive == status)
-	    return
-	
-	this.zone.run(() => {
-	    this.menuActive = status
-	})
+		if (this.menuActive == status)
+			return
+
+		this.zone.run(() => {
+			this.menuActive = status
+		})
     }
-    
+
     enableFilter(status: boolean) {
-	this.zone.run(() => {
+		this.zone.run(() => {
             this.filterEnabled = status
-	    if (status == false) {
-		this.onFilterClose()
-	    }
-	})
+			if (status == false) {
+				this.onFilterClose()
+			}
+		})
     }
-    
+
     onFilter() {
 
-	// Toggle filtering
-	this.changeFilterState(!this.filterActive)
+		// Toggle filtering
+		this.changeFilterState(!this.filterActive)
     }
 
     onFilterClose() {
-	this.changeFilterState(false)
+		this.changeFilterState(false)
     }
 
     changeFilterState(newState: boolean) {
-	this.zone.run(() => {
+		this.zone.run(() => {
             this.filterActive = newState
-	    this.class2toggle("li#filter", "active", newState)
-	})
+			this.class2toggle("li#filter", "active", newState)
+		})
     }
-    
+
     enableSearch(status: boolean) {
-	
-	this.zone.run(() => {
 
-	    this.searchEnabled = status
+		this.zone.run(() => {
 
-	    if (status == false) {
-		this.onSearchClose()
-	    }
+			this.searchEnabled = status
+
+			if (status == false) {
+				this.onSearchClose()
+			}
         })
     }
 
     onSearch() {
-	
-	// Toggle search
-	this.changeSearchState(!this.searchActive)
+
+		// Toggle search
+		this.changeSearchState(!this.searchActive)
     }
-    
+
     onSearchClose() {
-	this.changeSearchState(false)
+		this.changeSearchState(false)
     }
-    
+
     changeSearchState(newState: boolean) {
-	this.zone.run(() => {
+		this.zone.run(() => {
             this.searchActive = newState
-	    this.class2toggle("li#search", "active", newState)
-	})
+			this.class2toggle("li#search", "active", newState)
+		})
     }
 
     class2toggle(item: string, className: string, toggle: boolean) {
 
-	if (toggle) {
-	    jQuery(item).addClass(className)
-	} else {
-	    jQuery(item).removeClass(className)
-	}
+		if (toggle) {
+			jQuery(item).addClass(className)
+		} else {
+			jQuery(item).removeClass(className)
+		}
     }
 
     enableFilterAndSearch(status: boolean) {
-	this.enableFilter(status)
-	this.enableSearch(status)
+		this.enableFilter(status)
+		this.enableSearch(status)
     }
-    
+
     handleImport(e: Event) {
 
         console.log("IMPORT?", e)
@@ -321,7 +321,7 @@ export class AppComponent implements OnInit {
 
         // Send notifications to the imports list
         switch (destination) {
-            case "buffers":
+        case "buffers":
 
             let bufferItem = new BufferItem(e.data)
 
@@ -332,15 +332,15 @@ export class AppComponent implements OnInit {
                 this.bufferItem = bufferItem
             }
             // collection.addBufferItem(new BufferItem(e.data))
-	    
+
             break;
 
         case "items":
             collection.addItem(e.data)
             break;
 
-	default:
-	    console.error("Unhandled collection destination '" + destination + "'")
+		default:
+			console.error("Unhandled collection destination '" + destination + "'")
         }
     }
 
@@ -358,52 +358,55 @@ export class AppComponent implements OnInit {
     }
 
     selectNav(name: string) {
-	jQuery("li#"+name).children().click()
+		jQuery("li#"+name).children().click()
     }
-    
+
     disableNav() {
 
-	// Unbold nav title
-	jQuery("li.tab").children().removeClass("active")
+		// Unbold nav title
+		jQuery("li.tab").children().removeClass("active")
 
-	// Disable nav indicator
-	jQuery("li.indicator").css("height", "0px")	    
+		// Disable nav indicator
+		jQuery("li.indicator").css("height", "0px")
     }
-    
+
     // Display new collection
     onNewCollection() {
 
-	this.onReset()
-	
-	if (this.collections) {
-	    this.collections.onNewCollection()
+		this.onReset()
+
+		if (this.collections) {
+			this.collections.onNewCollection()
         }
     }
 
     // Display collections list
     onChangeCollection() {
 
-	// Get collection nb
-	let collectionNb = this.collections.nb()
+		// Get collection nb
+		let collectionNb = this.collections.nb()
 
-	// If no collection exist : create one
-	if (collectionNb == 0) {
-	    this.onReset()
-	    this.onNewCollection()
-	    return
-	}
-	
-	// If collections list exist
-	if (collectionNb > 1) {
-	    this.onReset()
-	    this.collections.onChooseCollection(undefined)
-	    return
-	}
+		console.log("onChangeCollection()", collectionNb)
 
-	// Otherwise select current collection
-	if (this.collection) {
-	    this.onCollection(this.collection)
-	}
+		// If no collection exist : create one
+		if (collectionNb == 0) {
+			this.onReset()
+			this.onNewCollection()
+			return
+		}
+
+		// If collections list exist
+		if (collectionNb > 1) {
+			console.log("collections.onChooseCollection")
+			this.onReset()
+			this.collections.onChooseCollection(undefined)
+			return
+		}
+
+		// Otherwise select current collection
+		if (this.collection) {
+			this.onCollection(this.collection)
+		}
     }
 
     // Affiche la liste des collections à sélectionner si aucune

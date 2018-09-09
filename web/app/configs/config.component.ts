@@ -1,6 +1,8 @@
 import {
-    Component, NgZone, Input, Output, EventEmitter, OnInit, OnDestroy
+    Component, NgZone, Input, Output, EventEmitter, ViewChild, OnInit, OnDestroy
 } from '@angular/core'
+import { TweaksComponent } from './tweaks/tweaks.component'
+import { BaseElement } from '../base'
 
 declare var jQuery: any
 
@@ -10,6 +12,10 @@ declare var jQuery: any
 })
 
 export class ConfigComponent implements OnInit, OnDestroy {
+
+	@ViewChild(TweaksComponent) tweaks;
+
+	public item: BaseElement
 
     private action: any
 
@@ -25,7 +31,9 @@ export class ConfigComponent implements OnInit, OnDestroy {
         this.stop()
     }
 
-    start() {
+    start(item: BaseElement) {
+		this.item = item
+		this.tweaks.start(item)
         this.action.modal("open")
     }
 

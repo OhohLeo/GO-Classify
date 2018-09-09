@@ -1,0 +1,15 @@
+<p>TWEAKS<i class="material-icons" (click)="onHelp()">live_help</i></p>
+<blockquote *ngIf="needHelp" class="left-align">
+  <p>To match <b>strings</b>, please use <b>$[parameter]</b>:</p>
+  <p><b>$*</b> to get whole remaining string</p>
+  <p><b>$10</b> to get next 10 letters</p>
+  <p><b>$"_"</b> to get all string until '_'</p>
+  <p><b>$/^([1-9]+)/</b> to match regular expression</p>
+  <p>To match <b>other formats</b>:</p>
+  <p><b>$country</b> for country name</p>
+  <p><b>$datetime</b> for date (YYYY-MM-DD hh:mm:ss & alternatives)</p>
+</blockquote>
+<div class="row">
+  <tweaks-datas class="col s6"></tweaks-datas>
+  <tweaks-datas class="col s6"></tweaks-datas>
+</div>

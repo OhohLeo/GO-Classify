@@ -1,7 +1,7 @@
 import { Component } from '@angular/core'
-import { ApiService } from '../../api.service'
-import { CollectionsService } from '../collections.service'
-import { Collection } from '../collection'
+import { ApiService } from '../api.service'
+import { CollectionsService } from '../collections/collections.service'
+import { Collection } from './collection'
 
 @Component({
     selector: 'collection-create',
@@ -15,22 +15,20 @@ export class CreateCollectionComponent {
     private websites: string[]
 
     constructor(private apiService: ApiService,
-        private collectionsService: CollectionsService) {
+				private collectionsService: CollectionsService) {
 
         apiService.getReferences()
             .subscribe(
-            references => {
-                this.websites = references["websites"]
-                this.collections = references["collections"]
-            });
+				references => {
+					this.websites = references["websites"]
+					this.collections = references["collections"]
+				});
     }
 
-    onSubmit(website: string) {
+    onSubmit() {
 
         // Check that a collection with same name doesn't already
         // exist
-
-        this.collection.websites = [website];
 
         // Create new collection
         this.collectionsService.newCollection(this.collection)
