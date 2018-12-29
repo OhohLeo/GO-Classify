@@ -11,7 +11,8 @@ export class ConfigsComponent implements OnInit {
 
     @Input() src: string
     @Input() name: string
-
+    @Input() init: boolean
+    
     @ViewChild(ConfigMultiComponent) multi;
 
     public collections: string[] = []
@@ -25,9 +26,17 @@ export class ConfigsComponent implements OnInit {
         private configsService: ConfigsService) { }
 
     ngOnInit() {
-        this.update()
+	if (this.init) {
+            this.update()
+	}
     }
 
+    forceInit(src: string, name: string) {
+	this.src = src
+	this.name = name
+	this.update()
+    }
+    
     update() {
 
         this.configsService.getConfigs(this.src, this.name)

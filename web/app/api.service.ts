@@ -162,6 +162,20 @@ export class ApiService {
         });
     }
 
+    getReferencesFromSrc(src: string, name: string) {
+
+        // Setup cache on the references
+        return new Observable(observer => {
+            let request = this.http.get(this.url + "/" + src + "/" + name + "/references")
+                .map(this.extractData)
+                .catch(this.handleError);
+
+            request.subscribe(references => {
+                observer.next(references)
+            })
+        })
+    }
+    
     getCollectionImport() {
 
         let collectionUrl = this.getCollectionUrl()
