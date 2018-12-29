@@ -6,7 +6,7 @@ import { ToolsModule } from '../tools/tools.module'
 import { ParamsModule } from '../params/params.module'
 
 import { ConfigsComponent } from './configs.component'
-import { ConfigComponent } from './config.component'
+import { ConfigModalComponent } from './modal.component'
 import { ConfigMultiComponent } from './multi.component'
 import { ConfigRefComponent } from './ref.component'
 

@@ -4,7 +4,7 @@ import {
 } from '@angular/core'
 import { NgSwitch } from '@angular/common'
 import { ApiService, Event } from './../api.service'
-import { ConfigComponent } from './../configs/config.component'
+import { ConfigModalComponent } from './../configs/modal.component'
 import { ImportsService } from './imports.service'
 import { ImportCreateComponent } from './create.component'
 import { Convert2Imap } from './imap/imap';
@@ -21,7 +21,7 @@ declare var jQuery: any;
 
 export class ImportsComponent implements OnInit, OnDestroy {
 
-	@ViewChild(ConfigComponent) config: ConfigComponent
+    @ViewChild(ConfigModalComponent) config: ConfigModalComponent
 
     public refs: Array<string> = []
     public refs2Display: Array<string> = []
@@ -151,8 +151,8 @@ export class ImportsComponent implements OnInit, OnDestroy {
     }
 
     onConfig(item: BaseElement) {
-		console.log(item)
-		this.config.start(item)
+	console.log(item)
+	this.config.start(item)
     }
 
     onDelete(item: BaseElement) {

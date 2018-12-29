@@ -18,8 +18,8 @@ type Server struct {
 	stoppable   *stoppableListener.StoppableListener
 	events      *fifo.Queue
 	eventStatus bool
-	onEvents    chan Event
-	onEvent     chan bool
+	onEvent     chan Event
+	onStop      chan bool
 }
 
 type ServerConfig struct {
@@ -54,8 +54,8 @@ func (c *Classify) CreateServer(config ServerConfig) (server *Server, err error)
 
 	// Init events channel
 	server.events = fifo.NewQueue()
-	server.onEvents = make(chan Event)
-	server.onEvent = make(chan bool)
+	server.onEvent = make(chan Event)
+	server.onStop = make(chan bool)
 
 	listener, err := net.Listen("tcp", config.Url)
 	if err != nil {
@@ -119,8 +119,6 @@ func (c *Classify) GetApi(server *Server) (*rest.Api, error) {
 		rest.Get("/imports/:name/config", c.ApiGetImportConfig),
 		rest.Patch("/imports/:name/config", c.ApiPatchImportConfig),
 		rest.Put("/imports/:name/param/:param", c.ApiPutImportParam),
-		rest.Put("/imports/:name/tweak", c.ApiPutImportTweaks),
-		rest.Get("/imports/:name/tweak", c.ApiGetImportTweaks),
 
 		// Handle exports
 		rest.Post("/exports", c.ApiAddExport),
@@ -185,7 +183,7 @@ func (s *Server) Start() {
 // ServerStop stop web server
 func (s *Server) Stop() {
 	log.Println("Stop server")
-	s.onEvent <- false
+	s.onStop <- false
 	s.stoppable.Stop()
 }
 
@@ -207,7 +205,7 @@ func (s *Server) SendEvent(eventType string, status string, name string, data in
 	if s.eventStatus == false {
 
 		// Kick event streamer to send this new event
-		s.onEvent <- true
+		s.onStop <- true
 		s.eventStatus = true
 	}
 }
@@ -236,7 +234,7 @@ func (s *Server) HandleStream(w rest.ResponseWriter, r *rest.Request) {
 		select {
 		case <-notify:
 			continue
-		case ok := <-s.onEvent:
+		case ok := <-s.onStop:
 
 			if ok == false {
 				continue
@@ -263,7 +261,7 @@ func (s *Server) HandleStream(w rest.ResponseWriter, r *rest.Request) {
 				time.Sleep(500 * time.Millisecond)
 			}
 
-			s.onEvent <- false
+			s.onStop <- false
 			s.eventStatus = false
 			continue
 		}
