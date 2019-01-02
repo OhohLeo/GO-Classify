@@ -128,7 +128,7 @@ func TestApiImport(t *testing.T) {
 			},
 			ExpectedCode: http.StatusBadRequest,
 			ExpectedBody: `{
-  "Error": "import 'imap' connection: dial tcp :0: connect: connection refused"
+  "Error": "import 'imap' connection: dial tcp :0: getsockopt: connection refused"
 }`,
 		},
 	}
@@ -187,7 +187,7 @@ func TestApiGetImport(t *testing.T) {
 		addGenericImport[0],
 		addGenericImport[1],
 		&RequestTest{
-			Name:         "Get with no import",
+			Name:         "Get with import",
 			Method:       http.MethodGet,
 			Url:          "http://localhost/imports",
 			ExpectedCode: http.StatusOK,
@@ -196,6 +196,173 @@ func TestApiGetImport(t *testing.T) {
     "directory": {
       "path": "",
       "is_recursive": false
+    }
+  }
+}`,
+		},
+	}
+
+	for _, check := range tests {
+		if GenericTest(t, api, check) == false {
+			t.Fail()
+		}
+	}
+}
+
+// GET /imports/:name/references
+func TestApiGetImportReferences(t *testing.T) {
+
+	assert := assert.New(t)
+
+	// Create API
+	api, err := new(Classify).GetApi(nil)
+	assert.Nil(err)
+
+	tests := []*RequestTest{
+		&RequestTest{
+			Name:         "Get import references with no import",
+			Method:       http.MethodGet,
+			Url:          "http://localhost/imports/directory/references",
+			ExpectedCode: http.StatusBadRequest,
+			ExpectedBody: `{
+  "Error": "import 'directory' not found"
+}`,
+		},
+		addGenericImport[0],
+		addGenericImport[1],
+		&RequestTest{
+			Name:         "Get import references with import",
+			Method:       http.MethodGet,
+			Url:          "http://localhost/imports/directory/references",
+			ExpectedCode: http.StatusOK,
+			ExpectedBody: `[
+  {
+    "name": "path",
+    "type": "string"
+  },
+  {
+    "name": "is_recursive",
+    "type": "bool"
+  }
+]`,
+		},
+	}
+
+	for _, check := range tests {
+		if GenericTest(t, api, check) == false {
+			t.Fail()
+		}
+	}
+}
+
+// [GET,PATCH] /imports/name/config?collection=COLLECTION_NAME
+func TestApiGetPatchImportConfig(t *testing.T) {
+
+	assert := assert.New(t)
+
+	// Create API
+	api, err := new(Classify).GetApi(nil)
+	assert.Nil(err)
+
+	tests := []*RequestTest{
+		&RequestTest{
+			Name:         "Patch import config with no import",
+			Method:       http.MethodPatch,
+			Url:          "http://localhost/imports/directory/config",
+			ExpectedCode: http.StatusBadRequest,
+			ExpectedBody: `{
+  "Error": "import 'directory' not found"
+}`,
+		},
+		&RequestTest{
+			Name:         "Get import config with no import",
+			Method:       http.MethodGet,
+			Url:          "http://localhost/imports/directory/config",
+			ExpectedCode: http.StatusBadRequest,
+			ExpectedBody: `{
+  "Error": "import 'directory' not found"
+}`,
+		},
+		addGenericImport[0],
+		addGenericImport[1],
+		&RequestTest{
+			Name:         "Patch import config with no collection and no body",
+			Method:       http.MethodPatch,
+			Url:          "http://localhost/imports/directory/config",
+			ExpectedCode: http.StatusBadRequest,
+			ExpectedBody: `{
+  "Error": "one (and only one) collection expected"
+}`,
+		},
+		&RequestTest{
+			Name:   "Patch import config with no collection",
+			Method: http.MethodPatch,
+			Url:    "http://localhost/imports/directory/config",
+			Payload: ImportExportConfig{
+				Tweak: &Tweak{
+					Source: map[string]Fields{
+						"directory": map[string]*Value{},
+					},
+					Destination: map[string]Fields{
+						"collection": map[string]*Value{},
+					},
+				},
+			},
+			ExpectedCode: http.StatusBadRequest,
+			ExpectedBody: `{
+  "Error": "one (and only one) collection expected"
+}`,
+		},
+		&RequestTest{
+			Name:   "Patch import config with no existing collection",
+			Method: http.MethodPatch,
+			Url:    "http://localhost/imports/directory/config?collection=error",
+			Payload: ImportExportConfig{
+				Tweak: &Tweak{
+					Source: map[string]Fields{
+						"directory": map[string]*Value{},
+					},
+					Destination: map[string]Fields{
+						"collection": map[string]*Value{},
+					},
+				},
+			},
+			ExpectedCode: http.StatusBadRequest,
+			ExpectedBody: `{
+  "Error": "collection 'error' not existing"
+}`,
+		},
+		&RequestTest{
+			Name:   "Patch import config working",
+			Method: http.MethodPatch,
+			Url:    "http://localhost/imports/directory/config?collection=collection",
+			Payload: ImportExportConfig{
+				Tweak: &Tweak{
+					Source: map[string]Fields{
+						"directory": map[string]*Value{},
+					},
+					Destination: map[string]Fields{
+						"collection": map[string]*Value{},
+					},
+				},
+			},
+			ExpectedCode: http.StatusNoContent,
+		},
+		&RequestTest{
+			Name:         "Get import config",
+			Method:       http.MethodGet,
+			Url:          "http://localhost/imports/directory/config?collection=collection",
+			ExpectedCode: http.StatusOK,
+			ExpectedBody: `{
+  "general": {
+    "enabled": true
+  },
+  "tweak": {
+    "source": {
+      "directory": {}
+    },
+    "destination": {
+      "collection": {}
     }
   }
 }`,

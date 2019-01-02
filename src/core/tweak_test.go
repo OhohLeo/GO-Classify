@@ -1,11 +1,10 @@
-package tweak
+package core
 
 import (
 	"encoding/json"
 	"fmt"
 	"testing"
 
-	"github.com/ohohleo/classify/core"
 	"github.com/ohohleo/classify/data"
 	"github.com/stretchr/testify/assert"
 )
@@ -34,7 +33,7 @@ func TestTweakJson(t *testing.T) {
 
 	assert := assert.New(t)
 
-	tweak, err := New([]byte(TWEAK_JSON))
+	tweak, err := NewTweak([]byte(TWEAK_JSON))
 	assert.Nil(err)
 
 	jsonRes, err := json.MarshalIndent(tweak, "", "  ")
@@ -65,7 +64,7 @@ func TestCheck(t *testing.T) {
   }
 }`
 
-	tweak, err := New([]byte(tweakJson))
+	tweak, err := NewTweak([]byte(tweakJson))
 	assert.Nil(err)
 
 	type check struct {
@@ -82,8 +81,8 @@ func TestCheck(t *testing.T) {
 					Path: "/path/// TODO: o/test/(2017-01-02) test",
 				},
 			},
-			Output: map[string]interface{}{
-				"item": &core.Item{
+			Destination: map[string]interface{}{
+				"item": &Item{
 					Name: "test",
 				},
 			},
@@ -94,8 +93,8 @@ func TestCheck(t *testing.T) {
 					Subject: "abcd1234",
 				},
 			},
-			Output: map[string]interface{}{
-				"item": &core.Item{
+			Destination: map[string]interface{}{
+				"item": &Item{
 					Name: "test",
 				},
 			},
@@ -127,7 +126,7 @@ func TestTweak(t *testing.T) {
 
 	assert := assert.New(t)
 
-	tweak, err := New([]byte(TWEAK_JSON))
+	tweak, err := NewTweak([]byte(TWEAK_JSON))
 	assert.Nil(err)
 
 	type check struct {

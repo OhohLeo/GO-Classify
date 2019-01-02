@@ -4,6 +4,8 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"log"
+
 	"github.com/ohohleo/classify/collections"
 	"github.com/ohohleo/classify/data"
 	"github.com/ohohleo/classify/database"
@@ -11,7 +13,6 @@ import (
 	"github.com/ohohleo/classify/imports"
 	"github.com/ohohleo/classify/reference"
 	"github.com/ohohleo/classify/websites"
-	"log"
 )
 
 type Collection struct {

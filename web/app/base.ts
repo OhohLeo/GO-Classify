@@ -2,21 +2,21 @@ import { Md5 } from 'ts-md5/dist/md5';
 
 export class BaseElement {
 
-	public isRunning: boolean
+    public isRunning: boolean
 
-    constructor(private typ: string, private ref: string, public name: string) { }
+    constructor(private src: string, private ref: string, public name: string) { }
 
-	getType(): string {
-		return this.typ
-	}
+    getType(): string {
+	return this.typ
+    }
 
-	getTypeRef(): string {
-		return this.typ + "/" + this.ref
-	}
+    getTypeRef(): string {
+	return this.typ + "/" + this.ref
+    }
 
-	getName(): string {
-		return String(Md5.hashStr(JSON.stringify(this.getParams())))
-	}
+    getName(): string {
+	return String(Md5.hashStr(JSON.stringify(this.getParams())))
+    }
 
     getRef(): string {
         if (this.ref === undefined)
