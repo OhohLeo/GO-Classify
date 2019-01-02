@@ -9,6 +9,7 @@ export type Imports = { [ref: string]: { [name: string]: any }; };
 export class Collection extends BaseElement {
 
     public enableCache: boolean
+	public modes: number = 0
     public imports: Imports
     public items: Items
     public bufferItems: BufferItem[] = []

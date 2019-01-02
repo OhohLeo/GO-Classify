@@ -15,6 +15,31 @@ export class Tweaks {
 				isInput, key, value, (src != undefined) ? src[key] : undefined))
 		})
 	}
+
+	getDatas() {
+
+		let datas = {}
+
+		this.datas.forEach((tweak, key) => {
+			datas[key] = tweak.GetFields()
+		})
+
+		return datas
+	}
+
+	getValues() {
+
+		let values = {}
+
+		this.datas.forEach((tweak, key) => {
+			let value = tweak.GetValues()
+			if (value != "") {
+				values[key] = value
+			}
+		})
+
+		return values
+	}
 }
 
 export class Tweak {
@@ -31,6 +56,45 @@ export class Tweak {
 		this.fields.sort()
 	}
 
+	GetFields() {
+
+		let fields = {}
+
+		this.fields.forEach((field, key) => {
+			fields[field.name] = {
+				"value": field.src != "" ? field.src : "",
+				"format": field.typ,
+			}
+		})
+
+		return fields
+	}
+
+	GetValues() {
+
+		let values = {}
+
+		this.fields.forEach((field, key) => {
+
+			// Ignore empty field
+			if (!field.src) {
+				return
+			}
+
+			let value
+
+			if (field.isInput) {
+				value = { "regexp": field.src }
+			} else {
+				value = { "value": field.src }
+			}
+
+			values[field.name] = value
+		})
+
+		return values
+	}
+
 	compare(tweak: Tweak): number {
 		return this.name.localeCompare(tweak.name)
 	}
@@ -40,15 +104,17 @@ export class TweakField {
 
 	public tag: string
 
-	constructor(isInput: boolean,
+	constructor(public isInput: boolean,
 				public name: string,
 				public typ: string,
-				src: any) {
+				public src: any) {
 		this.tag = this.setTag(isInput, typ)
 		console.log(name, typ, this.tag)
 	}
 
 	setTag(isInput: boolean, typ: string) : string {
+
+		this.isInput = isInput
 
 		if (isInput) {
 			return "input-text"
@@ -57,7 +123,7 @@ export class TweakField {
 		switch (typ) {
 		case "country":
 		case "datetime":
-			return "selector"
+			// return "selector"
 		default:
 			return "input-text"
 		}

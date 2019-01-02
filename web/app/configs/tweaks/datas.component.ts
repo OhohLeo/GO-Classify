@@ -11,6 +11,8 @@ import { Tweaks, Tweak } from './tweak'
 
 export class TweaksDatasComponent {
 
+	@Output() update = new EventEmitter()
+
 	public name : string
 	public refType: string
 	public tweaks: Tweaks
@@ -20,7 +22,9 @@ export class TweaksDatasComponent {
 
 	start(tweaks: Tweaks) {
 
+		this.datas = []
 		this.tweaks = tweaks
+
 		tweaks.datas.forEach((value) => {
 			this.datas.push(value)
 		});
@@ -36,4 +40,9 @@ export class TweaksDatasComponent {
 	compare(a: Tweak, b: Tweak) {
 		return a.compare(b)
 	}
+
+	onUpdate() {
+		this.update.emit()
+	}
+
 }

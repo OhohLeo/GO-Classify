@@ -6,10 +6,10 @@ import { Item, ItemEvent } from '../items/item'
 import { Collection } from './collection'
 
 enum ModeStatus {
-    HOME = 0,
-    LIST,
-    WORLD,
-    HISTORY,
+    HOME    = 0,
+    LIST    = 1 << 0,
+    WORLD   = 1 << 1,
+    HISTORY = 1 << 2,
 }
 
 @Component({
@@ -22,7 +22,7 @@ export class DisplayCollectionComponent implements OnInit, OnDestroy {
     @Input() collection: Collection
 
     public modeStatus = ModeStatus
-    private modes: string[] = ["star", "list", "language", "history"]
+    private modes: string[]= ["star", "list", "language", "history"]
     private currentMode: ModeStatus
     private items: Items
     private item: Item

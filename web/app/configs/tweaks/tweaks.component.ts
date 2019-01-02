@@ -20,6 +20,9 @@ import { BaseElement } from '../../base'
 export class TweaksComponent implements OnInit {
 
 	public needHelp: boolean
+	public canValidate: boolean
+
+	private item: BaseElement
 
 	@ViewChildren(TweaksDatasComponent) datas: QueryList<TweaksDatasComponent>;
 
@@ -30,6 +33,7 @@ export class TweaksComponent implements OnInit {
     ngOnInit() {}
 
 	start(item: BaseElement) {
+		this.item = item
 
 		Observable.combineLatest(
 			this.tweakService.getTweak(item.getType(), item.getName()),
@@ -77,5 +81,28 @@ export class TweaksComponent implements OnInit {
 		this.zone.run(() => {
 			this.needHelp = !this.needHelp
 		})
+	}
+
+	onUpdate() {
+		this.zone.run(() => {
+			this.canValidate = true
+		})
+	}
+
+	onValidate() {
+
+		let input = this.datas.first
+		let output = this.datas.last
+
+		let values = {
+			"input": input.tweaks.getValues(),
+			"output": output.tweaks.getValues()
+		}
+
+		console.log("[TWEAK] VALIDATE", values)
+		this.tweakService.setTweak(this.item.getType(), this.item.getName(), values)
+			.subscribe((rsp) => {
+				console.log("[TWEAK SET]", rsp)
+			})
 	}
 }

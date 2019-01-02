@@ -1,18 +1,15 @@
 <p>{{tweak.name}}</p>
 <div class="row" *ngFor="let field of tweak.fields">
   <div [ngSwitch]="field.tag">
-	<!-- <div *ngSwitchCase="'input-text'" class="input-field">
-		 <input class="col s6" id="name" type="text">
-		 <label for="name">{{field.name}} ({{field.typ}})</label>
-		 </div>  *ngSwitchCase="'selector'" -->
-  </div>
-  <div class="input-field">
-	<select>
-	  <option value="" disabled selected>Choose your option</option>
-	  <option value="1">Option 1</option>
-	  <option value="2">Option 2</option>
-	  <option value="3">Option 3</option>
-    </select>
-    <label>{{field.name}} ({{field.typ}})</label>
+	<div *ngSwitchCase="'input-text'" class="input-field">
+	  <input id="name" type="text" [(ngModel)]="field.src" (ngModelChange)="onChange($event)">
+	  <label for="name">{{field.name}} ({{field.typ}})</label>
+	</div>
+	<div *ngSwitchCase="'selector'" class="input-field">
+	  <select>
+		<option value="" disabled selected>Choose your option</option>
+      </select>
+      <label>{{field.name}} ({{field.typ}})</label>
+	</div>
   </div>
 </div>

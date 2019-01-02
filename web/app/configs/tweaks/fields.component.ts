@@ -1,5 +1,5 @@
 import {
-    Component, NgZone, Input, Output, EventEmitter, OnInit
+    Component, NgZone, Input, Output, EventEmitter, AfterViewInit
 } from '@angular/core'
 import { NgSwitch } from '@angular/common'
 
@@ -12,15 +12,20 @@ declare var jQuery: any;
     templateUrl: './fields.component.html',
 })
 
-export class TweaksFieldsComponent implements OnInit {
+export class TweaksFieldsComponent implements AfterViewInit {
+
 	@Input() tweak: Tweak
+	@Output() update = new EventEmitter()
 
-    ngOnInit() {
+	public inputValue: string = ""
 
-		// Init selectors
-		let selectors = jQuery('select')
-		selectors.each((idx) => {
-			selectors[idx].material_select();
-		})
+    ngAfterViewInit() {
+
+		// Init selector
+		// jQuery('select').material_select()
+	}
+
+	onChange(event) {
+		this.update.emit()
 	}
 }
