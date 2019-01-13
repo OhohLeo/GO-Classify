@@ -118,7 +118,7 @@ func (c *Classify) GetApi(server *Server) (*rest.Api, error) {
 		rest.Get("/imports/:name/references", c.ApiGetImportReferences),
 		rest.Get("/imports/:name/config", c.ApiGetImportConfig),
 		rest.Patch("/imports/:name/config", c.ApiPatchImportConfig),
-		rest.Put("/imports/:name/param/:param", c.ApiPutImportParam),
+		rest.Put("/imports/:name/param/:param", c.ApiPutImportParams),
 
 		// Handle exports
 		rest.Post("/exports", c.ApiAddExport),

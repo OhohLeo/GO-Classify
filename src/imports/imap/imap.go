@@ -134,15 +134,15 @@ func (i *Imap) GetRef() imports.Ref {
 	return imports.IMAP
 }
 
-func (i *Imap) CheckConfig(config json.RawMessage) error {
-	return nil
-}
-
-func (i *Imap) GetDataList() []data.Data {
+func (i *Imap) GetDatasRefs() []data.Data {
 	return []data.Data{
 		new(data.Email),
 		new(data.Attachment),
 	}
+}
+
+func (i *Imap) CheckConfig(config json.RawMessage) error {
+	return nil
 }
 
 func (i *Imap) GetParam(string, json.RawMessage) (result interface{}, err error) {

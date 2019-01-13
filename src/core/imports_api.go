@@ -7,7 +7,6 @@ import (
 
 	"github.com/ant0ine/go-json-rest/rest"
 	"github.com/ohohleo/classify/imports"
-	"github.com/ohohleo/classify/reference"
 )
 
 // getImportByName get from Url parameters import
@@ -206,13 +205,11 @@ func (c *Classify) ApiGetImportReferences(w rest.ResponseWriter, r *rest.Request
 		return
 	}
 
-	w.WriteJson(References{
-		Datas: i.GetDatasReference(),
-	})
+	w.WriteJson(i.GetRefs())
 }
 
 // List all config imports
-// GET /imports/:name/config
+// GET /imports/:name/config{?references}
 func (c *Classify) ApiGetImportConfig(w rest.ResponseWriter, r *rest.Request) {
 
 	i := c.getImportByName(w, r)
@@ -229,6 +226,10 @@ func (c *Classify) ApiGetImportConfig(w rest.ResponseWriter, r *rest.Request) {
 	if err != nil {
 		rest.Error(w, err.Error(), http.StatusBadRequest)
 		return
+	}
+
+	if _, ok := r.URL.Query()["references"]; ok {
+		config.GetRefs()
 	}
 
 	w.WriteJson(config)
@@ -248,14 +249,14 @@ func (c *Classify) ApiPatchImportConfig(w rest.ResponseWriter, r *rest.Request) 
 		return
 	}
 
-	var newConfig ImportExportConfig
-	err := r.DecodeJsonPayload(&newConfig)
+	var newConfigs Configs
+	err := r.DecodeJsonPayload(&newConfigs)
 	if err != nil {
 		rest.Error(w, "invalid json body", http.StatusBadRequest)
 		return
 	}
 
-	if err := i.SetConfig(collection.Name, &newConfig); err != nil {
+	if err := i.SetConfig(collection.Name, &newConfigs); err != nil {
 		rest.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
@@ -267,19 +268,11 @@ func (c *Classify) ApiPatchImportConfig(w rest.ResponseWriter, r *rest.Request) 
 // PUT /imports/:name/params/:param
 func (c *Classify) ApiPutImportParams(w rest.ResponseWriter, r *rest.Request) {
 
-	//param := r.PathParam("param")
 	name := r.PathParam("name")
 
 	i, err := c.GetImportByName(name)
 	if err == nil {
 		name = i.engine.GetRef().String()
-	}
-
-	if ok == false {
-		rest.Error(w,
-			fmt.Sprintf("unexpected type '%s' not handled", name),
-			http.StatusInternalServerError)
-		return
 	}
 
 	var body json.RawMessage
@@ -288,12 +281,12 @@ func (c *Classify) ApiPutImportParams(w rest.ResponseWriter, r *rest.Request) {
 		return
 	}
 
-	res, err := newImport.GetParam(r.PathParam("param"), body)
-	if err != nil {
-		rest.Error(w, err.Error(), http.StatusBadRequest)
-		return
-	}
+	// res, err := i.GetParam(r.PathParam("param"), body)
+	// if err != nil {
+	// 	rest.Error(w, err.Error(), http.StatusBadRequest)
+	// 	return
+	// }
 
-	w.WriteJson(res)
+	// w.WriteJson(res)
 	return
 }

@@ -21,6 +21,16 @@ type Directory struct {
 	needToStop  bool
 }
 
+func (r *Directory) GetRef() imports.Ref {
+	return imports.DIRECTORY
+}
+
+func (r *Directory) GetDatasRefs() []data.Data {
+	return []data.Data{
+		new(data.File),
+	}
+}
+
 func ToBuild() imports.Build {
 
 	return imports.Build{
@@ -75,10 +85,6 @@ func GetParam(name string, data json.RawMessage) (result interface{}, err error)
 	return
 }
 
-func (r *Directory) GetRef() imports.Ref {
-	return imports.DIRECTORY
-}
-
 func (r *Directory) CheckConfig(config json.RawMessage) error {
 
 	// // Check we have an existing directory
@@ -128,12 +134,6 @@ func (r *Directory) CheckConfig(config json.RawMessage) error {
 
 	// return errors.New("invalid or unauthorised import path '" + r.Path + "'")
 	return nil
-}
-
-func (r *Directory) GetDataList() []data.Data {
-	return []data.Data{
-		new(data.File),
-	}
 }
 
 // Return a channel of files in the directory

@@ -11,6 +11,7 @@ import (
 	"github.com/ohohleo/classify/imports"
 	"github.com/ohohleo/classify/imports/directory"
 	"github.com/ohohleo/classify/imports/imap"
+	"github.com/ohohleo/classify/reference"
 )
 
 // Type of imports
@@ -25,22 +26,26 @@ type Import struct {
 
 	engine imports.Import
 
-	collectionImports map[string]*CollectionImport
+	configs map[string]*Configs
 }
 
-func (i *Import) GetDatas() map[string]interface{} {
+func (i *Import) GetRefs() []*reference.Ref {
+	return reference.GetRefs(i.engine)
+}
 
-	res := make(map[string]interface{})
+func (i *Import) GetDatasRefs() map[string][]*reference.Ref {
 
-	for _, data := range i.engine.GetDataList() {
-		res[data.GetRef().String()] = data
+	res := make(map[string][]*reference.Ref)
+
+	for _, data := range i.engine.GetDatasRefs() {
+		res[data.GetRef().String()] = reference.GetRefs(data)
 	}
 
 	return res
 }
 
 func (i *Import) HasCollection(collectionName string) (ok bool) {
-	_, ok = i.collectionImports[collectionName]
+	_, ok = i.configs[collectionName]
 	return
 }
 
@@ -62,30 +67,32 @@ func (i *Import) HasCollections(collections map[string]*Collection) bool {
 	return true
 }
 
-func (i *Import) GetConfig(collectionName string) (config *ImportExportConfig, err error) {
+func (i *Import) GetConfig(collectionName string) (configs *Configs, err error) {
 
-	if collection, ok := i.collectionImports[collectionName]; ok {
-		config = collection.Config
-	} else {
+	var ok bool
+	if configs, ok = i.configs[collectionName]; !ok {
 		err = fmt.Errorf("no config found for collection '%s'", collectionName)
 	}
 	return
 }
 
-func (i *Import) SetConfig(collectionName string, newConfig *ImportExportConfig) (err error) {
+func (i *Import) SetConfig(collectionName string, newConfigs *Configs) (err error) {
 
-	var actualConfig *ImportExportConfig
-	actualConfig, err = i.GetConfig(collectionName)
+	var actualConfigs *Configs
+	actualConfigs, err = i.GetConfig(collectionName)
 	if err != nil {
 		return
 	}
 
-	// TODO : handle enable/disable import
-	if actualConfig.General.Enabled != newConfig.General.Enabled {
-	}
+	if newConfigs.Generic != nil {
 
-	if newConfig.Tweak != nil {
-		actualConfig.SetTweak(newConfig.Tweak)
+		// TODO : handle enable/disable import
+		if actualConfigs.Generic.General.Enabled != newConfigs.Generic.General.Enabled {
+		}
+
+		if newConfigs.Generic.Tweak != nil {
+			actualConfigs.Generic.SetTweak(newConfigs.Generic.Tweak)
+		}
 	}
 
 	return
@@ -115,12 +122,12 @@ func (i *Import) Store2DB(db *database.Database) error {
 	}
 
 	// Store the imports
-	for _, collectionImport := range i.collectionImports {
+	for _, config := range i.configs {
 
 		_, err := db.Insert("imports_mappings",
 			map[string]interface{}{
 				"imports_id":     lastId,
-				"collections_id": collectionImport.Collection.Id,
+				"collections_id": config.Collection.Id,
 			})
 		if err != nil {
 			return err
@@ -282,7 +289,7 @@ func (c *Classify) AddImport(name string, ref imports.Ref, inParams json.RawMess
 	}
 
 	// Set collection list to the import
-	i.collectionImports = make(map[string]*CollectionImport)
+	i.configs = make(map[string]*Configs)
 
 	// Add import to the collection
 	for _, collection := range collections {
@@ -290,7 +297,7 @@ func (c *Classify) AddImport(name string, ref imports.Ref, inParams json.RawMess
 		// Ignore already existing import error
 		collection.AddImport(name, i.engine)
 
-		i.collectionImports[collection.Name] = NewCollectionImport(collection)
+		i.configs[collection.Name] = NewConfigs(collection, nil)
 	}
 
 	return
@@ -327,11 +334,11 @@ func (c *Classify) DeleteImports(importList map[string]*Import, collections map[
 			collection.DeleteImport(importName)
 
 			// in the import collection list
-			delete(i.collectionImports, collectionName)
+			delete(i.configs, collectionName)
 		}
 
 		// If no collection are linked with specified import
-		if len(i.collectionImports) < 1 {
+		if len(i.configs) < 1 {
 
 			if err = i.Delete2DB(c.database); err != nil {
 				return
@@ -415,9 +422,9 @@ func (c *Classify) StartImports(imports map[string]*Import, collections map[stri
 				if input, ok := <-channel; ok {
 
 					// For each collections linked with the importation
-					for _, collectionImport := range i.collectionImports {
+					for _, config := range i.configs {
 
-						collection := collectionImport.Collection
+						collection := config.Collection
 
 						id := data.GetId(input)
 						if _, err := collection.OnInput(Id(id), input); err != nil {

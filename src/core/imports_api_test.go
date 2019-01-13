@@ -298,7 +298,7 @@ func TestApiGetPatchImportConfig(t *testing.T) {
 			Name:   "Patch import config with no collection",
 			Method: http.MethodPatch,
 			Url:    "http://localhost/imports/directory/config",
-			Payload: ImportExportConfig{
+			Payload: GenericConfig{
 				Tweak: &Tweak{
 					Source: map[string]Fields{
 						"directory": map[string]*Value{},
@@ -317,7 +317,7 @@ func TestApiGetPatchImportConfig(t *testing.T) {
 			Name:   "Patch import config with no existing collection",
 			Method: http.MethodPatch,
 			Url:    "http://localhost/imports/directory/config?collection=error",
-			Payload: ImportExportConfig{
+			Payload: GenericConfig{
 				Tweak: &Tweak{
 					Source: map[string]Fields{
 						"directory": map[string]*Value{},
@@ -336,7 +336,7 @@ func TestApiGetPatchImportConfig(t *testing.T) {
 			Name:   "Patch import config working",
 			Method: http.MethodPatch,
 			Url:    "http://localhost/imports/directory/config?collection=collection",
-			Payload: ImportExportConfig{
+			Payload: GenericConfig{
 				Tweak: &Tweak{
 					Source: map[string]Fields{
 						"directory": map[string]*Value{},
@@ -354,16 +354,46 @@ func TestApiGetPatchImportConfig(t *testing.T) {
 			Url:          "http://localhost/imports/directory/config?collection=collection",
 			ExpectedCode: http.StatusOK,
 			ExpectedBody: `{
-  "general": {
-    "enabled": true
-  },
-  "tweak": {
-    "source": {
-      "directory": {}
+  "generic": {
+    "general": {
+      "enabled": true
     },
-    "destination": {
-      "collection": {}
-    }
+    "tweak": null
+  },
+  "specific": null,
+  "references": null
+}`,
+		},
+		&RequestTest{
+			Name:         "Get import config",
+			Method:       http.MethodGet,
+			Url:          "http://localhost/imports/directory/config?collection=collection&references",
+			ExpectedCode: http.StatusOK,
+			ExpectedBody: `{
+  "generic": {
+    "general": {
+      "enabled": true
+    },
+    "tweak": null
+  },
+  "specific": null,
+  "references": {
+    "generic": [
+      {
+        "name": "general",
+        "type": "struct",
+        "childs": [
+          {
+            "name": "enabled",
+            "type": "bool"
+          }
+        ]
+      },
+      {
+        "name": "tweak",
+        "type": "ptr"
+      }
+    ]
   }
 }`,
 		},
