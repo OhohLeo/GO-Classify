@@ -33,7 +33,7 @@ func (i *Import) GetRefs() []*reference.Ref {
 	return reference.GetRefs(i.engine)
 }
 
-func (i *Import) GetDatasRefs() map[string][]*reference.Ref {
+func (i *Import) GetDatasRef() map[string][]*reference.Ref {
 
 	res := make(map[string][]*reference.Ref)
 
@@ -78,8 +78,8 @@ func (i *Import) GetConfig(collectionName string) (configs *Configs, err error) 
 
 func (i *Import) SetConfig(collectionName string, newConfigs *Configs) (err error) {
 
-	var actualConfigs *Configs
-	actualConfigs, err = i.GetConfig(collectionName)
+	var configs *Configs
+	configs, err = i.GetConfig(collectionName)
 	if err != nil {
 		return
 	}
@@ -87,11 +87,12 @@ func (i *Import) SetConfig(collectionName string, newConfigs *Configs) (err erro
 	if newConfigs.Generic != nil {
 
 		// TODO : handle enable/disable import
-		if actualConfigs.Generic.General.Enabled != newConfigs.Generic.General.Enabled {
+		if configs.Generic.General.Enabled != newConfigs.Generic.General.Enabled {
+			configs.Generic.General.Enabled = newConfigs.Generic.General.Enabled
 		}
 
 		if newConfigs.Generic.Tweak != nil {
-			actualConfigs.Generic.SetTweak(newConfigs.Generic.Tweak)
+			configs.Generic.SetTweak(newConfigs.Generic.Tweak)
 		}
 	}
 

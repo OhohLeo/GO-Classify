@@ -209,7 +209,7 @@ func (c *Classify) ApiGetImportReferences(w rest.ResponseWriter, r *rest.Request
 }
 
 // List all config imports
-// GET /imports/:name/config{?references}
+// GET /imports/:name/config?collection=COLLECTION_NAME{&references}
 func (c *Classify) ApiGetImportConfig(w rest.ResponseWriter, r *rest.Request) {
 
 	i := c.getImportByName(w, r)
@@ -228,15 +228,22 @@ func (c *Classify) ApiGetImportConfig(w rest.ResponseWriter, r *rest.Request) {
 		return
 	}
 
+	// Do we need to display references?
 	if _, ok := r.URL.Query()["references"]; ok {
 		config.GetRefs()
+	} else if config.References != nil {
+		// Otherwise d not display References
+		config = &Configs{
+			Generic:  config.Generic,
+			Specific: config.Specific,
+		}
 	}
 
 	w.WriteJson(config)
 }
 
 // Set config imports
-// PATCH /imports/:name/config
+// PATCH /imports/:name/config?collection=COLLECTION_NAME
 func (c *Classify) ApiPatchImportConfig(w rest.ResponseWriter, r *rest.Request) {
 
 	i := c.getImportByName(w, r)

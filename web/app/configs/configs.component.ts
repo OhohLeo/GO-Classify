@@ -1,6 +1,9 @@
 import { Component, Input, OnInit, ViewChild, NgZone, Renderer } from '@angular/core'
-import { ConfigsService, ConfigBase, ConfigRef } from './configs.service'
+import { ConfigsService } from './configs.service'
 import { ConfigMultiComponent } from './multi.component'
+import { ConfigRef } from './config_ref'
+import { ConfigBase } from './config_base'
+import { BaseElement } from '../base'
 
 @Component({
     selector: 'configs',
@@ -10,20 +13,21 @@ import { ConfigMultiComponent } from './multi.component'
 export class ConfigsComponent implements OnInit {
 
     @Input() src: string
-    @Input() name: string
+    @Input() item: BaseElement
     @Input() init: boolean
+       
     
     @ViewChild(ConfigMultiComponent) multi;
 
-    public collections: string[] = []
+    public mainConfigNames: string[] = []
 
     public refMulti: ConfigRef
 
     public validate: boolean = false
 
     constructor(private zone: NgZone,
-        private render: Renderer,
-        private configsService: ConfigsService) { }
+		private render: Renderer,
+		private configsService: ConfigsService) { }
 
     ngOnInit() {
 	if (this.init) {
@@ -31,15 +35,15 @@ export class ConfigsComponent implements OnInit {
 	}
     }
 
-    forceInit(src: string, name: string) {
+    forceInit(src: string, item: BaseElement) {
 	this.src = src
-	this.name = name
+	this.item = item
 	this.update()
     }
     
     update() {
 
-        this.configsService.getConfigs(this.src, this.name)
+        this.configsService.getConfig(this.src, this.item.name)
             .subscribe((cfg: ConfigBase) => {
 
                 let refs = cfg.getRefs();
@@ -59,7 +63,7 @@ export class ConfigsComponent implements OnInit {
                 }
 
                 this.zone.run(() => {
-                    this.collections = refsMainList
+                    this.mainConfigNames = refsMainList
                     this.validate = false
                 })
             })
@@ -77,7 +81,7 @@ export class ConfigsComponent implements OnInit {
 
         this.render.setElementClass(event.target, "active", true)
 
-        this.configsService.getConfigs(this.src, this.name)
+        this.configsService.getConfig(this.src, this.item.name)
             .subscribe((cfg: ConfigBase) => {
 
                 let ref = cfg.getRef(refSelected)
@@ -99,9 +103,7 @@ export class ConfigsComponent implements OnInit {
 
         event.preventDefault()
 
-        console.log(this.src, this.name)
-
-        this.configsService.setConfig(this.src, this.name)
+        this.configsService.setConfig(this.src, this.item.name)
             .subscribe((res) => {
                 this.zone.run(() => {
                     this.validate = false

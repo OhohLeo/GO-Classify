@@ -1,5 +1,6 @@
 import { Component, Input, Output, EventEmitter, OnInit, NgZone } from '@angular/core'
-import { ConfigsService, ConfigRef } from './configs.service'
+import { ConfigsService } from './configs.service'
+import { ConfigRef } from './config_ref'
 import { CfgStringList } from '../tools/stringlist.component'
 
 @Component({

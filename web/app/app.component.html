@@ -61,7 +61,7 @@
 	</div>
         <div *ngSwitchCase="appStatus.CONFIGS">
 	  <configs [src]="'collections'"
-		   [name]="collection.name"
+		   [item]="collection"
 		   [init]=true></configs>
 	</div>
 	<div *ngSwitchCase="appStatus.BUFFER_ITEM">

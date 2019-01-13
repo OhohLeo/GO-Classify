@@ -1,22 +1,21 @@
 <div class="col s3">
-	<div class="collection">
-	  <a *ngFor="let name of collections"
-		 class="collection-item" (click)="onMulti($event, name)">{{name}}</a>
-	</div>
+  <div class="collection">
+    <a *ngFor="let name of mainConfigNames"
+       class="collection-item" (click)="onMulti($event, name)">{{name}}</a>
+  </div>
 </div>
 <div class="col s9">
-	<form #createForm="ngForm">
-		<config-multi (update)="onChange($event)">
-		</config-multi>
-		<div class="row">
-			<button *ngIf="validate"
-					(click)="onSubmit($event)"
-					type="submit"
-					[disabled]="!createForm.form.valid"
-				    class="btn waves-effect waves-light">
-				Validate
-				<i class="material-icons right">send</i>
-			</button>
-		</div>
-	</form>
+  <form #createForm="ngForm">
+    <config-multi [item]="item" (update)="onChange($event)"></config-multi>
+    <div class="row">
+      <button *ngIf="validate"
+	      (click)="onSubmit($event)"
+	      type="submit"
+	      [disabled]="!createForm.form.valid"
+	      class="btn waves-effect waves-light">
+	Validate
+	<i class="material-icons right">send</i>
+      </button>
+    </div>
+  </form>
 </div>

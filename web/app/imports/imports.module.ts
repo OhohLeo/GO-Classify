@@ -21,21 +21,21 @@ import { ImapDisplayComponent } from './imap/display.component'
     imports: [
         BrowserModule,
         CommonModule,
-		ConfigsModule,
+	ConfigsModule,
         FormsModule,
         ParamsModule,
         ToolsModule,
-		ReferencesModule
+	ReferencesModule
     ],
     providers: [ImportsService],
     declarations: [
-		ImportsComponent,
+	ImportsComponent,
         DirectoryCreateComponent,
         DirectoryDisplayComponent,
         ImapCreateComponent,
         ImapSearchComponent,
         ImapDisplayComponent
-	],
+    ],
     exports: [ImportsComponent]
 })
 

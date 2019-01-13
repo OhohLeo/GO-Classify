@@ -11,44 +11,44 @@ import { BaseElement } from '../../base'
 export class TweaksService {
 
     constructor(private apiService: ApiService,
-				private importsService: ImportsService) { }
+		private importsService: ImportsService) { }
 
-	// Returns inputs & outputs references depending on item type.
-	// If type is "imports" :
-	//  - inputs are import items
-	//  - outputs are collection items
-	// If type is "exports" :
-	//  - inputs are collection items
-	//  - outputs are export items
-	getReferences(item: BaseElement) {
+    // Returns inputs & outputs references depending on item type.
+    // If type is "imports" :
+    //  - inputs are import items
+    //  - outputs are collection items
+    // If type is "exports" :
+    //  - inputs are collection items
+    //  - outputs are export items
+    getReferences(item: BaseElement) {
 
         return new Observable(observer => {
 
-			switch (item.getType()) {
+	    switch (item.getType()) {
 
-			case "imports":
-				Observable.combineLatest(
-					this.importsService.getReferences(item),
-					this.apiService.getCollectionReferences()
-				).subscribe(([inputs, outputs]) => {
-					observer.next([inputs, outputs])
-				})
-				break
-
-			case "exports":
-				Observable.combineLatest(
-					this.apiService.getCollectionReferences()
-					//this.exportsService.getReferences(item),
-				).subscribe(([inputs, outputs]) => {
-					observer.next([inputs, outputs])
-				})
-				break
-
-			default:
-				console.error("Tweak item not possible on '" + item.getType() + "'")
-			}
+	    case "imports":
+		Observable.combineLatest(
+		    this.importsService.getReferences(item),
+		    this.apiService.getCollectionReferences()
+		).subscribe(([inputs, outputs]) => {
+		    observer.next([inputs, outputs])
 		})
-	}
+		break
+
+	    case "exports":
+		Observable.combineLatest(
+		    this.apiService.getCollectionReferences()
+		    //this.exportsService.getReferences(item),
+		).subscribe(([inputs, outputs]) => {
+		    observer.next([inputs, outputs])
+		})
+		break
+
+	    default:
+		console.error("Tweak item not possible on '" + item.getType() + "'")
+	    }
+	})
+    }
 
     getTweak(type: string, name: string) {
 
@@ -56,7 +56,7 @@ export class TweaksService {
 
             return this.apiService.get(
                 type + "/" + name + "/tweaks?collection="+
-					this.apiService.getCollectionName())
+		    this.apiService.getCollectionName())
                 .subscribe(rsp => {
                     observer.next(rsp)
                 })
@@ -69,7 +69,7 @@ export class TweaksService {
 
             return this.apiService.putWithData(
                 type + "/" + name + "/tweaks?collection="+
-					this.apiService.getCollectionName(), data)
+		    this.apiService.getCollectionName(), data)
                 .subscribe(rsp => {
                     observer.next(rsp)
                 })

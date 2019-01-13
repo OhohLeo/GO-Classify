@@ -1,5 +1,10 @@
-import { Component, Output, EventEmitter, OnInit, NgZone, Renderer } from '@angular/core'
-import { ConfigRef } from './configs.service'
+import {
+    Component, Input, Output, EventEmitter, OnInit, NgZone,
+    Renderer, ViewChildren, QueryList
+} from '@angular/core'
+import { ConfigRef } from './config_ref'
+import { TweaksComponent } from './tweaks/tweaks.component'
+import { BaseElement } from '../base'
 
 @Component({
     selector: 'config-multi',
@@ -8,6 +13,7 @@ import { ConfigRef } from './configs.service'
 
 export class ConfigMultiComponent implements OnInit {
 
+    @Input() item : BaseElement
     @Output() update = new EventEmitter<ConfigRef[]>()
 
     public tabs: string[] = []
@@ -17,8 +23,11 @@ export class ConfigMultiComponent implements OnInit {
     public refsByStruct: { [name: string]: ConfigRef[] } = {}
     public refs: ConfigRef[] = []
 
+    @ViewChildren(TweaksComponent) tweaks: QueryList<TweaksComponent>;
+    public hasTweaks: boolean = false;
+
     constructor(private zone: NgZone,
-        private render: Renderer) { }
+		private render: Renderer) { }
 
     ngOnInit() { }
 
@@ -29,22 +38,22 @@ export class ConfigMultiComponent implements OnInit {
         let childs: ConfigRef[] = []
 
         switch (ref.type) {
-            case "map":
-                for (let idx in ref.childs) {
-                    let refElement = ref.childs[idx]
-                    tabs.push(refElement.name)
-                    if (refElement.type === "key") {
-                        this.refsByTab[refElement.name] = refElement.childs
-                    } else {
-                        childs.push(refElement)
-                    }
+        case "map":
+            for (let idx in ref.childs) {
+                let refElement = ref.childs[idx]
+                tabs.push(refElement.name)
+                if (refElement.type === "key") {
+                    this.refsByTab[refElement.name] = refElement.childs
+                } else {
+                    childs.push(refElement)
                 }
-                break;
-            case "struct":
-                childs = ref.childs
-                break;
-        }
-
+            }
+            break;
+        case "struct":
+            childs = ref.childs
+            break;
+	}
+    
         this.zone.run(() => {
             this.tabs = tabs
         })
@@ -60,12 +69,16 @@ export class ConfigMultiComponent implements OnInit {
         for (let idx in childs) {
             let refChild = childs[idx]
             switch (refChild.type) {
-                case "struct":
-                    structs.push(refChild.name)
-                    this.refsByStruct[refChild.name] = refChild.childs
-                    break
-                default:
-                    refs.push(refChild)
+            case "struct":
+                structs.push(refChild.name)
+                this.refsByStruct[refChild.name] = refChild.childs
+                break
+	    case "ptr":
+		this.hasTweaks = true
+		console.log("PTR", refChild.name)
+		break
+            default:
+                refs.push(refChild)
             }
         }
 

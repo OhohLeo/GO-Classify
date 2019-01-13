@@ -26,16 +26,16 @@ import { TweaksService } from './tweaks/tweaks.service'
         ParamsModule
     ],
     declarations: [
-		ConfigsComponent,
-		ConfigMultiComponent,
-		ConfigRefComponent,
-		ConfigComponent,
-		TweaksComponent,
-		TweaksDatasComponent,
-		TweaksFieldsComponent
-	],
+	ConfigsComponent,
+	ConfigMultiComponent,
+	ConfigRefComponent,
+	ConfigModalComponent,
+	TweaksComponent,
+	TweaksDatasComponent,
+	TweaksFieldsComponent
+    ],
     providers: [ConfigsService, TweaksService],
-    exports: [ConfigsComponent, ConfigComponent, TweaksComponent]
+    exports: [ConfigsComponent, ConfigModalComponent, TweaksComponent]
 })
 
 export class ConfigsModule { }

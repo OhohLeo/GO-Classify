@@ -8,24 +8,21 @@
 	</ul>
     </div>
 </div>
-<div *ngFor="let name of structs"
-     class="card horizontal col s6">
+<div *ngFor="let name of structs" class="card horizontal col s6">
     <div>
         <span class="card-title">{{name}}</span>
 	<div>
 	    <div *ngFor="let ref of refsByStruct[name]">
 		<config-ref [ref]="ref"
-			    (update)="onChange($event)">
-		</config-ref>
+			    (update)="onChange($event)"></config-ref>
 	    </div>
 	</div>
     </div>
 </div>
-<div *ngIf="refs.length > 0"
-     class="col s12">
+<div *ngIf="refs.length > 0" class="col s12">
     <div *ngFor="let ref of refs">
 	<config-ref [ref]="ref"
-		    (update)="onChange($event)">
-	</config-ref>
+		    (update)="onChange($event)"></config-ref>
     </div>
 </div>
+<tweaks *ngIf="hasTweaks" [item]="item"></tweaks>

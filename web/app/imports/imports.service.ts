@@ -22,8 +22,8 @@ export class ImportsService {
     private convertToImport = {}
 
     constructor(private apiService: ApiService,
-				private bufferService: BufferService,
-				private referencesService: ReferencesService) { }
+		private bufferService: BufferService,
+		private referencesService: ReferencesService) { }
 
     // Set update import list function
     setUpdateList(updateList: any) {
@@ -89,11 +89,11 @@ export class ImportsService {
             return
         }
 
-		let name = i.getName()
-		if (this.hasSameImportName(name)) {
-			console.error("Already existing name " + name)
+	let name = i.getName()
+	if (this.hasSameImportName(name)) {
+	    console.error("Already existing name " + name)
             return
-		}
+	}
 
         return this.apiService.post(
             "imports", {
@@ -177,25 +177,25 @@ export class ImportsService {
     }
 
     getUrl(i: BaseElement): string {
-		return "imports/" + i.name
+	return "imports/" + i.name
     }
 
-	getReferences(i: BaseElement) {
+    getReferences(item: BaseElement) {
         return new Observable(observer => {
 
-			let references = this.referencesService.getReferences(i)
-			if (references != null) {
-				observer.next(references)
-				return
-			}
+	    let references = this.referencesService.getReferences(item)
+	    if (references != null) {
+		observer.next(references)
+		return
+	    }
 
-			this.apiService.get(this.getUrl(i) + "/references")
-				.subscribe((src) => {
-					let references = this.referencesService.setReferences(i, src)
-					console.log("[IMPORTS REFERENCES] OK", references)
-					observer.next(references)
-				})
+	    this.apiService.get(this.getUrl(item) + "/references")
+		.subscribe((src) => {
+		    let references = this.referencesService.setReferences(item, src)
+		    console.log("[IMPORTS REFERENCES] OK", item, references)
+		    observer.next(references)
 		})
+	})
     }
 
 

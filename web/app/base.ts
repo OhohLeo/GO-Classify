@@ -4,7 +4,7 @@ export class BaseElement {
 
     public isRunning: boolean
 
-    constructor(private src: string, private ref: string, public name: string) { }
+    constructor(private typ: string, private ref: string, public name: string) { }
 
     getType(): string {
 	return this.typ

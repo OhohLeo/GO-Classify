@@ -7,8 +7,8 @@ import (
 type Configs struct {
 	Collection *Collection                 `json:"-"`
 	Generic    *GenericConfig              `json:"generic"`
-	Specific   interface{}                 `json:"specific"`
-	References map[string][]*reference.Ref `json:"references"`
+	Specific   interface{}                 `json:"specific,omitempty"`
+	References map[string][]*reference.Ref `json:"references,omitempty"`
 }
 
 func NewConfigs(collection *Collection, specialConfig interface{}) *Configs {
