@@ -235,16 +235,16 @@ func TestApiGetImportReferences(t *testing.T) {
 			Method:       http.MethodGet,
 			Url:          "http://localhost/imports/directory/references",
 			ExpectedCode: http.StatusOK,
-			ExpectedBody: `[
-  {
-    "name": "path",
-    "type": "string"
-  },
-  {
-    "name": "is_recursive",
-    "type": "bool"
+			ExpectedBody: `{
+  "datas": {
+    "file": {
+      "contentType": "string",
+      "extension": "string",
+      "name": "string",
+      "path": "string"
+    }
   }
-]`,
+}`,
 		},
 	}
 
@@ -359,9 +359,7 @@ func TestApiGetPatchImportConfig(t *testing.T) {
       "enabled": true
     },
     "tweak": null
-  },
-  "specific": null,
-  "references": null
+  }
 }`,
 		},
 		&RequestTest{
@@ -376,7 +374,6 @@ func TestApiGetPatchImportConfig(t *testing.T) {
     },
     "tweak": null
   },
-  "specific": null,
   "references": {
     "generic": [
       {

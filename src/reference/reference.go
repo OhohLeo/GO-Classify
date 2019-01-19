@@ -24,7 +24,7 @@ type GetRefOptions struct {
 }
 
 type Reference struct {
-	Refs []*Ref      `json:"refs"`
+	Refs []*Ref      `json:"references"`
 	Data interface{} `json:"data"`
 }
 

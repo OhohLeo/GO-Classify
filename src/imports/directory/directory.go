@@ -25,7 +25,7 @@ func (r *Directory) GetRef() imports.Ref {
 	return imports.DIRECTORY
 }
 
-func (r *Directory) GetDatasRefs() []data.Data {
+func (r *Directory) GetDatasReferences() []data.Data {
 	return []data.Data{
 		new(data.File),
 	}

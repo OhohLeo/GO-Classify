@@ -134,7 +134,7 @@ func (i *Imap) GetRef() imports.Ref {
 	return imports.IMAP
 }
 
-func (i *Imap) GetDatasRefs() []data.Data {
+func (i *Imap) GetDatasReferences() []data.Data {
 	return []data.Data{
 		new(data.Email),
 		new(data.Attachment),

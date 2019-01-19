@@ -146,7 +146,7 @@ func (c *Classify) ApiDeleteCollectionByName(w rest.ResponseWriter, r *rest.Requ
 }
 
 // ApiGetCollectionConfig display actual configuration parameter
-// GET /collections/:name/config
+// GET /collections/:name/config[?references]
 func (c *Classify) ApiGetCollectionConfig(w rest.ResponseWriter, r *rest.Request) {
 
 	// Check the collection exist
@@ -164,7 +164,7 @@ func (c *Classify) ApiGetCollectionConfig(w rest.ResponseWriter, r *rest.Request
 	// From the url query list
 	values := r.URL.Query()
 
-	_, ok := values["refs"]
+	_, ok := values["references"]
 	w.WriteJson(collection.config.Get(ok))
 }
 
@@ -366,7 +366,6 @@ func (c *Classify) ApiStopCollection(w rest.ResponseWriter, r *rest.Request) {
 
 func (c *Classify) ApiGetCollectionReferences(w rest.ResponseWriter, r *rest.Request) {
 
-	// Récupération de l'collectionation
 	collection := c.getCollectionByName(w, r)
 	if collection == nil {
 		return

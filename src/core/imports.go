@@ -33,11 +33,21 @@ func (i *Import) GetRefs() []*reference.Ref {
 	return reference.GetRefs(i.engine)
 }
 
-func (i *Import) GetDatasRef() map[string][]*reference.Ref {
+func (i *Import) GetDatasReferences() map[string]map[string]string {
+	references := make(map[string]map[string]string)
+
+	for _, data := range i.engine.GetDatasReferences() {
+		references[data.GetRef().String()] = reference.GetFieldTypes(data)
+	}
+
+	return references
+}
+
+func (i *Import) GetConfigDatasReferences() map[string][]*reference.Ref {
 
 	res := make(map[string][]*reference.Ref)
 
-	for _, data := range i.engine.GetDatasRefs() {
+	for _, data := range i.engine.GetDatasReferences() {
 		res[data.GetRef().String()] = reference.GetRefs(data)
 	}
 

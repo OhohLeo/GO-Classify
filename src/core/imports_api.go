@@ -205,7 +205,9 @@ func (c *Classify) ApiGetImportReferences(w rest.ResponseWriter, r *rest.Request
 		return
 	}
 
-	w.WriteJson(i.GetRefs())
+	w.WriteJson(References{
+		Datas: i.GetDatasReferences(),
+	})
 }
 
 // List all config imports
