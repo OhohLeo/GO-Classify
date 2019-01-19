@@ -5,17 +5,6 @@
   </div>
 </div>
 <div class="col s9">
-  <form #createForm="ngForm">
-    <config-multi [item]="item" (update)="onChange($event)"></config-multi>
-    <div class="row">
-      <button *ngIf="validate"
-	      (click)="onSubmit($event)"
-	      type="submit"
-	      [disabled]="!createForm.form.valid"
-	      class="btn waves-effect waves-light">
-	Validate
-	<i class="material-icons right">send</i>
-      </button>
-    </div>
-  </form>
+    <config-multi [item]="item" (update)="change($event)"></config-multi>
 </div>
+ 

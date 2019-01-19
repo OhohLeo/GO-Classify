@@ -7,6 +7,11 @@ export class Tweaks {
 
     constructor(public isInput: boolean, public name: string, reference: Reference, src: any) {
 
+	if (reference == undefined) {
+	    console.error("[Tweaks] no reference found for " + name)
+	    return
+	}
+	
 	this.refType = reference.name
 
 	reference.datas.forEach((value, key) => {

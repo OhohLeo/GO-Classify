@@ -2,7 +2,8 @@ import { Injectable } from '@angular/core'
 import { Response } from '@angular/http'
 import { Observable } from 'rxjs/Rx'
 import { ConfigBase } from './config_base'
-import { ApiService, Event } from './../api.service'
+import { ApiService, Event } from '../api.service'
+import { BaseElement } from '../base'
 
 @Injectable()
 export class ConfigsService {
@@ -11,14 +12,16 @@ export class ConfigsService {
 
     constructor(private apiService: ApiService) { }
 
-    public getConfig(src: string, name: string) {
+    public getConfig(src: string, item: BaseElement) {
 
 	let collectionName = this.apiService.getCollectionName()
 	if (collectionName == undefined) {
 	    console.error("no collection name found")
 	    return undefined
 	}
-		
+
+	let name = item.name
+	
         return new Observable(observer => {
 
             let needReferences: boolean = true
@@ -37,45 +40,62 @@ export class ConfigsService {
                 }
             }
 
+	    let url = src + "/" + name + "/config"
+	    let queries = []
+	    
+	    if (needReferences) {
+		queries.push("references")
+	    }
+	    
+	    if (["imports", "exports"].includes(item.getType())) {
+		queries.push("collection=" + collectionName) 
+	    }
+
+	    if (queries.length > 0) {
+		url += "?" + queries.join("&")
+	    }
+	    
             // Ask for the current configuration
-            this.apiService.get(src + "/" + name + "/config"
-		+ "?collection=" + collectionName
-		+ (needReferences ? "&references" : ""))
+	    this.apiService.get(url)
                 .subscribe((res: any) => {
 
                     // No config
                     if (res == undefined) {
-                        console.error("No configuration found for "
-                            + src + "/" + name)
+                        console.error("no configuration found for " + src + "/" + name)
                         return
                     }
 
                     let cfg: ConfigBase
 
-                    // Refs are expected
+                    // References are expected
                     if (needReferences) {
 
+			console.log(res)
 			let references = res["references"]
                         if (references == undefined) {
-                            console.error("No refs received at " + src + "/" + name)
+                            console.error("no references received at " + src + "/" + name)
                             return
                         }
 
-			let generic = res["generic"]
-			if (generic == undefined) {
-                            console.error("No generic data received at " + src + "/" + name)
-                            return
-                        }
-			
                         cfg = new ConfigBase()
-                        cfg.setRefs([
-			    { "name": "generic", "type": "struct", "childs": references["generic"] },
-			    { "name": "specific", "type": "struct", "childs": references["specific"] },
-			])
-                        cfg.setData({
-			    "generic": res["generic"],
-                            "specific": res["specific"],
-			})
+
+			let forceRefs = []
+			let generic = references["generic"]
+			if (generic) {
+			    forceRefs.push({"name":"generic","type":"struct","childs":generic})
+			}
+			let specific = references["specific"]
+			if (specific) {
+			    forceRefs.push({"name":"specific","type":"struct","childs":specific})
+			}
+
+			if (forceRefs.length > 0) {
+                            cfg.setRefs(forceRefs)          
+                        } else {
+			    cfg.setRefs(references)
+			}
+			
+                        cfg.setData(res["data"])
 
                         if (this.configs[src] == undefined) {
                             this.configs[src] = {}
@@ -84,7 +104,7 @@ export class ConfigsService {
                         this.configs[src][name] = cfg
 
                     }
-                    // Needs to update data
+                    // Otherwise needs to update data
                     else {
                         cfg = currentCfg[name]
                         cfg.setData(res)

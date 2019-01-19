@@ -9,7 +9,7 @@ export class ConfigBase {
     private onChange: { [name: string]: (newData: any) => void } = {}
 
     setRefs(refs: any): boolean {
-
+	
         if (Array.isArray(refs) == false) {
             console.error("Expected config refs array, received", refs)
             return false
@@ -67,8 +67,12 @@ export class ConfigBase {
 
     setData(data: any): boolean {
 
+	if (data == undefined) {
+	    return false
+	}
+	
         if (typeof data != "object") {
-            console.error("Expected config object, received", data)
+            console.error("expected config object, received", data)
             return false
         }
 
@@ -80,7 +84,7 @@ export class ConfigBase {
 	    
             let ref = this.refsByName[key]
             if (ref === undefined) {
-                console.error("Config value '" + key + "' not found")
+                console.error("config value '" + key + "' not found", this.refsByName)
                 continue
             }
 

@@ -1,6 +1,6 @@
 import {
     Component, Input, Output, EventEmitter, OnInit, NgZone,
-    Renderer, ViewChildren, QueryList
+    Renderer, ViewChild
 } from '@angular/core'
 import { ConfigRef } from './config_ref'
 import { TweaksComponent } from './tweaks/tweaks.component'
@@ -23,8 +23,8 @@ export class ConfigMultiComponent implements OnInit {
     public refsByStruct: { [name: string]: ConfigRef[] } = {}
     public refs: ConfigRef[] = []
 
-    @ViewChildren(TweaksComponent) tweaks: QueryList<TweaksComponent>;
-    public hasTweaks: boolean = false;
+    @ViewChild(TweaksComponent) tweaks
+    public hasTweaks: boolean = false
 
     constructor(private zone: NgZone,
 		private render: Renderer) { }

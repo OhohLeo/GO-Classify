@@ -11,38 +11,34 @@ import { Tweaks, Tweak } from './tweak'
 
 export class TweaksDatasComponent {
 
-	@Output() update = new EventEmitter()
+    @Input() tweaks: Tweaks
+    @Output() update = new EventEmitter()
 
-	public name : string
-	public refType: string
-	public tweaks: Tweaks
-	public datas: Tweak[] = []
+    public name : string
+    public refType: string
+    public datas: Tweak[] = []
 
-	constructor(private zone: NgZone) { }
+    constructor(private zone: NgZone) { }
 
-	start(tweaks: Tweaks) {
+    ngOnInit() { 	
+	let datas = []
+	this.tweaks.datas.forEach((value) => {
+	    datas.push(value)
+	});
+	datas.sort(this.compare);
 
-		this.datas = []
-		this.tweaks = tweaks
+	console.log("[TWEAKS DATA]", this.tweaks)
+	this.name = this.tweaks.name
+	this.refType = this.tweaks.refType
+	this.datas = datas
+    }
 
-		tweaks.datas.forEach((value) => {
-			this.datas.push(value)
-		});
+    compare(a: Tweak, b: Tweak) {
+	return a.compare(b)
+    }
 
-		console.log("[TWEAKS DATA]", tweaks)
-		this.zone.run(() => {
-			this.name = tweaks.name
-			this.refType = tweaks.refType
-			this.datas.sort(this.compare);
-		})
-	}
-
-	compare(a: Tweak, b: Tweak) {
-		return a.compare(b)
-	}
-
-	onUpdate() {
-		this.update.emit()
-	}
+    onUpdate() {
+	this.update.emit()
+    }
 
 }

@@ -1,4 +1,5 @@
-import { Component, Input, OnInit, ViewChild, NgZone, Renderer } from '@angular/core'
+import { Component, Input, Output, EventEmitter, OnInit, ViewChild,
+	 NgZone, Renderer } from '@angular/core'
 import { ConfigsService } from './configs.service'
 import { ConfigMultiComponent } from './multi.component'
 import { ConfigRef } from './config_ref'
@@ -15,16 +16,13 @@ export class ConfigsComponent implements OnInit {
     @Input() src: string
     @Input() item: BaseElement
     @Input() init: boolean
-       
+    @Output() onUpdate = new EventEmitter()
+    @Output() onChange = new EventEmitter()
     
     @ViewChild(ConfigMultiComponent) multi;
 
     public mainConfigNames: string[] = []
-
     public refMulti: ConfigRef
-
-    public validate: boolean = false
-
     constructor(private zone: NgZone,
 		private render: Renderer,
 		private configsService: ConfigsService) { }
@@ -43,7 +41,7 @@ export class ConfigsComponent implements OnInit {
     
     update() {
 
-        this.configsService.getConfig(this.src, this.item.name)
+        this.configsService.getConfig(this.src, this.item)
             .subscribe((cfg: ConfigBase) => {
 
                 let refs = cfg.getRefs();
@@ -64,7 +62,7 @@ export class ConfigsComponent implements OnInit {
 
                 this.zone.run(() => {
                     this.mainConfigNames = refsMainList
-                    this.validate = false
+                    this.onUpdate.emit()
                 })
             })
     }
@@ -81,33 +79,19 @@ export class ConfigsComponent implements OnInit {
 
         this.render.setElementClass(event.target, "active", true)
 
-        this.configsService.getConfig(this.src, this.item.name)
+        this.configsService.getConfig(this.src, this.item)
             .subscribe((cfg: ConfigBase) => {
 
                 let ref = cfg.getRef(refSelected)
 
                 this.zone.run(() => {
                     this.multi.onUpdate(ref)
-                    this.validate = false
+                    this.onUpdate.emit()
                 })
             })
     }
 
-    onChange(event) {
-        this.zone.run(() => {
-            this.validate = true
-        })
-    }
-
-    onSubmit(event) {
-
-        event.preventDefault()
-
-        this.configsService.setConfig(this.src, this.item.name)
-            .subscribe((res) => {
-                this.zone.run(() => {
-                    this.validate = false
-                })
-            })
+    change(event) {
+        this.onChange.emit()
     }
 }

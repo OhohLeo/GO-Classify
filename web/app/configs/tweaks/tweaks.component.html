@@ -11,10 +11,12 @@
       <p><b>$datetime</b> for date (YYYY-MM-DD hh:mm:ss & alternatives)</p>
     </blockquote> -->
 <div class="row">
-  <tweaks-datas class="col s6"
-		(update)="onUpdate($event)"></tweaks-datas>
-  <tweaks-datas class="col s6"
-		(update)="onUpdate($event)"></tweaks-datas>
+  <tweaks-datas *ngIf="input"
+		class="col s6"
+		[tweaks]="input" (update)="onUpdate($event)"></tweaks-datas>
+  <tweaks-datas *ngIf="output"
+		class="col s6"
+		[tweaks]="output" (update)="onUpdate($event)"></tweaks-datas>
 </div>
 <button *ngIf="canValidate"
 	class="btn waves-effect waves-light"

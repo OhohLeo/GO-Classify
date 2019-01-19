@@ -1,13 +1,11 @@
 import {
-    Component, NgZone, Input, Output, EventEmitter, OnInit, ViewChildren, QueryList
+    Component, NgZone, Input, Output, EventEmitter, OnInit
 } from '@angular/core'
 
 import { Observable } from 'rxjs/Rx';
 
 import { TweaksService } from './tweaks.service'
 import { ApiService, Event } from '../../api.service'
-
-import { TweaksDatasComponent } from './datas.component'
 
 import { Tweaks } from './tweak'
 import { BaseElement } from '../../base'
@@ -23,9 +21,9 @@ export class TweaksComponent implements OnInit {
 
     public needHelp: boolean
     public canValidate: boolean
-
-    @ViewChildren(TweaksDatasComponent) datas: QueryList<TweaksDatasComponent>;
-
+    public input : Tweaks
+    public output : Tweaks
+    
     constructor(private zone: NgZone,
 		private apiService: ApiService,
 		private tweakService: TweaksService) {}
@@ -37,13 +35,15 @@ export class TweaksComponent implements OnInit {
     start(tweak) {
 	let item = this.item
 	this.tweakService.getReferences(item).subscribe((references) => {
-
+	    
 	    if (tweak == undefined) {
-		console.error("[Tweaks] tweak response is invalid")
+		console.error("[TWEAKS] tweak response is invalid")
+		return
 	    }
 
 	    if (references == undefined) {
-		console.error("[Tweaks] references response is invalid")
+		console.error("[TWEAKS] references response is invalid")
+		return
 	    }
 
 	    console.log("[TWEAK] INPUT", tweak["input"], references[0])
@@ -67,10 +67,8 @@ export class TweaksComponent implements OnInit {
 	    }
 
 	    this.zone.run(() => {
-		this.datas.first.start(
-		    new Tweaks(true, input, references[0], tweak["input"]))
-		this.datas.last.start(
-		    new Tweaks(false, output, references[1], tweak["output"]))
+		this.input = new Tweaks(true, input, references[0], tweak["input"])
+		this.output = new Tweaks(false, output, references[1], tweak["output"])
 	    })
 	})
     }
@@ -88,13 +86,9 @@ export class TweaksComponent implements OnInit {
     }
 
     onValidate() {
-
-	let input = this.datas.first
-	let output = this.datas.last
-
 	let values = {
-	    "input": input.tweaks.getValues(),
-	    "output": output.tweaks.getValues()
+	    "input": this.input.getValues(),
+	    "output": this.output.getValues()
 	}
 
 	console.log("[TWEAK] VALIDATE", values)
