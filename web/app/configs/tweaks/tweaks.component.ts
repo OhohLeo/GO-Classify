@@ -8,6 +8,7 @@ import { TweaksService } from './tweaks.service'
 import { ApiService, Event } from '../../api.service'
 
 import { Tweaks } from './tweak'
+import { ConfigRef } from '../config_ref'
 import { BaseElement } from '../../base'
 
 @Component({
@@ -18,9 +19,10 @@ import { BaseElement } from '../../base'
 export class TweaksComponent implements OnInit {
 
     @Input() item : BaseElement
+    @Input() ref: ConfigRef
+    @Output() update = new EventEmitter()
 
     public needHelp: boolean
-    public canValidate: boolean
     public input : Tweaks
     public output : Tweaks
     
@@ -46,8 +48,8 @@ export class TweaksComponent implements OnInit {
 		return
 	    }
 
-	    console.log("[TWEAK] INPUT", tweak["input"], references[0])
-	    console.log("[TWEAK] OUTPUT", tweak["output"], references[1])
+	    // console.log("[TWEAK] INPUT", tweak["input"], references[0])
+	    // console.log("[TWEAK] OUTPUT", tweak["output"], references[1])
 
 	    let input: string
 	    let output: string
@@ -80,21 +82,10 @@ export class TweaksComponent implements OnInit {
     }
 
     onUpdate() {
-	this.zone.run(() => {
-	    this.canValidate = true
-	})
-    }
-
-    onValidate() {
-	let values = {
+	this.ref.data = {
 	    "input": this.input.getValues(),
 	    "output": this.output.getValues()
 	}
-
-	console.log("[TWEAK] VALIDATE", values)
-	this.tweakService.setTweak(this.item.getType(), this.item.getName(), values)
-	    .subscribe((rsp) => {
-		console.log("[TWEAK SET]", rsp)
-	    })
+	this.update.emit(this.ref)
     }
 }

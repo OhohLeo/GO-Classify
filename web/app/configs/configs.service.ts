@@ -25,11 +25,11 @@ export class ConfigsService {
         return new Observable(observer => {
 
             let needReferences: boolean = true
-            let currentCfg = this.configs[src]
+            let currentConfig = this.configs[src]
 
-            if (currentCfg != undefined) {
+            if (currentConfig != undefined) {
 
-                let cfg = currentCfg[name]
+                let cfg = currentConfig[name]
                 if (cfg != undefined) {
                     needReferences = (cfg.getRefs().length < 1)
 
@@ -65,58 +65,79 @@ export class ConfigsService {
                         return
                     }
 
-                    let cfg: ConfigBase
-
-                    // References are expected
-                    if (needReferences) {
-
-			console.log(res)
-			let references = res["references"]
-                        if (references == undefined) {
-                            console.error("no references received at " + src + "/" + name)
-                            return
-                        }
-
-                        cfg = new ConfigBase()
-
-			let forceRefs = []
-			let generic = references["generic"]
-			if (generic) {
-			    forceRefs.push({"name":"generic","type":"struct","childs":generic})
-			}
-			let specific = references["specific"]
-			if (specific) {
-			    forceRefs.push({"name":"specific","type":"struct","childs":specific})
-			}
-
-			if (forceRefs.length > 0) {
-                            cfg.setRefs(forceRefs)          
-                        } else {
-			    cfg.setRefs(references)
-			}
-			
-                        cfg.setData(res["data"])
-
-                        if (this.configs[src] == undefined) {
-                            this.configs[src] = {}
-                        }
-
-                        this.configs[src][name] = cfg
-
-                    }
-                    // Otherwise needs to update data
-                    else {
-                        cfg = currentCfg[name]
-                        cfg.setData(res)
-                    }
-
-                    cfg.enableCache()
-
-                    observer.next(cfg)
+		    let config = this.handleConfig(
+			src, name, res, currentConfig, needReferences)
+		    if (config == undefined) {
+			return
+		    }
+		    
+                    observer.next(config)
                 })
         })
     }
 
+    public handleConfig(src: string, name: string,
+			res: any, currentConfig: any,
+			needReferences: boolean): ConfigBase {
+	
+	let config: ConfigBase
+
+        // References are expected
+        if (needReferences) {
+
+	    console.log(res)
+	    let references = res["references"]
+            if (references == undefined) {
+                console.error("no references received at " + src + "/" + name)
+                return
+            }
+
+            config = new ConfigBase()
+
+	    let forceRefs = []
+
+	    let generic = references["generic"]
+	    if (generic) {
+		forceRefs.push({"name":"generic","type":"struct","childs":generic})
+	    }
+	    
+	    let specific = references["specific"]
+	    if (specific) {
+		forceRefs.push({"name":"specific","type":"struct","childs":specific})
+	    }
+
+	    if (references["tweak"]) {
+		forceRefs.push({"name":"tweak","type":"struct","childs":[
+		    {"name":"tweak","type":"ptr"},
+		]})
+	    }
+
+	    if (forceRefs.length > 0) {
+                config.setRefs(forceRefs)          
+            } else {
+		config.setRefs(references)
+	    }
+	    
+            config.setData(res["data"])
+
+            if (this.configs[src] == undefined) {
+                this.configs[src] = {}
+            }
+
+            this.configs[src][name] = config
+
+        }
+        // Otherwise needs to update data
+        else {
+            config = currentConfig[name]
+            config.setData(res)
+        }
+
+        config.enableCache()
+	
+	return config
+    }
+    
     public setConfig(src: string, name: string) {
 
 	let collectionName = this.apiService.getCollectionName()
@@ -125,23 +146,20 @@ export class ConfigsService {
 	    return undefined
 	}
 
-	let currentCfg = this.configs[src]
-        if (currentCfg == undefined || currentCfg[name] == undefined) {
+	let currentConfig = this.configs[src]
+        if (currentConfig == undefined || currentConfig[name] == undefined) {
             console.error("No configuration found for " + src + "/" + name)
             return
         }
 
-        let cfg = currentCfg[name]
+        let config = currentConfig[name]
 
         return new Observable(observer => {
-
-            cfg.disableCache();
-            console.log(cfg.getData())
+            config.disableCache();
+            console.log("[SET CONFIG]", config.getData())
             this.apiService.patch(src + "/" + name + "/config?collection=" + collectionName,
-				  cfg.getData())
+				  config.getData())
                 .subscribe((status) => {
-                    console.log(status)
-
                     observer.next(status)
                 })
         })

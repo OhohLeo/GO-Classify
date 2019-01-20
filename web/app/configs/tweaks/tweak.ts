@@ -15,7 +15,6 @@ export class Tweaks {
 	this.refType = reference.name
 
 	reference.datas.forEach((value, key) => {
-	    console.log(value, key)
 	    this.datas.set(key, new Tweak(
 		isInput, key, value, (src != undefined) ? src[key] : undefined))
 	})
@@ -114,7 +113,6 @@ export class TweakField {
 		public typ: string,
 		public src: any) {
 	this.tag = this.setTag(isInput, typ)
-	console.log(name, typ, this.tag)
     }
 
     setTag(isInput: boolean, typ: string) : string {

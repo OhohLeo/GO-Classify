@@ -1,28 +1,36 @@
 <div *ngIf="tabs.length > 0" class="card">
-    <div class="card-tabs">
-	<ul class="tabs tabs-fixed-width">
-	    <li class="tab">
-		<a *ngFor="let name of tabs"
-		   (click)="onRef($event, name)">{{name}}</a>
-	    </li>
-	</ul>
-    </div>
+  <div class="card-tabs">
+    <ul class="tabs tabs-fixed-width">
+      <li class="tab">
+	<a *ngFor="let name of tabs"
+	   (click)="onRef($event, name)">{{name}}</a>
+      </li>
+    </ul>
+  </div>
 </div>
-<div *ngFor="let name of structs" class="card horizontal col s6">
+<div *ngFor="let name of structs" class="card horizontal row">
+  <div class="col s12">
+    <span class="card-title">{{name}}</span>
     <div>
-        <span class="card-title">{{name}}</span>
-	<div>
-	    <div *ngFor="let ref of refsByStruct[name]">
-		<config-ref [ref]="ref"
-			    (update)="onChange($event)"></config-ref>
-	    </div>
-	</div>
-    </div>
-</div>
-<div *ngIf="refs.length > 0" class="col s12">
-    <div *ngFor="let ref of refs">
+      <div *ngFor="let ref of refsByStruct[name]">
 	<config-ref [ref]="ref"
 		    (update)="onChange($event)"></config-ref>
+      </div>
     </div>
+  </div>
 </div>
-<tweaks *ngIf="hasTweaks" [item]="item"></tweaks>
+<div *ngIf="refs.length > 0" class="col s12">
+  <div *ngFor="let ref of refs">
+    <config-ref [ref]="ref"
+		(update)="onChange($event)"></config-ref>
+  </div>
+</div>
+<div class="row">
+  <div class="card horizontal">
+    <tweaks *ngIf="tweaksRef"
+	    class="col s12"
+	    [item]="item"
+	    [ref]="tweaksRef"
+	    (update)="onChange($event)"></tweaks>
+  </div>
+</div>

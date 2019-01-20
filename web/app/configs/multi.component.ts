@@ -24,17 +24,19 @@ export class ConfigMultiComponent implements OnInit {
     public refs: ConfigRef[] = []
 
     @ViewChild(TweaksComponent) tweaks
-    public hasTweaks: boolean = false
+    public tweaksRef: ConfigRef = null
 
     constructor(private zone: NgZone,
 		private render: Renderer) { }
 
-    ngOnInit() { }
+    ngOnInit() {}
 
     onUpdate(ref: ConfigRef) {
 
+	// Reset tweaks in all cases
+	this.tweaksRef = null
+	
         let tabs: string[] = []
-
         let childs: ConfigRef[] = []
 
         switch (ref.type) {
@@ -50,6 +52,8 @@ export class ConfigMultiComponent implements OnInit {
             }
             break;
         case "struct":
+	    // fallthrough
+	case "ptr":
             childs = ref.childs
             break;
 	}
@@ -70,17 +74,22 @@ export class ConfigMultiComponent implements OnInit {
             let refChild = childs[idx]
             switch (refChild.type) {
             case "struct":
-                structs.push(refChild.name)
+		structs.push(refChild.name)
                 this.refsByStruct[refChild.name] = refChild.childs
-                break
+		// fallthrough
 	    case "ptr":
-		this.hasTweaks = true
-		console.log("PTR", refChild.name)
+		switch (refChild.name) {
+		case "tweak":
+		    this.tweaksRef = refChild
+		    break
+		}
 		break
             default:
                 refs.push(refChild)
             }
         }
+
+	console.log("Update REFS!!", refs)
 
         this.zone.run(() => {
             this.structs = structs
@@ -89,6 +98,7 @@ export class ConfigMultiComponent implements OnInit {
     }
 
     onChange(ref) {
+	console.log("[MULTI] UPDATE", this.refs)
         this.update.emit(this.refs)
     }
 

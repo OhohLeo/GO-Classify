@@ -86,8 +86,8 @@ export class ConfigRef {
 
         for (let ref of this.childs) {
 
-            console.log(ref.type, ref.name)
-
+            // console.log(ref.type, ref.name)
+	    
             switch (ref.type) {
                 case "stringlist":
                     if (ref.data instanceof CfgStringList) {
@@ -108,7 +108,7 @@ export class ConfigRef {
                     data[ref.name] = ref.data
             }
         }
-        console.log(data)
+        // console.log(data)
         return data
     }
 

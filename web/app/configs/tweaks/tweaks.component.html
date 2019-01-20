@@ -1,4 +1,13 @@
-<p>TWEAKS</p>
+<span class="card-title">Tweaks</span>
+<div class="card-content">
+  <tweaks-datas *ngIf="input"
+		class="col s4 offset-s1"
+		[tweaks]="input" (update)="onUpdate($event)"></tweaks-datas>
+  <tweaks-datas *ngIf="output"
+		class="col s4 offset-s2"
+		[tweaks]="output" (update)="onUpdate($event)"></tweaks-datas>
+</div>
+
 <!--<i class="material-icons" (click)="onHelp()">live_help</i>
     <blockquote *ngIf="needHelp" class="left-align">
       <p>To match <b>strings</b>, please use <b>$[parameter]</b>:</p>
@@ -10,16 +19,8 @@
       <p><b>$country</b> for country name</p>
       <p><b>$datetime</b> for date (YYYY-MM-DD hh:mm:ss & alternatives)</p>
     </blockquote> -->
-<div class="row">
-  <tweaks-datas *ngIf="input"
-		class="col s6"
-		[tweaks]="input" (update)="onUpdate($event)"></tweaks-datas>
-  <tweaks-datas *ngIf="output"
-		class="col s6"
-		[tweaks]="output" (update)="onUpdate($event)"></tweaks-datas>
-</div>
-<button *ngIf="canValidate"
-	class="btn waves-effect waves-light"
-	type="submit"
-	(click)="onValidate()">Validate<i class="material-icons right">send</i>
-</button>
+<!-- <button *ngIf="canValidate" -->
+<!-- 	class="btn waves-effect waves-light" -->
+<!-- 	type="submit" -->
+<!-- 	(click)="onValidate()">Validate<i class="material-icons right">send</i> -->
+<!-- </button> -->

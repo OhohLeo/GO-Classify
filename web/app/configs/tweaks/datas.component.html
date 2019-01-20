@@ -1,5 +1,5 @@
 <p>{{refType}}</p>
-<div class="row" *ngFor="let tweak of datas">
+<div *ngFor="let tweak of datas">
   <tweaks-fields [tweak]="tweak"
-				 (update)="onUpdate($event)"></tweaks-fields>
+		 (update)="onUpdate($event)"></tweaks-fields>
 </div>

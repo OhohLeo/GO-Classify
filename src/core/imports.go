@@ -97,13 +97,14 @@ func (i *Import) SetConfig(collectionName string, newConfigs *Configs) (err erro
 	if newConfigs.Generic != nil {
 
 		// TODO : handle enable/disable import
-		if configs.Generic.General.Enabled != newConfigs.Generic.General.Enabled {
-			configs.Generic.General.Enabled = newConfigs.Generic.General.Enabled
+		if configs.Generic.Enabled != newConfigs.Generic.Enabled {
+			configs.Generic.Enabled = newConfigs.Generic.Enabled
 		}
+	}
 
-		if newConfigs.Generic.Tweak != nil {
-			configs.Generic.SetTweak(newConfigs.Generic.Tweak)
-		}
+	if newConfigs.Tweak != nil {
+		fmt.Printf("HAS TWEAK %+v\n", newConfigs.Tweak)
+		configs.Tweak = newConfigs.Tweak
 	}
 
 	return

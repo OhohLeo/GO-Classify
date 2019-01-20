@@ -1,10 +1,10 @@
-<div class="col s3">
+<div class="col s2">
   <div class="collection">
     <a *ngFor="let name of mainConfigNames"
-       class="collection-item" (click)="onMulti($event, name)">{{name}}</a>
+       class="collection-item" (click)="onClick($event, name)">{{name}}</a>
   </div>
 </div>
-<div class="col s9">
+<div class="col s10">
     <config-multi [item]="item" (update)="change($event)"></config-multi>
 </div>
  

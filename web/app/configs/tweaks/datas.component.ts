@@ -27,7 +27,7 @@ export class TweaksDatasComponent {
 	});
 	datas.sort(this.compare);
 
-	console.log("[TWEAKS DATA]", this.tweaks)
+	// console.log("[TWEAKS DATA]", this.tweaks)
 	this.name = this.tweaks.name
 	this.refType = this.tweaks.refType
 	this.datas = datas

@@ -68,7 +68,7 @@ export class ConfigsComponent implements OnInit {
     }
 
 
-    onMulti(event: any, refSelected: string) {
+    onClick(event: any, refSelected: string) {
 
         // Set collection-items as active
         event.preventDefault()
@@ -78,7 +78,7 @@ export class ConfigsComponent implements OnInit {
         }
 
         this.render.setElementClass(event.target, "active", true)
-
+	
         this.configsService.getConfig(this.src, this.item)
             .subscribe((cfg: ConfigBase) => {
 

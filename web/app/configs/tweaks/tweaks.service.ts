@@ -49,31 +49,4 @@ export class TweaksService {
 	    }
 	})
     }
-
-    getTweak(type: string, name: string) {
-
-        return new Observable(observer => {
-
-            return this.apiService.get(
-                type + "/" + name + "/tweaks?collection="+
-		    this.apiService.getCollectionName())
-                .subscribe(rsp => {
-                    observer.next(rsp)
-                })
-        })
-    }
-
-    setTweak(type: string, name: string, data: any) {
-
-        return new Observable(observer => {
-
-            return this.apiService.putWithData(
-                type + "/" + name + "/tweaks?collection="+
-		    this.apiService.getCollectionName(), data)
-                .subscribe(rsp => {
-                    observer.next(rsp)
-                })
-        })
-    }
-
 }

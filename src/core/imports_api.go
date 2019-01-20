@@ -265,6 +265,8 @@ func (c *Classify) ApiPatchImportConfig(w rest.ResponseWriter, r *rest.Request) 
 		return
 	}
 
+	fmt.Printf("[DECODE CONFIG] %+v\n", newConfigs)
+
 	if err := i.SetConfig(collection.Name, &newConfigs); err != nil {
 		rest.Error(w, err.Error(), http.StatusBadRequest)
 		return

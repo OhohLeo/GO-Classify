@@ -6,16 +6,13 @@
 	       (onChange)="onChange($event)"></configs>
     </form>
   </div>
-  <div class="modal-footer">
-    <div class="row">
-      <button *ngIf="validate"
-	      (click)="onSubmit($event)"
-	      type="submit"
-	      [disabled]="!createForm.form.valid"
-	      class="btn waves-effect waves-light">
-	Validate
-	<i class="material-icons right">send</i>
-      </button>
-    </div>
+  <div *ngIf="validate" class="modal-footer">
+    <button (click)="onSubmit($event)"
+	    type="submit"
+	    [disabled]="!createForm.form.valid"
+	    class="btn waves-effect waves-light">
+      Validate
+      <i class="material-icons right">send</i>
+    </button>
   </div>
 </div>

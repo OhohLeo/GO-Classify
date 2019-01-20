@@ -7,6 +7,7 @@ import (
 type Configs struct {
 	Collection *Collection                 `json:"-"`
 	Generic    *GenericConfig              `json:"generic"`
+	Tweak      *Tweak                      `json:"tweak"`
 	Specific   interface{}                 `json:"specific,omitempty"`
 	References map[string][]*reference.Ref `json:"references,omitempty"`
 }
@@ -26,6 +27,7 @@ func (c *Configs) GetRefs() {
 
 	c.References = make(map[string][]*reference.Ref)
 	c.References["generic"] = reference.GetRefs(c.Generic)
+	c.References["tweak"] = []*reference.Ref{}
 
 	if c.Specific != nil {
 		c.References["specific"] = reference.GetRefs(c.Specific)
@@ -33,22 +35,14 @@ func (c *Configs) GetRefs() {
 }
 
 type GenericConfig struct {
-	General struct {
-		Enabled bool `json:"enabled"`
-	} `json:"general"`
-
-	Tweak *Tweak `json:"tweak"`
+	Enabled bool `json:"enabled"`
 }
 
 func NewGenericConfig() *GenericConfig {
 	config := &GenericConfig{}
 
 	// Enable import by default
-	config.General.Enabled = true
+	config.Enabled = true
 
 	return config
-}
-
-func (g *GenericConfig) SetTweak(tweak *Tweak) {
-	g.Tweak = tweak
 }
