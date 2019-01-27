@@ -21,8 +21,7 @@ type File struct {
 
 func ToBuild() exports.Build {
 	return exports.Build{
-		Create:   Create,
-		GetParam: GetParam,
+		Create: Create,
 	}
 }
 
@@ -55,16 +54,8 @@ func Create(input json.RawMessage,
 	return
 }
 
-func GetParam(name string, data json.RawMessage) (result interface{}, err error) {
-
-	switch name {
-	case "path":
-		result, err = params.GetPath(data)
-	default:
-		err = fmt.Errorf("export 'file' invalid param '%s'", name)
-	}
-
-	return
+func GetParams() []params.Param {
+	return []params.Param{new(params.Path)}
 }
 
 func (f *File) GetRef() exports.Ref {

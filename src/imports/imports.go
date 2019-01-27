@@ -37,6 +37,6 @@ type Import interface {
 
 type Build struct {
 	CheckConfig func(json.RawMessage) error
+	ForceCreate func() Import
 	Create      func(json.RawMessage, json.RawMessage, []string) (Import, interface{}, error)
-	GetParam    func(string, json.RawMessage) (interface{}, error)
 }

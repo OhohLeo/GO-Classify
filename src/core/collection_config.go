@@ -2,7 +2,6 @@ package core
 
 import (
 	"encoding/json"
-	"fmt"
 	"github.com/ohohleo/classify/data"
 	"github.com/ohohleo/classify/database"
 	"github.com/ohohleo/classify/imports"
@@ -30,7 +29,7 @@ type CollectionConfig struct {
 	Datas data.Configs `json:"datas"`
 
 	references []*reference.Ref
-	params     map[string]params.HasParam
+	params     map[string]params.Param
 }
 
 func NewCollectionConfig() *CollectionConfig {
@@ -50,7 +49,7 @@ func (c *CollectionConfig) Get(needReferences bool) interface{} {
 	if needReferences {
 
 		if c.references == nil {
-			c.references, c.params = reference.GetParamRefs("datas", c)
+			c.references = reference.GetRefs(c)
 		}
 
 		return reference.New(c.references, c)
@@ -61,32 +60,6 @@ func (c *CollectionConfig) Get(needReferences bool) interface{} {
 
 func (c *CollectionConfig) Update(config []byte) error {
 	return json.Unmarshal(config, c)
-}
-
-func (c *CollectionConfig) AddParam(key string, param params.HasParam) {
-
-	if c.params == nil {
-		c.params = make(map[string]params.HasParam)
-	}
-
-	c.params[key] = param
-}
-
-func (c *CollectionConfig) GetParam(path string, name string, body json.RawMessage) (result interface{}, err error) {
-
-	if c.params == nil {
-		err = fmt.Errorf("no config params initialized")
-		return
-	}
-
-	param, ok := c.params[path]
-	if ok == false {
-		err = fmt.Errorf("no config params '%s' found", path)
-		return
-	}
-
-	result, err = param.GetParam(name, body)
-	return
 }
 
 // Return the current list of datas handled by all the imports of the
@@ -119,10 +92,6 @@ func (c *CollectionConfig) updateSingleData(refParent string, d data.Data, alrea
 		if config := hasConfig.NewConfig(); config != nil {
 			c.Datas[refName] = config
 		}
-	}
-
-	if param, ok := d.(params.HasParam); ok {
-		c.AddParam(refParent, param)
 	}
 
 	alreadyExisting[d.GetRef()] = struct{}{}

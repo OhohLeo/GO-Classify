@@ -77,8 +77,13 @@ type ImapOutputParams struct {
 
 func ToBuild() imports.Build {
 	return imports.Build{
-		Create: Create,
+		ForceCreate: ForceCreate,
+		Create:      Create,
 	}
+}
+
+func ForceCreate() (i imports.Import) {
+	return new(Imap)
 }
 
 func Create(input json.RawMessage, config json.RawMessage,

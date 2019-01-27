@@ -1,20 +1,20 @@
 import { Component, OnInit, Output, EventEmitter } from '@angular/core'
 
 @Component({
-	selector: 'import-create'
+    selector: 'import-create'
 })
 
 export class ImportCreateComponent implements OnInit {
 
-	@Output() onCreated = new EventEmitter();
+    @Output() onCreated = new EventEmitter();
 
-	constructor(public data : any) {
-	}
+    constructor(public data : any) {
+    }
 
-	ngOnInit() {
-		this.onCreated.emit(this)
-	}
+    ngOnInit() {
+	this.onCreated.emit(this)
+    }
 
-	onParams(data: any) {}
-	onSuccess(data: any) {}
+    onParams(data: any) {}
+    onSuccess(data: any) {}
 }

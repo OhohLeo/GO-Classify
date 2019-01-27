@@ -184,34 +184,34 @@ func (c *Classify) ApiPatchExportConfig(w rest.ResponseWriter, r *rest.Request) 
 // PUT /exports/:name/params/:params
 func (c *Classify) ApiPutExportParams(w rest.ResponseWriter, r *rest.Request) {
 
-	param := r.PathParam("param")
-	name := r.PathParam("name")
+	// param := r.PathParam("param")
+	// name := r.PathParam("name")
 
-	// Récupération du type de l'exportation
-	i, err := c.GetExportByName(name)
-	if err == nil {
-		name = i.engine.GetRef().String()
-	}
+	// // Récupération du type de l'exportation
+	// i, err := c.GetExportByName(name)
+	// if err == nil {
+	// 	name = i.engine.GetRef().String()
+	// }
 
-	newExport, ok := newExports[name]
-	if ok == false {
-		rest.Error(w, err.Error(), http.StatusBadRequest)
-		return
-	}
+	// newExport, ok := newExports[name]
+	// if ok == false {
+	// 	rest.Error(w, err.Error(), http.StatusBadRequest)
+	// 	return
+	// }
 
-	var body json.RawMessage
-	err = r.DecodeJsonPayload(&body)
-	if err != nil {
-		rest.Error(w, "invalid json body", http.StatusBadRequest)
-		return
-	}
+	// var body json.RawMessage
+	// err = r.DecodeJsonPayload(&body)
+	// if err != nil {
+	// 	rest.Error(w, "invalid json body", http.StatusBadRequest)
+	// 	return
+	// }
 
-	res, err := newExport.GetParam(param, body)
-	if err != nil {
-		rest.Error(w, err.Error(), http.StatusBadRequest)
-		return
-	}
+	// res, err := newExport.GetParam(param, body)
+	// if err != nil {
+	// 	rest.Error(w, err.Error(), http.StatusBadRequest)
+	// 	return
+	// }
 
-	w.WriteJson(res)
+	// w.WriteJson(res)
 	return
 }

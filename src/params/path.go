@@ -15,7 +15,11 @@ type PathResult struct {
 	Files       []string `json:"files"`
 }
 
-func GetPath(params json.RawMessage) (result interface{}, err error) {
+func (*Path) GetName() string {
+	return "path"
+}
+
+func (*Path) ExecuteParam(params json.RawMessage) (result interface{}, err error) {
 
 	// Get path parameter
 	var paramPath Path

@@ -198,29 +198,29 @@ func (c *Classify) ApiPatchCollectionConfig(w rest.ResponseWriter, r *rest.Reque
 // PUT /collections/:name/config/:param
 func (c *Classify) ApiPutCollectionConfigParam(w rest.ResponseWriter, r *rest.Request) {
 
-	// Check the collection exist
-	collection := c.getCollectionByName(w, r)
-	if collection == nil {
-		return
-	}
+	// // Check the collection exist
+	// collection := c.getCollectionByName(w, r)
+	// if collection == nil {
+	// 	return
+	// }
 
-	path := r.PathParam("path")
-	param := r.PathParam("param")
+	// path := r.PathParam("path")
+	// param := r.PathParam("param")
 
-	var body json.RawMessage
-	err := r.DecodeJsonPayload(&body)
-	if err != nil {
-		rest.Error(w, "invalid json body", http.StatusBadRequest)
-		return
-	}
+	// var body json.RawMessage
+	// err := r.DecodeJsonPayload(&body)
+	// if err != nil {
+	// 	rest.Error(w, "invalid json body", http.StatusBadRequest)
+	// 	return
+	// }
 
-	res, err := collection.config.GetParam(path, param, body)
-	if err != nil {
-		rest.Error(w, err.Error(), http.StatusBadRequest)
-		return
-	}
+	// res, err := collection.config.GetParam(path, param, body)
+	// if err != nil {
+	// 	rest.Error(w, err.Error(), http.StatusBadRequest)
+	// 	return
+	// }
 
-	w.WriteJson(res)
+	// w.WriteJson(res)
 	return
 }
 

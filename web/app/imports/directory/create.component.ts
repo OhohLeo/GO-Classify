@@ -14,8 +14,8 @@ export class DirectoryCreateComponent extends ImportCreateComponent {
     public paths: string[] = []
 
     constructor(private zone: NgZone,
-        private importsService: ImportsService,
-        private apiService: ApiService) {
+		private importsService: ImportsService,
+		private apiService: ApiService) {
 
         super(new Directory(""))
 

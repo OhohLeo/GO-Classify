@@ -8,15 +8,15 @@ import { Directory } from './directory'
 
 export class DirectoryDisplayComponent implements OnInit {
 
-	@Input() directory : Directory
-	public display: string
+    @Input() directory : Directory
+    public display: string
 
     ngOnInit() {
 
-		this.display = this.directory.path
+	this.display = this.directory.path
 
-		if (this.directory.isRecursive) {
-			this.display += "/**/*"
-		}
+	if (this.directory.isRecursive) {
+	    this.display += "/**/*"
+	}
     }
 }

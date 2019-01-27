@@ -279,11 +279,17 @@ func (c *Classify) ApiPatchImportConfig(w rest.ResponseWriter, r *rest.Request) 
 // PUT /imports/:name/params/:param
 func (c *Classify) ApiPutImportParams(w rest.ResponseWriter, r *rest.Request) {
 
+	// Check if 'name' is an existing import
 	name := r.PathParam("name")
-
 	i, err := c.GetImportByName(name)
-	if err == nil {
-		name = i.engine.GetRef().String()
+	if err != nil {
+
+		// Otherwise try to create an ephemerous import with type specified
+		i, err = NewImport(name)
+		if err != nil {
+			rest.Error(w, err.Error(), http.StatusBadRequest)
+			return
+		}
 	}
 
 	var body json.RawMessage
@@ -292,12 +298,12 @@ func (c *Classify) ApiPutImportParams(w rest.ResponseWriter, r *rest.Request) {
 		return
 	}
 
-	// res, err := i.GetParam(r.PathParam("param"), body)
-	// if err != nil {
-	// 	rest.Error(w, err.Error(), http.StatusBadRequest)
-	// 	return
-	// }
+	res, err := i.GetParam(r.PathParam("param"), body)
+	if err != nil {
+		rest.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
 
-	// w.WriteJson(res)
+	w.WriteJson(res)
 	return
 }

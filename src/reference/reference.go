@@ -4,8 +4,6 @@ import (
 	"log"
 	"reflect"
 	"strings"
-
-	"github.com/ohohleo/classify/params"
 )
 
 type Ref struct {
@@ -16,11 +14,6 @@ type Ref struct {
 	Map      map[string][]*Ref `json:"map,omitempty"`
 	Key      string            `json:"key,omitempty"`
 	Value    interface{}       `json:"-"`
-}
-
-type GetRefOptions struct {
-	Src    string
-	Params map[string]params.HasParam
 }
 
 type Reference struct {
@@ -37,14 +30,14 @@ func New(refs []*Ref, data interface{}) *Reference {
 }
 
 func GetRefs(data interface{}) []*Ref {
-	return getRefsByValue(reflect.ValueOf(data).Elem(), nil)
+	return getRefsByValue(reflect.ValueOf(data).Elem())
 }
 
 func GetFieldTypes(data interface{}) map[string]string {
 
 	result := make(map[string]string)
 
-	for _, ref := range getRefsByValue(reflect.ValueOf(data).Elem(), nil) {
+	for _, ref := range getRefsByValue(reflect.ValueOf(data).Elem()) {
 
 		// Reject unused fields
 		switch ref.Name {
@@ -72,14 +65,7 @@ func GetFieldTypes(data interface{}) map[string]string {
 	return result
 }
 
-func GetParamRefs(prefix string, data interface{}) ([]*Ref, map[string]params.HasParam) {
-
-	params := make(map[string]params.HasParam)
-	return getRefsByValue(reflect.ValueOf(data).Elem(), &GetRefOptions{prefix, params}), params
-}
-
-func getRefsByValue(val reflect.Value, opt *GetRefOptions) []*Ref {
-
+func getRefsByValue(val reflect.Value) []*Ref {
 	refs := make([]*Ref, 0)
 
 	if val.Kind() == reflect.Interface && !val.IsNil() {
@@ -95,17 +81,6 @@ func getRefsByValue(val reflect.Value, opt *GetRefOptions) []*Ref {
 
 	if val.Kind() == reflect.Ptr {
 		val = val.Elem()
-	}
-
-	// Store structure handling params
-	if opt != nil {
-
-		// Handle HasParam interface
-		if opt.Params != nil {
-			if param, ok := val.Interface().(params.HasParam); ok {
-				opt.Params[opt.Src] = param
-			}
-		}
 	}
 
 	for i := 0; i < val.NumField(); i++ {
@@ -150,11 +125,7 @@ func getRefsByValue(val reflect.Value, opt *GetRefOptions) []*Ref {
 		switch kind {
 
 		case "struct":
-			if opt != nil {
-				opt.Src = opt.Src + "-" + name
-			}
-
-			ref.Childs = getRefsByValue(valueField, opt)
+			ref.Childs = getRefsByValue(valueField)
 
 		case "map":
 			if ref.Map == nil {
@@ -170,12 +141,7 @@ func getRefsByValue(val reflect.Value, opt *GetRefOptions) []*Ref {
 				}
 
 				mapValue := valueField.MapIndex(k).Interface()
-				if opt != nil {
-					opt.Src = opt.Src + "-" + mapKey
-				}
-
-				ref.Map[mapKey] = getRefsByValue(
-					reflect.ValueOf(mapValue), opt)
+				ref.Map[mapKey] = getRefsByValue(reflect.ValueOf(mapValue))
 			}
 
 		case "interface":

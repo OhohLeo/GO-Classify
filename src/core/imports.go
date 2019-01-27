@@ -11,6 +11,7 @@ import (
 	"github.com/ohohleo/classify/imports"
 	"github.com/ohohleo/classify/imports/directory"
 	"github.com/ohohleo/classify/imports/imap"
+	"github.com/ohohleo/classify/params"
 	"github.com/ohohleo/classify/reference"
 )
 
@@ -20,6 +21,14 @@ var newImports = map[string]imports.Build{
 	"imap":      imap.ToBuild(),
 }
 
+func Import2Build(typ string) (imports.Build, error) {
+	buildImport, ok := newImports[typ]
+	if ok == false {
+		return buildImport, fmt.Errorf("import type '%s' not handled", typ)
+	}
+	return buildImport, nil
+}
+
 type Import struct {
 	Id   uint64 `json:"id"`
 	Name string `json:"name"`
@@ -27,6 +36,19 @@ type Import struct {
 	engine imports.Import
 
 	configs map[string]*Configs
+	params  map[string]params.Param
+}
+
+func NewImport(typ string) (*Import, error) {
+	buildImport, err := Import2Build(typ)
+	if err != nil {
+		return nil, err
+	}
+
+	return &Import{
+		Name:   typ,
+		engine: buildImport.ForceCreate(),
+	}, nil
 }
 
 func (i *Import) GetRefs() []*reference.Ref {
@@ -110,6 +132,20 @@ func (i *Import) SetConfig(collectionName string, newConfigs *Configs) (err erro
 	return
 }
 
+func (i *Import) GetParam(name string, input json.RawMessage) (interface{}, error) {
+
+	if i.params == nil {
+		i.params = params.GetParams(i.engine)
+	}
+
+	param, ok := i.params[name]
+	if ok == false {
+		return nil, fmt.Errorf("import param '%s' not found for '%s'", name, i.Name)
+	}
+
+	return param.ExecuteParam(input)
+}
+
 func (i *Import) Store2DB(db *database.Database) error {
 
 	// Check if db is enabled
@@ -180,7 +216,7 @@ func (i *Import) Delete2DB(db *database.Database) error {
 }
 
 // Check imports configuration
-func (c *Classify) CheckImportsConfig(configuration map[string]json.RawMessage) (err error) {
+func (c *Classify) CheckImportsConfig(configuration map[string]json.RawMessage) error {
 
 	// For all import configuration
 	for importType, config := range configuration {
@@ -191,16 +227,15 @@ func (c *Classify) CheckImportsConfig(configuration map[string]json.RawMessage) 
 		}
 
 		// Check that the import type does exists
-		buildImport, ok := newImports[importType]
-		if ok == false {
-			err = errors.New("import type '" + importType + "' not handled")
-			return
+		buildImport, err := Import2Build(importType)
+		if err != nil {
+			return err
 		}
 
 		// Check specified configuration
 		err = buildImport.CheckConfig(config)
 		if err != nil {
-			return
+			return err
 		}
 	}
 
@@ -244,9 +279,9 @@ func (c *Classify) AddImport(name string, ref imports.Ref, inParams json.RawMess
 	}
 
 	// Check that the type exists
-	buildImport, ok := newImports[ref.String()]
-	if ok == false {
-		err = errors.New("import type '" + ref.String() + "' not handled")
+	var buildImport imports.Build
+	buildImport, err = Import2Build(ref.String())
+	if err != nil {
 		return
 	}
 

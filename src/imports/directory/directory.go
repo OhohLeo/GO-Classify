@@ -51,9 +51,13 @@ func ToBuild() imports.Build {
 
 			return
 		},
-		Create:   Create,
-		GetParam: GetParam,
+		ForceCreate: ForceCreate,
+		Create:      Create,
 	}
+}
+
+func ForceCreate() (i imports.Import) {
+	return new(Directory)
 }
 
 func Create(input json.RawMessage, config json.RawMessage, collections []string) (i imports.Import, params interface{}, err error) {
@@ -73,16 +77,8 @@ func Create(input json.RawMessage, config json.RawMessage, collections []string)
 	return
 }
 
-func GetParam(name string, data json.RawMessage) (result interface{}, err error) {
-
-	switch name {
-	case "path":
-		result, err = params.GetPath(data)
-	default:
-		err = fmt.Errorf("import 'directory' invalid param '%s'", name)
-	}
-
-	return
+func (*Directory) GetParams() []params.Param {
+	return []params.Param{new(params.Path)}
 }
 
 func (r *Directory) CheckConfig(config json.RawMessage) error {
