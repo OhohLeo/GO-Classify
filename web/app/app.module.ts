@@ -8,9 +8,10 @@ import { BufferModule } from './buffer/buffer.module'
 import { CollectionModule } from './collection/collection.module'
 import { CollectionsModule } from './collections/collections.module'
 import { ConfigsModule } from './configs/configs.module'
+import { MappingsModule } from './mappings/mappings.module'
+import { ImportsModule } from './imports/imports.module'
 import { ExportsModule } from './exports/exports.module'
 import { FilterModule } from './filter/filter.module'
-import { ImportsModule } from './imports/imports.module'
 import { ReferencesModule } from './references/references.module'
 import { ToolsModule } from './tools/tools.module'
 
@@ -26,13 +27,14 @@ import { AppComponent } from './app.component'
         CollectionModule,
         CollectionsModule,
         ConfigsModule,
-        ExportsModule,
         FilterModule,
         FormsModule,
         HttpModule,
+	MappingsModule,
         ImportsModule,
+	ExportsModule,
         ToolsModule,
-		ReferencesModule,
+	ReferencesModule,
     ],
     providers: [ApiService],
     declarations: [AppComponent],

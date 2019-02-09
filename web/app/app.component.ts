@@ -18,6 +18,7 @@ declare var jQuery: any;
 enum AppStatus {
     NONE = 0,
     COLLECTION,
+    MAPPINGS,
     IMPORTS,
     EXPORTS,
     CONFIGS,
@@ -58,10 +59,10 @@ export class AppComponent implements OnInit {
     public bufferItem: BufferItem
 
     constructor(private zone: NgZone,
-				private apiService: ApiService,
-				private importsService: ImportsService,
-				private bufferService: BufferService,
-				private collectionsService: CollectionsService) { }
+		private apiService: ApiService,
+		private importsService: ImportsService,
+		private bufferService: BufferService,
+		private collectionsService: CollectionsService) { }
 
     ngOnInit() {
 
@@ -97,54 +98,58 @@ export class AppComponent implements OnInit {
         this.apiService.subscribeCollectionChange(
             (collection: Collection, status: CollectionStatus) => {
 
-				switch (status) {
-				case CollectionStatus.CREATED:
-				case CollectionStatus.DELETED:
-					this.collections.refresh(false)
-					break
-				}
+		switch (status) {
+		case CollectionStatus.CREATED:
+		case CollectionStatus.DELETED:
+		    this.collections.refresh(false)
+		    break
+		}
 
                 if (status == CollectionStatus.DELETED
-					|| collection === undefined) {
-					this.onChangeCollection()
+		    || collection === undefined) {
+		    this.onChangeCollection()
                     return
                 }
 
-				this.onCollection(collection)
+		this.onCollection(collection)
             })
     }
 
     onReset() {
 
-		// Reset display first
+	// Reset display first
         this.onNewState(AppStatus.NONE)
 
-		// Disable collection menu
-		this.enableMenu(false)
+	// Disable collection menu
+	this.enableMenu(false)
 
-		// Reset title name
-		this.setTitle("")
+	// Reset title name
+	this.setTitle("")
     }
 
     onCollection(collection: Collection) {
 
-		if (collection == undefined) {
-			console.error("onCollection() failure: no collection given")
-			return
-		}
+	if (collection == undefined) {
+	    console.error("onCollection() failure: no collection given")
+	    return
+	}
 
-		this.setTitle(collection.name)
+	this.setTitle(collection.name)
         this.collection = collection
 
-		// Activate collection menu
-		this.enableMenu(true)
+	// Activate collection menu
+	this.enableMenu(true)
 
-		// Select collection nav
-		this.selectNav("collection")
+	// Select collection nav
+	this.selectNav("collection")
 
         this.onNewState(AppStatus.COLLECTION)
     }
 
+    onMappings() {
+        this.onNewState(AppStatus.MAPPINGS)
+    }
+    
     onImports() {
         this.onNewState(AppStatus.IMPORTS)
     }
@@ -166,16 +171,16 @@ export class AppComponent implements OnInit {
 
     onNewState(nextStatus: AppStatus) {
 
-		if (nextStatus == AppStatus.COLLECTION) {
-			this.enableFilterAndSearch(true)
-		} else {
-			this.enableFilterAndSearch(false)
-		}
+	if (nextStatus == AppStatus.COLLECTION) {
+	    this.enableFilterAndSearch(true)
+	} else {
+	    this.enableFilterAndSearch(false)
+	}
 
-		// Enable nav indicator
-		jQuery("li.indicator").css("height", "2px")
+	// Enable nav indicator
+	jQuery("li.indicator").css("height", "2px")
 
-		this.resetCollectionState()
+	this.resetCollectionState()
         this.status = nextStatus
     }
 
@@ -185,92 +190,92 @@ export class AppComponent implements OnInit {
 
     setTitle(name: string) {
 
-		if (name == "") {
-			name = "Classify"
-		}
+	if (name == "") {
+	    name = "Classify"
+	}
 
-		this.zone.run(() => {
-			this.title = name
-		})
+	this.zone.run(() => {
+	    this.title = name
+	})
     }
 
     enableMenu(status: boolean) {
 
-		if (this.menuActive == status)
-			return
+	if (this.menuActive == status)
+	    return
 
-		this.zone.run(() => {
-			this.menuActive = status
-		})
+	this.zone.run(() => {
+	    this.menuActive = status
+	})
     }
 
     enableFilter(status: boolean) {
-		this.zone.run(() => {
+	this.zone.run(() => {
             this.filterEnabled = status
-			if (status == false) {
-				this.onFilterClose()
-			}
-		})
+	    if (status == false) {
+		this.onFilterClose()
+	    }
+	})
     }
 
     onFilter() {
 
-		// Toggle filtering
-		this.changeFilterState(!this.filterActive)
+	// Toggle filtering
+	this.changeFilterState(!this.filterActive)
     }
 
     onFilterClose() {
-		this.changeFilterState(false)
+	this.changeFilterState(false)
     }
 
     changeFilterState(newState: boolean) {
-		this.zone.run(() => {
+	this.zone.run(() => {
             this.filterActive = newState
-			this.class2toggle("li#filter", "active", newState)
-		})
+	    this.class2toggle("li#filter", "active", newState)
+	})
     }
 
     enableSearch(status: boolean) {
 
-		this.zone.run(() => {
+	this.zone.run(() => {
 
-			this.searchEnabled = status
+	    this.searchEnabled = status
 
-			if (status == false) {
-				this.onSearchClose()
-			}
+	    if (status == false) {
+		this.onSearchClose()
+	    }
         })
     }
 
     onSearch() {
 
-		// Toggle search
-		this.changeSearchState(!this.searchActive)
+	// Toggle search
+	this.changeSearchState(!this.searchActive)
     }
 
     onSearchClose() {
-		this.changeSearchState(false)
+	this.changeSearchState(false)
     }
 
     changeSearchState(newState: boolean) {
-		this.zone.run(() => {
+	this.zone.run(() => {
             this.searchActive = newState
-			this.class2toggle("li#search", "active", newState)
-		})
+	    this.class2toggle("li#search", "active", newState)
+	})
     }
 
     class2toggle(item: string, className: string, toggle: boolean) {
 
-		if (toggle) {
-			jQuery(item).addClass(className)
-		} else {
-			jQuery(item).removeClass(className)
-		}
+	if (toggle) {
+	    jQuery(item).addClass(className)
+	} else {
+	    jQuery(item).removeClass(className)
+	}
     }
 
     enableFilterAndSearch(status: boolean) {
-		this.enableFilter(status)
-		this.enableSearch(status)
+	this.enableFilter(status)
+	this.enableSearch(status)
     }
 
     handleImport(e: Event) {
@@ -339,8 +344,8 @@ export class AppComponent implements OnInit {
             collection.addItem(e.data)
             break;
 
-		default:
-			console.error("Unhandled collection destination '" + destination + "'")
+	default:
+	    console.error("Unhandled collection destination '" + destination + "'")
         }
     }
 
@@ -358,55 +363,55 @@ export class AppComponent implements OnInit {
     }
 
     selectNav(name: string) {
-		jQuery("li#"+name).children().click()
+	jQuery("li#"+name).children().click()
     }
 
     disableNav() {
 
-		// Unbold nav title
-		jQuery("li.tab").children().removeClass("active")
+	// Unbold nav title
+	jQuery("li.tab").children().removeClass("active")
 
-		// Disable nav indicator
-		jQuery("li.indicator").css("height", "0px")
+	// Disable nav indicator
+	jQuery("li.indicator").css("height", "0px")
     }
 
     // Display new collection
     onNewCollection() {
 
-		this.onReset()
+	this.onReset()
 
-		if (this.collections) {
-			this.collections.onNewCollection()
+	if (this.collections) {
+	    this.collections.onNewCollection()
         }
     }
 
     // Display collections list
     onChangeCollection() {
 
-		// Get collection nb
-		let collectionNb = this.collections.nb()
+	// Get collection nb
+	let collectionNb = this.collections.nb()
 
-		console.log("onChangeCollection()", collectionNb)
+	console.log("onChangeCollection()", collectionNb)
 
-		// If no collection exist : create one
-		if (collectionNb == 0) {
-			this.onReset()
-			this.onNewCollection()
-			return
-		}
+	// If no collection exist : create one
+	if (collectionNb == 0) {
+	    this.onReset()
+	    this.onNewCollection()
+	    return
+	}
 
-		// If collections list exist
-		if (collectionNb > 1) {
-			console.log("collections.onChooseCollection")
-			this.onReset()
-			this.collections.onChooseCollection(undefined)
-			return
-		}
+	// If collections list exist
+	if (collectionNb > 1) {
+	    console.log("collections.onChooseCollection")
+	    this.onReset()
+	    this.collections.onChooseCollection(undefined)
+	    return
+	}
 
-		// Otherwise select current collection
-		if (this.collection) {
-			this.onCollection(this.collection)
-		}
+	// Otherwise select current collection
+	if (this.collection) {
+	    this.onCollection(this.collection)
+	}
     }
 
     // Affiche la liste des collections à sélectionner si aucune

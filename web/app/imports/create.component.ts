@@ -1,20 +1,24 @@
-import { Component, OnInit, Output, EventEmitter } from '@angular/core'
+import {
+    Component, NgZone, Input, ViewChild, Renderer
+} from '@angular/core'
+
+import { ImportsService } from './imports.service'
 
 @Component({
-    selector: 'import-create'
+    selector: 'imports-create',
+    templateUrl: './create.component.html'
 })
 
-export class ImportCreateComponent implements OnInit {
+export class ImportsCreateComponent {
 
-    @Output() onCreated = new EventEmitter();
-
-    constructor(public data : any) {
+    @Input() currentRef: string
+    
+    constructor(private zone: NgZone,
+		private render: Renderer,
+		private importsService: ImportsService) {
     }
 
-    ngOnInit() {
-	this.onCreated.emit(this)
+    onCreated(importCreated) {
+        console.log("CREATED:",importCreated)
     }
-
-    onParams(data: any) {}
-    onSuccess(data: any) {}
 }

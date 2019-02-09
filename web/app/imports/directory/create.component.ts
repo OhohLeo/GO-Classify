@@ -1,7 +1,7 @@
 import { Component, NgZone } from '@angular/core'
 import { ImportsService } from '../imports.service'
 import { ApiService } from '../../api.service'
-import { ImportCreateComponent } from './../create.component'
+import { BaseCreateComponent } from '../../tools/base_create.component'
 import { Directory } from './directory'
 
 @Component({
@@ -9,7 +9,7 @@ import { Directory } from './directory'
     templateUrl: './create.component.html'
 })
 
-export class DirectoryCreateComponent extends ImportCreateComponent {
+export class DirectoryCreateComponent extends BaseCreateComponent {
 
     public paths: string[] = []
 

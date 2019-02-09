@@ -1,6 +1,6 @@
 import { Component, NgZone } from '@angular/core'
 import { ImportsService } from '../imports.service'
-import { ImportCreateComponent } from '../create.component'
+import { BaseCreateComponent } from '../../tools/base_create.component'
 import { Imap } from './imap'
 
 @Component({
@@ -8,13 +8,13 @@ import { Imap } from './imap'
     templateUrl: './create.component.html'
 })
 
-export class ImapCreateComponent extends ImportCreateComponent {
+export class ImapCreateComponent extends BaseCreateComponent {
 
     public mailboxes: string[] = []
 
     constructor(private zone: NgZone,
-				private importsService: ImportsService) {
-		super(new Imap(""))
+		private importsService: ImportsService) {
+	super(new Imap(""))
     }
 
     onParams(params: any): boolean {

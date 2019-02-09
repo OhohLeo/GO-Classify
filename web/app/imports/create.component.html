@@ -1,0 +1,8 @@
+<div [ngSwitch]="currentRef">
+  <imap-create *ngSwitchCase="'imap'"
+	       (onCreated)="onCreated($event)">
+  </imap-create>
+  <directory-create *ngSwitchCase="'directory'"
+		    (onCreated)="onCreated($event)">
+  </directory-create>
+</div>

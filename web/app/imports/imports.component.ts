@@ -6,7 +6,7 @@ import { NgSwitch } from '@angular/common'
 import { ApiService, Event } from './../api.service'
 import { ConfigModalComponent } from './../configs/modal.component'
 import { ImportsService } from './imports.service'
-import { ImportCreateComponent } from './create.component'
+import { BaseCreateComponent } from '../tools/base_create.component'
 import { Convert2Imap } from './imap/imap';
 import { Convert2Directory } from './directory/directory';
 import { DirectoryCreateComponent } from './directory/create.component';
@@ -28,7 +28,7 @@ export class ImportsComponent implements OnInit, OnDestroy {
     public imports: Map<string, BaseElement[]>
     public currentRef: string = "all"
 
-    public createComponent: ImportCreateComponent
+    public createComponent: BaseCreateComponent
 
     private events
 
@@ -120,8 +120,8 @@ export class ImportsComponent implements OnInit, OnDestroy {
         })
     }
 
-    onImportCreated(importCreated) {
-        this.createComponent = importCreated
+    onCreated(importCreated) {
+	this.createComponent = importCreated
     }
 
     // Create new import collection
@@ -135,8 +135,8 @@ export class ImportsComponent implements OnInit, OnDestroy {
         this.importsService.addImport(
             this.createComponent.data,
             (params) => {
-				return this.createComponent.onParams(params)
-			},
+    		return this.createComponent.onParams(params)
+    	    },
             (newImport) => {
                 return this.createComponent.onSuccess(newImport)
             })

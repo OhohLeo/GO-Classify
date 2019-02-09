@@ -4,7 +4,7 @@ import {
 } from '@angular/core'
 import { NgSwitch } from '@angular/common'
 import { ExportsService, ExportBase } from './exports.service'
-import { ExportCreateComponent } from './create.component'
+import { BaseCreateComponent } from '../tools/base_create.component'
 import { ApiService, Event } from '../api.service'
 import { Convert2File } from './file/file';
 
@@ -22,7 +22,7 @@ export class ExportsComponent implements OnInit, OnDestroy {
     public exports: Map<string, ExportBase[]>
     public currentRef: string = "all"
 
-    public createComponent: ExportCreateComponent
+    public createComponent: BaseCreateComponent
 
     private events
 
@@ -114,13 +114,12 @@ export class ExportsComponent implements OnInit, OnDestroy {
         })
     }
 
-    onExportCreated(exportCreated) {
-        this.createComponent = exportCreated
+    onCreated(exportCreated) {
+    //     this.createComponent = exportCreated
     }
 
-    // Create new export collection
+    // // Create new export collection
     onSubmit() {
-
         if (this.createComponent === undefined) {
             console.error("export created component not found", this.currentRef)
             return
@@ -129,8 +128,8 @@ export class ExportsComponent implements OnInit, OnDestroy {
         this.exportsService.addExport(
             this.createComponent.data,
             (params) => {
-				return this.createComponent.onParams(params)
-			},
+    				return this.createComponent.onParams(params)
+    			},
             (newExport) => {
                 return this.createComponent.onSuccess(newExport)
             })

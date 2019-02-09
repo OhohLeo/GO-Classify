@@ -11,10 +11,10 @@
 		(ngSubmit)="onSubmit()">
 	<div [ngSwitch]="currentRef">
 	  <imap-create *ngSwitchCase="'imap'"
-		       (onCreated)="onImportCreated($event)">
+	  	       (onCreated)="onCreated($event)">
 	  </imap-create>
 	  <directory-create *ngSwitchCase="'directory'"
-			    (onCreated)="onImportCreated($event)">
+	  		    (onCreated)="onCreated($event)">
 	  </directory-create>
 	</div>
 	<div class="row">

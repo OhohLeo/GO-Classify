@@ -13,7 +13,7 @@
 	  (ngSubmit)="onSubmit()">
 	<div [ngSwitch]="currentRef">
 	    <file-create *ngSwitchCase="'file'"
-			 (onCreated)="onExportCreated($event)">
+	    		 (onCreated)="onCreated($event)">
 	    </file-create>
 	</div>
 	<div class="row">

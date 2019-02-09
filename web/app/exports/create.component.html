@@ -1,0 +1,5 @@
+<div [ngSwitch]="currentRef">
+  <file-create *ngSwitchCase="'file'"
+	       (onCreated)="onCreated($event)">
+  </file-create>
+</div>

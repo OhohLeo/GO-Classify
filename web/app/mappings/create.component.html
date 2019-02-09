@@ -1,0 +1,42 @@
+<div class="row">
+  <h6>{{mappingRef[mappingType]}}<i class="material-icons"
+				    (click)="onNewMapping()">plus_one</i></h6>
+</div> 
+<div id="mapping-{{mappingType}}" class="modal">
+  <h5>New {{mappingRef[mappingType]}}</h5>
+  <div class="modal-content">
+    <div class="row">
+      <input name="name"
+	     type="string"
+	     id="name"
+	     [(ngModel)]="mapping.name" />
+      <label for="name">Name</label>
+    </div>
+    <div class="row">
+      <label for="ref">Type</label>
+      <select name="ref"
+              [(ngModel)]="mapping.ref"
+              class="browser-default">
+	<option *ngFor="let ref of refs" [value]="ref">
+	  {{ref}}
+	</option>
+      </select>
+    </div>
+    <form *ngIf="mapping.ref"
+	  #createForm="ngForm"
+	  (ngSubmit)="onSubmit()">
+      <div class="row" [ngSwitch]="mappingType">
+	<imports-create *ngSwitchCase="mappingRef.IMPORT" [currentRef]="mapping.ref"></imports-create>
+	<exports-create *ngSwitchCase="mappingRef.EXPORT" [currentRef]="mapping.ref"></exports-create>
+      </div>
+      <div class="row">
+	<button type="submit"
+		[disabled]="!createForm.form.valid"
+		class="btn waves-effect waves-light">
+	  New {{mapping.ref}}
+	  <i class="material-icons right">send</i>
+	</button>
+      </div>
+    </form>
+  </div>
+</div>
