@@ -12,6 +12,7 @@ import { MappingsService } from './mappings.service'
 
 import { MappingsComponent } from './mappings.component'
 import { CreateComponent } from './create.component'
+import { CanvasComponent } from './canvas.component'
 
 
 @NgModule({
@@ -27,7 +28,8 @@ import { CreateComponent } from './create.component'
     providers: [MappingsService],
     declarations: [
 	MappingsComponent,
-	CreateComponent,	
+	CreateComponent,
+	CanvasComponent,
     ],
     exports: [MappingsComponent]
 })

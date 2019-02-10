@@ -1,17 +1,18 @@
 <div class="row">
-  <div class="col s4">
+  <div class="col s3">
     <mappings-create
        [mappingType]="mappingType.IMPORT"
        [refs]="importRefs"></mappings-create>
   </div>
-  <div class="col s4">
+  <mappings-canvas #importsLinks class="col s2"></mappings-canvas>
+  <div class="col s2">
     <h6>Collection</h6>
   </div>
-  <div class="col s4">
+  <mappings-canvas #exportsLinks class="col s2"></mappings-canvas>
+  <div class="col s3">
     <mappings-create
        [mappingType]="mappingType.EXPORT"
        [refs]="exportRefs"></mappings-create>
   </div>
 </div>
-<div class="row">
-</div>
+

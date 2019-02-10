@@ -4,8 +4,9 @@ import {
 } from '@angular/core'
 import { NgSwitch } from '@angular/common'
 import { ApiService, Event } from './../api.service'
-import { ConfigModalComponent } from './../configs/modal.component'
 import { MappingsService } from './mappings.service'
+
+import { CanvasComponent } from './canvas.component'
 
 import { MappingType } from './mapping'
 
@@ -16,8 +17,11 @@ declare var jQuery: any;
     templateUrl: './mappings.component.html'
 })
 
-export class MappingsComponent implements OnInit, OnDestroy {
+export class MappingsComponent implements OnInit, AfterViewInit, OnDestroy {
 
+    @ViewChild("importsLinks") importLinks: CanvasComponent
+    @ViewChild("exportsLinks") exportLinks: CanvasComponent
+    
     public mappingType = MappingType
     public importRefs: Array<string> = []
     public exportRefs: Array<string> = []
@@ -36,6 +40,10 @@ export class MappingsComponent implements OnInit, OnDestroy {
     }
 
     ngOnInit() {
+    }
+
+    ngAfterViewInit() {
+	console.log(this.importLinks, this.exportLinks)
     }
 
     ngOnDestroy() {
