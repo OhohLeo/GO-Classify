@@ -1,39 +1,39 @@
 <div class="row">
-  <h6>{{mappingRef[mappingType]}}<i class="material-icons"
-				    (click)="onNewMapping()">plus_one</i></h6>
+  <h6>{{workflowRef[workflowType]}}<i class="material-icons"
+				    (click)="onNewWorkflow()">plus_one</i></h6>
 </div> 
-<div id="mapping-{{mappingType}}" class="modal">
-  <h5>New {{mappingRef[mappingType]}}</h5>
+<div id="workflow-{{workflowType}}" class="modal">
+  <h5>New {{workflowRef[workflowType]}}</h5>
   <div class="modal-content">
     <div class="row">
       <input name="name"
 	     type="string"
 	     id="name"
-	     [(ngModel)]="mapping.name" />
+	     [(ngModel)]="workflow.name" />
       <label for="name">Name</label>
     </div>
     <div class="row">
       <label for="ref">Type</label>
       <select name="ref"
-              [(ngModel)]="mapping.ref"
+              [(ngModel)]="workflow.ref"
               class="browser-default">
 	<option *ngFor="let ref of refs" [value]="ref">
 	  {{ref}}
 	</option>
       </select>
     </div>
-    <form *ngIf="mapping.ref"
+    <form *ngIf="workflow.ref"
 	  #createForm="ngForm"
 	  (ngSubmit)="onSubmit()">
-      <div class="row" [ngSwitch]="mappingType">
-	<imports-create *ngSwitchCase="mappingRef.IMPORT" [currentRef]="mapping.ref"></imports-create>
-	<exports-create *ngSwitchCase="mappingRef.EXPORT" [currentRef]="mapping.ref"></exports-create>
+      <div class="row" [ngSwitch]="workflowType">
+	<imports-create *ngSwitchCase="workflowRef.IMPORT" [currentRef]="workflow.ref"></imports-create>
+	<exports-create *ngSwitchCase="workflowRef.EXPORT" [currentRef]="workflow.ref"></exports-create>
       </div>
       <div class="row">
 	<button type="submit"
 		[disabled]="!createForm.form.valid"
 		class="btn waves-effect waves-light">
-	  New {{mapping.ref}}
+	  New {{workflow.ref}}
 	  <i class="material-icons right">send</i>
 	</button>
       </div>

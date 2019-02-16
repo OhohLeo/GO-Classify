@@ -10,7 +10,7 @@ import { ReferencesService } from '../references/references.service'
 import { BaseElement } from '../base'
 
 @Injectable()
-export class MappingsService {
+export class WorkflowService {
     
     constructor(private apiService: ApiService,
 		private bufferService: BufferService,

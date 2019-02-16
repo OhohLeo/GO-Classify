@@ -24,8 +24,8 @@
 	  <li id="collection" class="tab">
 	    <a (click)="onCollection(collection)">Collection</a>
 	  </li>
-	  <li id="mappings" class="tab"><a (click)="onMappings()">Mappings
-	      <i id="mappings-loop"
+	  <li id="workflow" class="tab"><a (click)="onWorkflow()">Workflow
+	      <i id="workflow-loop"
 		 class="material-icons right">loop</i></a></li>
 	  <li id="imports" class="tab"><a (click)="onImports()">Imports
 	      <i id="imports-loop"
@@ -56,8 +56,8 @@
             <collection [collection]="collection">
             </collection>
 	</div>
-        <div *ngSwitchCase="appStatus.MAPPINGS">
-            <mappings></mappings>
+        <div *ngSwitchCase="appStatus.WORKFLOW">
+            <workflow></workflow>
         </div>
         <div *ngSwitchCase="appStatus.IMPORTS">
             <imports></imports>

@@ -1,31 +1,31 @@
 import { Component, NgZone, Input } from '@angular/core'
-import { MappingType, Mapping } from './mapping'
+import { WorkflowType, Workflow } from './workflow'
 
 declare var jQuery: any
 
 @Component({
-    selector: 'mappings-create',
+    selector: 'workflow-create',
     templateUrl: './create.component.html'
 })
 
 export class CreateComponent {
 
-    @Input() mappingType: MappingType
+    @Input() workflowType: WorkflowType
     @Input() refs: Array<string>
     
-    public mappingRef = MappingType
-    public mapping = new(Mapping)
+    public workflowRef = WorkflowType
+    public workflow = new(Workflow)
     
     private action: any
 
-    onNewMapping() {
+    onNewWorkflow() {
         if (this.action != undefined) {
             return
         }
 
 	console.log("NEW MAPPING!")
 	
-        this.action = jQuery('div#mapping-' + this.mappingType).modal({
+        this.action = jQuery('div#workflow-' + this.workflowType).modal({
             complete: () => {
                 this.stop()
             }

@@ -8,7 +8,7 @@ import { BufferModule } from './buffer/buffer.module'
 import { CollectionModule } from './collection/collection.module'
 import { CollectionsModule } from './collections/collections.module'
 import { ConfigsModule } from './configs/configs.module'
-import { MappingsModule } from './mappings/mappings.module'
+import { WorkflowModule } from './workflow/workflow.module'
 import { ImportsModule } from './imports/imports.module'
 import { ExportsModule } from './exports/exports.module'
 import { FilterModule } from './filter/filter.module'
@@ -30,7 +30,7 @@ import { AppComponent } from './app.component'
         FilterModule,
         FormsModule,
         HttpModule,
-	MappingsModule,
+	WorkflowModule,
         ImportsModule,
 	ExportsModule,
         ToolsModule,

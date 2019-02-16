@@ -18,7 +18,7 @@ declare var jQuery: any;
 enum AppStatus {
     NONE = 0,
     COLLECTION,
-    MAPPINGS,
+    WORKFLOW,
     IMPORTS,
     EXPORTS,
     CONFIGS,
@@ -146,8 +146,8 @@ export class AppComponent implements OnInit {
         this.onNewState(AppStatus.COLLECTION)
     }
 
-    onMappings() {
-        this.onNewState(AppStatus.MAPPINGS)
+    onWorkflow() {
+        this.onNewState(AppStatus.WORKFLOW)
     }
     
     onImports() {

@@ -8,9 +8,9 @@ import { ImportsModule } from '../imports/imports.module'
 import { ExportsModule } from '../exports/exports.module'
 import { ToolsModule } from '../tools/tools.module'
 
-import { MappingsService } from './mappings.service'
+import { WorkflowService } from './workflow.service'
 
-import { MappingsComponent } from './mappings.component'
+import { WorkflowComponent } from './workflow.component'
 import { CreateComponent } from './create.component'
 import { CanvasComponent } from './canvas.component'
 
@@ -25,13 +25,13 @@ import { CanvasComponent } from './canvas.component'
 	ExportsModule,
 	ToolsModule
     ],
-    providers: [MappingsService],
+    providers: [WorkflowService],
     declarations: [
-	MappingsComponent,
+	WorkflowComponent,
 	CreateComponent,
 	CanvasComponent,
     ],
-    exports: [MappingsComponent]
+    exports: [WorkflowComponent]
 })
 
-export class MappingsModule {}
+export class WorkflowModule {}

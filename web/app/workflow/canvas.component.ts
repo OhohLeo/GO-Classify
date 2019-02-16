@@ -15,7 +15,7 @@ class Line {
 }
 
 @Component({
-    selector: 'mappings-canvas',
+    selector: 'workflow-canvas',
     template: `<div #position style="position: relative;">
   <canvas #lines style="position: absolute; left: 0; top: 0; z-index: 0;">
   Your browser does not support HTML5 Canvas.
