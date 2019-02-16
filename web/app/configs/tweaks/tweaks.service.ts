@@ -36,12 +36,12 @@ export class TweaksService {
 		break
 
 	    case "exports":
-		Observable.combineLatest(
-		    this.apiService.getCollectionReferences()
-		    //this.exportsService.getReferences(item),
-		).subscribe(([inputs, outputs]) => {
-		    observer.next([inputs, outputs])
-		})
+		// Observable.combineLatest(
+		//     this.apiService.getCollectionReferences()
+		//     this.exportsService.getReferences(item),
+		// ).subscribe(([inputs, outputs]) => {
+		//     observer.next([inputs, outputs])
+		// })
 		break
 
 	    default:

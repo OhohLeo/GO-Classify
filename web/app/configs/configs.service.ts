@@ -48,7 +48,7 @@ export class ConfigsService {
 	    }
 	    
 	    if (["imports", "exports"].includes(item.getType())) {
-		queries.push("collection=" + collectionName) 
+	    	queries.push("collection=" + collectionName)
 	    }
 
 	    if (queries.length > 0) {

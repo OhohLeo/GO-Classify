@@ -3,10 +3,11 @@ import {
     ContentChildren, QueryList, Renderer
 } from '@angular/core'
 import { NgSwitch } from '@angular/common'
-import { ExportsService, ExportBase } from './exports.service'
+import { ExportsService } from './exports.service'
 import { BaseCreateComponent } from '../tools/base_create.component'
 import { ApiService, Event } from '../api.service'
-import { Convert2File } from './file/file';
+
+import { BaseElement } from '../base'
 
 declare var jQuery: any;
 
@@ -19,7 +20,7 @@ export class ExportsComponent implements OnInit, OnDestroy {
 
     public refs: Array<string> = []
     public refs2Display: Array<string> = []
-    public exports: Map<string, ExportBase[]>
+    public exports: Map<string, BaseElement[]>
     public currentRef: string = "all"
 
     public createComponent: BaseCreateComponent
@@ -41,10 +42,6 @@ export class ExportsComponent implements OnInit, OnDestroy {
         exportsService.setUpdateList(() => {
             this.update()
         })
-
-        // Subscribe to convert received data
-        exportsService.addConvertToExport("file", Convert2File)
-
 
         this.events = exportsService.subscribeEvents("status")
             .subscribe((e: Event) => {
@@ -90,7 +87,7 @@ export class ExportsComponent implements OnInit, OnDestroy {
 
     update() {
         this.exportsService.getExports()
-            .subscribe((exports: Map<string, ExportBase[]>) => {
+            .subscribe((exports: Map<string, BaseElement[]>) => {
                 this.zone.run(() => {
                     this.exports = exports
                 })
@@ -135,7 +132,7 @@ export class ExportsComponent implements OnInit, OnDestroy {
             })
     }
 
-    onRefresh(item: ExportBase) {
+    onRefresh(item: BaseElement) {
         if (item.isRunning) {
             this.exportsService.stopExport(item)
         } else {
@@ -143,10 +140,10 @@ export class ExportsComponent implements OnInit, OnDestroy {
         }
     }
 
-    onConfig(item: ExportBase) {
+    onConfig(item: BaseElement) {
     }
 
-    onDelete(item: ExportBase) {
+    onDelete(item: BaseElement) {
         this.exportsService.deleteExport(item)
     }
 }

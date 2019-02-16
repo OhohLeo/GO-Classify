@@ -7,9 +7,7 @@ import { ApiService, Event } from './../api.service'
 import { ConfigModalComponent } from './../configs/modal.component'
 import { ImportsService } from './imports.service'
 import { BaseCreateComponent } from '../tools/base_create.component'
-import { Convert2Imap } from './imap/imap';
-import { Convert2Directory } from './directory/directory';
-import { DirectoryCreateComponent } from './directory/create.component';
+import { DirectoryCreateComponent } from './directory/create.component'
 import { BaseElement } from '../base'
 
 declare var jQuery: any;
@@ -47,10 +45,6 @@ export class ImportsComponent implements OnInit, OnDestroy {
         importsService.setUpdateList(() => {
             this.update()
         })
-
-        // Subscribe to convert received data
-        importsService.addConvertToImport("imap", Convert2Imap)
-        importsService.addConvertToImport("directory", Convert2Directory)
 
         this.events = importsService.subscribeEvents("status")
             .subscribe((e: Event) => {

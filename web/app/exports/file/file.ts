@@ -1,12 +1,12 @@
-import { ExportBase } from '../exports.service';
+import { BaseElement } from '../../base'
 
-export class File extends ExportBase {
+export class File extends BaseElement {
 
     public path: string = ""
     public permissions: string
 
-    constructor(public id: string) {
-        super("file", id);
+    constructor(public name: string) {
+        super("exports", "file", name);
     }
 
     getParams(): any {
@@ -23,7 +23,7 @@ export class File extends ExportBase {
     }
 }
 
-export function Convert2File(id: string, params): ExportBase {
+export function Convert2File(name: string, params): File {
 
     if (typeof params != 'object') {
         console.error("Unsupported file parameters!")
@@ -42,7 +42,7 @@ export function Convert2File(id: string, params): ExportBase {
         return undefined
     }
 
-    let file = new File(id)
+    let file = new File(name)
     file.path = path
     file.permissions = permissions
 

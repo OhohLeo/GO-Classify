@@ -4,11 +4,14 @@ import {
 } from '@angular/core'
 import { NgSwitch } from '@angular/common'
 import { ApiService, Event } from './../api.service'
+import { ImportsService } from '../imports/imports.service'
+import { ExportsService } from '../exports/exports.service'
 import { WorkflowService } from './workflow.service'
 
 import { CanvasComponent } from './canvas.component'
 
 import { WorkflowType } from './workflow'
+import { BaseElement } from '../base'
 
 declare var jQuery: any;
 
@@ -24,11 +27,15 @@ export class WorkflowComponent implements OnInit, AfterViewInit, OnDestroy {
     
     public workflowType = WorkflowType
     public importRefs: Array<string> = []
+    public imports: Map<string, BaseElement[]>
     public exportRefs: Array<string> = []
+    public exports: Map<string, BaseElement[]>
     
     constructor(private zone: NgZone,
 		private render: Renderer,
 		private apiService: ApiService,
+		private importsService: ImportsService,
+		private exportsService: ExportsService,
 		private workflowService: WorkflowService) {
 
 	// Refresh the import/export ref list
@@ -37,6 +44,15 @@ export class WorkflowComponent implements OnInit, AfterViewInit, OnDestroy {
                 this.importRefs = references["imports"]
 		this.exportRefs = references["exports"]
             })
+
+	// // Refresh the import/export lists
+        // importsService.setUpdateList(() => {
+        //     this.updateImports()
+        // })
+
+	// exportsService.setUpdateList(() => {
+        //     this.updateExports()
+        // })
     }
 
     ngOnInit() {
@@ -48,4 +64,29 @@ export class WorkflowComponent implements OnInit, AfterViewInit, OnDestroy {
 
     ngOnDestroy() {
     }
+
+
+    updateAll() {
+	this.updateImports()
+	this.updateExports()
+    }
+    
+    updateImports() {
+        this.importsService.getImports()
+            .subscribe((imports: Map<string, BaseElement[]>) => {
+                this.zone.run(() => {
+                    this.imports = imports
+                })
+            })
+    }
+
+    updateExports() {
+	this.exportsService.getExports()
+            .subscribe((exports: Map<string, BaseElement[]>) => {
+                this.zone.run(() => {
+                    this.exports = exports
+                })
+            })
+    }
+
 }

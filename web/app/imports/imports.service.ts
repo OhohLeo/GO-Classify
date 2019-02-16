@@ -7,6 +7,9 @@ import { ApiService, Event } from '../api.service';
 import { BufferService } from '../buffer/buffer.service';
 import { ReferencesService } from '../references/references.service'
 
+import { Convert2Imap } from './imap/imap'
+import { Convert2Directory } from './directory/directory'
+
 import { BaseElement } from '../base'
 
 @Injectable()
@@ -19,19 +22,18 @@ export class ImportsService {
     updateList: any
 
     private eventObservers = {}
-    private convertToImport = {}
+    private convertToImport: { [index:string]: (string, any) => BaseElement } = {
+	"imap": Convert2Imap,
+	"directory": Convert2Directory,
+    }
 
     constructor(private apiService: ApiService,
 		private bufferService: BufferService,
-		private referencesService: ReferencesService) { }
-
+		private referencesService: ReferencesService) {}
+    
     // Set update import list function
     setUpdateList(updateList: any) {
         this.updateList = updateList;
-    }
-
-    addConvertToImport(name: string, callback) {
-        this.convertToImport[name] = callback
     }
 
     // Refresh the import list

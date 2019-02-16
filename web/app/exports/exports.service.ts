@@ -1,71 +1,34 @@
-import { Injectable } from '@angular/core';
-import { Observable } from 'rxjs/Rx';
-import { ApiService, Event } from './../api.service';
-import { BufferService } from './../buffer/buffer.service';
-import { Response } from '@angular/http';
-import { Md5 } from 'ts-md5/dist/md5';
+import { Injectable } from '@angular/core'
+import { Observable } from 'rxjs/Rx'
+import { ApiService, Event } from './../api.service'
+import { BufferService } from './../buffer/buffer.service'
+import { Response } from '@angular/http'
 
-export class ExportBase {
+import { Convert2File } from './file/file'
 
-    public isRunning: boolean
-
-    constructor(private ref: string, public name: string) { }
-
-	getName(): string {
-		return String(Md5.hashStr(JSON.stringify(this.getParams())))
-	}
-
-    getRef(): string {
-        if (this.ref === undefined)
-            throw new Error("attribute 'ref' should be defined!")
-
-        return this.ref
-    }
-
-    getParams(): any {
-        throw new Error("method 'getParams' should be defined!")
-    }
-
-    display(): string {
-        throw new Error("method 'display' should be defined!")
-    }
-
-    compare(i: ExportBase): boolean {
-        if (this.ref === undefined)
-            throw new Error("attribute 'ref' should be defined!")
-
-        if (this.ref != i.getRef())
-            return false
-
-        return true
-    }
-}
+import { BaseElement } from '../base'
 
 @Injectable()
 export class ExportsService {
 
     enableCache: boolean
-    exports: Map<string, ExportBase[]> = new Map<string, ExportBase[]>()
-    exportsByName: Map<string, ExportBase> = new Map<string, ExportBase>()
+    exports: Map<string, BaseElement[]> = new Map<string, BaseElement[]>()
+    exportsByName: Map<string, BaseElement> = new Map<string, BaseElement>()
     configs: any
     updateList: any
 
     private eventObservers = {}
-
-    private convertToExport = {};
-
+    public convertToExport: { [index:string]: (string, any) => BaseElement } = {
+        "file": Convert2File,
+    }
 
     constructor(private apiService: ApiService,
-        private bufferService: BufferService) { }
+		private bufferService: BufferService) {}
 
     // Set update export list function
     setUpdateList(updateList: any) {
         this.updateList = updateList;
     }
-
-	addConvertToExport(name: string, callback) {
-		this.convertToExport[name] = callback
-	}
 
     // Refresh the export list
     private update() {
@@ -74,7 +37,7 @@ export class ExportsService {
     }
 
     // Check if export does exist
-    hasExport(search: ExportBase): boolean {
+    hasExport(search: BaseElement): boolean {
         return this.hasSameExportName(search.name)
     }
 
@@ -84,7 +47,7 @@ export class ExportsService {
     }
 
     // Check if export does exist
-    hasSameExport(search: ExportBase): boolean {
+    hasSameExport(search: BaseElement): boolean {
         let exports = this.exports.get(search.getRef())
         if (exports === undefined) {
             return false
@@ -99,7 +62,7 @@ export class ExportsService {
         return false
     }
 
-    private add(i: ExportBase) {
+    private add(i: BaseElement) {
 
         // Store exports by name
         this.exportsByName.set(i.name, i)
@@ -112,7 +75,7 @@ export class ExportsService {
         this.exports.get(i.getRef()).push(i)
     }
 
-    addExport(i: ExportBase, onParams: any, onSuccess: any) {
+    addExport(i: BaseElement, onParams: any, onSuccess: any) {
 
         // Disable cache
         this.enableCache = false
@@ -122,15 +85,15 @@ export class ExportsService {
             return
         }
 
-		let name = i.getName()
-		if (this.hasSameExportName(name)) {
-			console.error("Already existing name " + name)
+	let name = i.getName()
+	if (this.hasSameExportName(name)) {
+	    console.error("Already existing name " + name)
             return
-		}
+	}
 
         return this.apiService.post(
             "exports", {
-				"name": name,
+		"name": name,
                 "ref": i.getRef(),
                 "params": i.getParams(),
                 "collections": [this.apiService.getCollectionName()],
@@ -145,8 +108,8 @@ export class ExportsService {
 
                 if (body === undefined && body.name === undefined) {
 
-					if (onParams !== undefined && onParams(body))
-						return
+		    if (onParams !== undefined && onParams(body))
+			return
 
                     throw new Error('Name not found when adding new export!');
                 }
@@ -155,13 +118,13 @@ export class ExportsService {
 
                 this.update()
 
-				if (onSuccess !== undefined) {
-					onSuccess(i)
-				}
+		if (onSuccess !== undefined) {
+		    onSuccess(i)
+		}
             })
     }
 
-    private delete(i: ExportBase) {
+    private delete(i: BaseElement) {
 
         // Delete export by name
         this.exportsByName.delete(i.name)
@@ -182,7 +145,7 @@ export class ExportsService {
         }
     }
 
-    deleteExport(i: ExportBase) {
+    deleteExport(i: BaseElement) {
 
         // Disable cache
         this.enableCache = false
@@ -209,15 +172,15 @@ export class ExportsService {
             })
     }
 
-    forceExport(e: ExportBase) {
+    forceExport(e: BaseElement) {
         return this.actionExport(true, e)
     }
 
-    stopExport(e: ExportBase) {
+    stopExport(e: BaseElement) {
         return this.actionExport(false, e)
     }
 
-    actionExport(isForce: boolean, e: ExportBase) {
+    actionExport(isForce: boolean, e: BaseElement) {
 
         if (this.hasExport(e) === false) {
             console.error("No existing " + e.getRef())
@@ -232,7 +195,7 @@ export class ExportsService {
             .subscribe(rsp => {
                 if (rsp.status != 204) {
                     throw new Error(' Error when '
-                        + action + ' export: ' + rsp.status)
+				    + action + ' export: ' + rsp.status)
                 }
 
                 if (isForce)
@@ -254,8 +217,8 @@ export class ExportsService {
             this.apiService.get("exports").subscribe(rsp => {
 
                 // Init the export lists
-                this.exports = new Map<string, ExportBase[]>()
-                this.exportsByName = new Map<string, ExportBase>()
+                this.exports = new Map<string, BaseElement[]>()
+                this.exportsByName = new Map<string, BaseElement>()
 
                 for (let exportRef in rsp) {
 
