@@ -1,0 +1,4 @@
+<div [ngSwitch]="element.getRef()">
+    <imap-display *ngSwitchCase="'imap'" [imap]="element"></imap-display>
+    <directory-display *ngSwitchCase="'directory'" [directory]="element"></directory-display>
+</div>

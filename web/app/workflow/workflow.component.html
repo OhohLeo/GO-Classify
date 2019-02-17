@@ -1,15 +1,21 @@
 <div class="row">
-  <div class="col s3">
+  <div class="col s3 no-padding-right">
     <workflow-create
        [workflowType]="workflowType.IMPORT"
        [refs]="importRefs"></workflow-create>
+    <workflow-display
+       *ngFor="let importType of importTypes"
+       [elementsRef]="'import'"
+       [elementsType]="importType"
+       [elements]="imports">
+    </workflow-display>
   </div>
-  <workflow-canvas #importsLinks class="col s2"></workflow-canvas>
-  <div class="col s2">
+  <workflow-canvas #importsLinks class="col s2 no-padding"></workflow-canvas>
+  <div class="col s2 no-padding">
     <h6>Collection</h6>
   </div>
-  <workflow-canvas #exportsLinks class="col s2"></workflow-canvas>
-  <div class="col s3">
+  <workflow-canvas #exportsLinks class="col s2 no-padding"></workflow-canvas>
+  <div class="col s3 no-padding-left">
     <workflow-create
        [workflowType]="workflowType.EXPORT"
        [refs]="exportRefs"></workflow-create>

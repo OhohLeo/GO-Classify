@@ -7,11 +7,20 @@ import (
 	"github.com/ohohleo/classify/database"
 	"github.com/ohohleo/classify/exports"
 	"github.com/ohohleo/classify/exports/file"
+	"github.com/ohohleo/classify/reference"
 )
 
 // Type of exports
 var newExports = map[string]exports.Build{
 	"file": file.ToBuild(),
+}
+
+func Export2Build(typ string) (exports.Build, error) {
+	buildExport, ok := newExports[typ]
+	if ok == false {
+		return buildExport, fmt.Errorf("export type '%s' not handled", typ)
+	}
+	return buildExport, nil
 }
 
 type Export struct {
@@ -21,18 +30,44 @@ type Export struct {
 	collections map[string]*Collection
 }
 
-func (i *Export) HasCollection(name string) (ok bool) {
-	_, ok = i.collections[name]
+func NewExport(typ string) (*Export, error) {
+	buildExport, err := Export2Build(typ)
+	if err != nil {
+		return nil, err
+	}
+
+	return &Export{
+		Name:   typ,
+		engine: buildExport.ForceCreate(),
+	}, nil
+}
+
+func (e *Export) GetRefs() []*reference.Ref {
+	return reference.GetRefs(e.engine)
+}
+
+func (e *Export) GetDatasReferences() map[string]map[string]string {
+	references := make(map[string]map[string]string)
+
+	for _, data := range e.engine.GetDatasReferences() {
+		references[data.GetRef().String()] = reference.GetFieldTypes(data)
+	}
+
+	return references
+}
+
+func (e *Export) HasCollection(name string) (ok bool) {
+	_, ok = e.collections[name]
 	return
 }
 
 // Return true if export has a specified collection or no collections are specified
-func (i *Export) HasCollections(collections map[string]*Collection) bool {
+func (e *Export) HasCollections(collections map[string]*Collection) bool {
 
 	if len(collections) > 0 {
 
 		for name, _ := range collections {
-			if i.HasCollection(name) {
+			if e.HasCollection(name) {
 				return true
 			}
 		}
@@ -142,10 +177,10 @@ func (c *Classify) CheckExportsConfig(configuration map[string]json.RawMessage) 
 }
 
 // Check export name and return the exports
-func (c *Classify) GetExportByName(name string) (i *Export, err error) {
+func (c *Classify) GetExportByName(name string) (e *Export, err error) {
 
 	var ok bool
-	i, ok = c.exports[name]
+	e, ok = c.exports[name]
 	if ok == false {
 		err = fmt.Errorf("export '%s' not found", name)
 		return
@@ -374,6 +409,15 @@ func (c *Classify) StopExports(exportList map[string]*Export, collections map[st
 	return nil
 }
 
-func (c *Classify) GetExportRefs() []string {
-	return exports.REF_IDX2STR
+func (c *Classify) GetExportRefs() map[string]References {
+	references := make(map[string]References)
+
+	for _, name := range exports.REF_IDX2STR {
+		e, _ := NewExport(name)
+		references[name] = References{
+			Datas: e.GetDatasReferences(),
+		}
+	}
+
+	return references
 }

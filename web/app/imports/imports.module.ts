@@ -11,6 +11,7 @@ import { ImportsService } from './imports.service'
 
 import { ImportsComponent } from './imports.component'
 import { ImportsCreateComponent } from './create.component'
+import { ImportsDisplayComponent } from './display.component'
 import { DirectoryCreateComponent } from './directory/create.component'
 import { DirectoryDisplayComponent } from './directory/display.component'
 import { ImapCreateComponent } from './imap/create.component'
@@ -31,13 +32,16 @@ import { ImapDisplayComponent } from './imap/display.component'
     declarations: [
 	ImportsComponent,
 	ImportsCreateComponent,
+	ImportsDisplayComponent,
         DirectoryCreateComponent,
         DirectoryDisplayComponent,
         ImapCreateComponent,
         ImapSearchComponent,
         ImapDisplayComponent
     ],
-    exports: [ImportsComponent, ImportsCreateComponent]
+    exports: [ImportsComponent,
+	      ImportsCreateComponent,
+	      ImportsDisplayComponent]
 })
 
 export class ImportsModule { }

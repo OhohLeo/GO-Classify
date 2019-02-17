@@ -40,7 +40,7 @@ export class ApiService {
     private references: any
 
     private onCollectionChange: (collection: Collection,
-								 status: CollectionStatus) => void
+				 status: CollectionStatus) => void
 
     private zone = new NgZone({ enableLongStackTrace: false })
 
@@ -49,7 +49,7 @@ export class ApiService {
     public collectionSelected: Collection
 
     constructor(private http: Http,
-				private referencesService: ReferencesService) { }
+		private referencesService: ReferencesService) { }
 
     headers() {
         return new RequestOptions({
@@ -99,11 +99,11 @@ export class ApiService {
 
     changePath(path: string): string {
         return path.replace("collections/:name",
-							"collections/" + this.collectionSelected.name)
+			    "collections/" + this.collectionSelected.name)
     }
 
     subscribeCollectionChange(cb: (collection: Collection,
-								   status: CollectionStatus) => void) {
+				   status: CollectionStatus) => void) {
         this.onCollectionChange = cb
     }
 
@@ -132,33 +132,33 @@ export class ApiService {
     }
 
     getCollectionUrl(): string {
-		return this.url + "collections/" + this.getCollectionName()
+	return this.url + "collections/" + this.getCollectionName()
     }
 
     getCollectionReferences() {
 
-		let collectionUrl = this.getCollectionUrl()
+	let collectionUrl = this.getCollectionUrl()
         if (collectionUrl == undefined) {
             return
         }
 
         return new Observable(observer => {
 
-			let references = this.referencesService.getReferences(this.collectionSelected)
-			if (references != undefined) {
-				observer.next(references)
-				return
-			}
+	    let references = this.referencesService.getReferences(this.collectionSelected)
+	    if (references != undefined) {
+		observer.next(references)
+		return
+	    }
 
-			let request = this.http.get(collectionUrl + "/references")
+	    let request = this.http.get(collectionUrl + "/references")
                 .map(this.extractData)
                 .catch(this.handleError);
 
-			request.subscribe((src) => {
-				let references = this.referencesService.setReferences(this.collectionSelected, src)
-				console.log("[COLLECTION REFERENCES] OK", references)
-				observer.next(references)
-			})
+	    request.subscribe((src) => {
+		let references = this.referencesService.setReferences(this.collectionSelected, src)
+		console.log("[COLLECTION REFERENCES] OK", references)
+		observer.next(references)
+	    })
         });
     }
 
@@ -212,28 +212,28 @@ export class ApiService {
         }
 
         return this.http.delete(collectionUrl + "/imports/" + name,
-								this.headers())
+				this.headers())
             .map((res: Response) => {
                 if (res.status != 204) {
                     throw new Error('Impossible to delete import collection '
-									+ name + ': ' + res.status);
+				    + name + ': ' + res.status);
                 }
             })
             .catch(this.handleError);
     }
 
     getIconUrl(item: Item, size?: string): string {
-		return this.getItemUrl(item.id, item.getIconUrl(size))
+	return this.getItemUrl(item.id, item.getIconUrl(size))
     }
 
     getItemUrl(id: string, content?: string): string {
 
-		let url =  this.getCollectionUrl() + "/items/" + id
-		if (content == "") {
-			return url
-		}
+	let url =  this.getCollectionUrl() + "/items/" + id
+	if (content == "") {
+	    return url
+	}
 
-		return url + "?content=" + encodeURIComponent(content)
+	return url + "?content=" + encodeURIComponent(content)
     }
 
     // GET /stream
@@ -253,7 +253,7 @@ export class ApiService {
                 }
 
             return () => {
-				console.error("CLOSE STREAM!")
+		console.error("CLOSE STREAM!")
                 eventSource.close()
             }
         })

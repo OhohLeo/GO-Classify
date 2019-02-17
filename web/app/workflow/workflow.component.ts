@@ -17,7 +17,8 @@ declare var jQuery: any;
 
 @Component({
     selector: 'workflow',
-    templateUrl: './workflow.component.html'
+    templateUrl: './workflow.component.html',
+    styleUrls: ['./workflow.component.css']
 })
 
 export class WorkflowComponent implements OnInit, AfterViewInit, OnDestroy {
@@ -26,9 +27,13 @@ export class WorkflowComponent implements OnInit, AfterViewInit, OnDestroy {
     @ViewChild("exportsLinks") exportLinks: CanvasComponent
     
     public workflowType = WorkflowType
+
     public importRefs: Array<string> = []
+    public importTypes: Array<string> = []
     public imports: Map<string, BaseElement[]>
+	
     public exportRefs: Array<string> = []
+    public exportTypes: Array<string> = []
     public exports: Map<string, BaseElement[]>
     
     constructor(private zone: NgZone,
@@ -41,25 +46,26 @@ export class WorkflowComponent implements OnInit, AfterViewInit, OnDestroy {
 	// Refresh the import/export ref list
         apiService.getReferences()
             .subscribe((references) => {
-                this.importRefs = references["imports"]
+		this.importRefs = references["imports"]
 		this.exportRefs = references["exports"]
             })
 
-	// // Refresh the import/export lists
-        // importsService.setUpdateList(() => {
-        //     this.updateImports()
-        // })
+	// Refresh the import/export lists
+        importsService.setUpdateList(() => {
+            this.updateImports()
+        })
 
-	// exportsService.setUpdateList(() => {
-        //     this.updateExports()
-        // })
+	exportsService.setUpdateList(() => {
+            this.updateExports()
+        })
     }
 
     ngOnInit() {
+	this.updateAll()
     }
 
     ngAfterViewInit() {
-	console.log(this.importLinks, this.exportLinks)
+	console.log("AFTER VIEW INIT", this.importLinks, this.exportLinks)
     }
 
     ngOnDestroy() {
@@ -75,6 +81,7 @@ export class WorkflowComponent implements OnInit, AfterViewInit, OnDestroy {
         this.importsService.getImports()
             .subscribe((imports: Map<string, BaseElement[]>) => {
                 this.zone.run(() => {
+		    this.importTypes = Array.from(imports.keys())
                     this.imports = imports
                 })
             })
@@ -84,6 +91,7 @@ export class WorkflowComponent implements OnInit, AfterViewInit, OnDestroy {
 	this.exportsService.getExports()
             .subscribe((exports: Map<string, BaseElement[]>) => {
                 this.zone.run(() => {
+		    this.exportTypes = Array.from(exports.keys())
                     this.exports = exports
                 })
             })

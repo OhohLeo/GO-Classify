@@ -25,6 +25,8 @@ var REF_STR2IDX = map[string]Ref{
 
 type Export interface {
 	GetRef() Ref
+	GetDatasReferences() []data.Data
+	CheckConfig(json.RawMessage) error
 	OnInput(data data.Data) error
 	Stop() error
 	Eq(Export) bool
@@ -32,5 +34,6 @@ type Export interface {
 
 type Build struct {
 	CheckConfig func(json.RawMessage) error
+	ForceCreate func() Export
 	Create      func(json.RawMessage, json.RawMessage, []string) (Export, error)
 }

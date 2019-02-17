@@ -12,6 +12,8 @@ import { WorkflowService } from './workflow.service'
 
 import { WorkflowComponent } from './workflow.component'
 import { CreateComponent } from './create.component'
+import { DisplayComponent } from './display.component'
+import { ElementComponent } from './element.component'
 import { CanvasComponent } from './canvas.component'
 
 
@@ -29,6 +31,8 @@ import { CanvasComponent } from './canvas.component'
     declarations: [
 	WorkflowComponent,
 	CreateComponent,
+	DisplayComponent,
+	ElementComponent,
 	CanvasComponent,
     ],
     exports: [WorkflowComponent]

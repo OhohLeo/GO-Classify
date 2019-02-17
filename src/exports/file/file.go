@@ -21,8 +21,13 @@ type File struct {
 
 func ToBuild() exports.Build {
 	return exports.Build{
-		Create: Create,
+		ForceCreate: ForceCreate,
+		Create:      Create,
 	}
+}
+
+func ForceCreate() (i exports.Export) {
+	return new(File)
 }
 
 func Create(input json.RawMessage,
@@ -58,8 +63,18 @@ func GetParams() []params.Param {
 	return []params.Param{new(params.Path)}
 }
 
+func (f *File) CheckConfig(config json.RawMessage) error {
+	return nil
+}
+
 func (f *File) GetRef() exports.Ref {
 	return exports.FILE
+}
+
+func (f *File) GetDatasReferences() []data.Data {
+	return []data.Data{
+		new(data.File),
+	}
 }
 
 func (f *File) OnInput(input data.Data) error {

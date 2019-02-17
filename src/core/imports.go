@@ -517,6 +517,15 @@ func (c *Classify) StopImports(imports map[string]*Import, collections map[strin
 	return nil
 }
 
-func (c *Classify) GetImportRefs() []string {
-	return imports.REF_IDX2STR
+func (c *Classify) GetImportRefs() map[string]References {
+	references := make(map[string]References)
+
+	for _, name := range imports.REF_IDX2STR {
+		i, _ := NewImport(name)
+		references[name] = References{
+			Datas: i.GetDatasReferences(),
+		}
+	}
+
+	return references
 }
