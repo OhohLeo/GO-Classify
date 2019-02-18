@@ -33,5 +33,6 @@ type Collection interface {
 
 type Build struct {
 	CheckConfig func(json.RawMessage) error
+	ForceCreate func() Collection
 	Create      func(json.RawMessage, json.RawMessage) (Collection, error)
 }

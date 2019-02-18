@@ -382,7 +382,7 @@ type Websocket interface {
 
 type GetReferences struct {
 	Websites    []string              `json:"websites"`
-	Collections []string              `json:"collections"`
+	Collections map[string]References `json:"collections"`
 	Imports     map[string]References `json:"imports"`
 	Exports     map[string]References `json:"exports"`
 }

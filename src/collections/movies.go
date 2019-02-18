@@ -6,6 +6,9 @@ import (
 
 func BuildMovies() Build {
 	return Build{
+		ForceCreate: func() Collection {
+			return new(Movies)
+		},
 		Create: func(json.RawMessage, json.RawMessage) (Collection, error) {
 			return new(Movies), nil
 		},

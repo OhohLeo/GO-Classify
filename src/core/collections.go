@@ -15,7 +15,27 @@ var newCollections = map[string]collections.Build{
 	"simple": collections.BuildSimple(),
 }
 
-// Check imports configuration
+func Collection2Build(typ string) (collections.Build, error) {
+	buildCollection, ok := newCollections[typ]
+	if ok == false {
+		return buildCollection, fmt.Errorf("collection type '%s' not handled", typ)
+	}
+	return buildCollection, nil
+}
+
+func NewCollection(typ string) (*Collection, error) {
+	buildCollection, err := Collection2Build(typ)
+	if err != nil {
+		return nil, err
+	}
+
+	return &Collection{
+		Name:   typ,
+		engine: buildCollection.ForceCreate(),
+	}, nil
+}
+
+// Check collections configuration
 func (c *Classify) CheckCollectionsConfig(configuration map[string]json.RawMessage) (err error) {
 
 	// For all collection configuration
@@ -245,6 +265,15 @@ func (c *Classify) ModifyCollection(
 }
 
 // Returns the type of collection
-func (c *Classify) GetCollectionRefs() []string {
-	return collections.REF_IDX2STR
+func (c *Classify) GetCollectionRefs() map[string]References {
+	references := make(map[string]References)
+
+	for _, name := range collections.REF_IDX2STR {
+		collection, _ := NewCollection(name)
+		references[name] = References{
+			Datas: collection.GetDatasReferences(),
+		}
+	}
+
+	return references
 }

@@ -6,6 +6,9 @@ import (
 
 func BuildSimple() Build {
 	return Build{
+		ForceCreate: func() Collection {
+			return new(Simple)
+		},
 		Create: func(json.RawMessage, json.RawMessage) (Collection, error) {
 			return new(Simple), nil
 		},
