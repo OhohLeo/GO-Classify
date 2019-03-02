@@ -9,7 +9,10 @@ declare var jQuery: any
     template: `
 <div>
   <p>{{elementsRef}}/{{elementsType}}</p>
-  <workflow-element *ngFor="let element of elementList" [element]="element"></workflow-element>
+  <workflow-element *ngFor="let element of elementList"
+                    [element]="element"
+                    [ref]="elementsRef">
+  </workflow-element>
 </div>
 `,
     styles: [

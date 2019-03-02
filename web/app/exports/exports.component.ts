@@ -35,7 +35,7 @@ export class ExportsComponent implements OnInit, OnDestroy {
         // Refresh the import ref list
         apiService.getReferences()
             .subscribe((references) => {
-                this.refs = references["exports"]
+                this.refs = Object.keys(references["exports"])
             })
 
         // Method called to refresh the export list
@@ -107,7 +107,7 @@ export class ExportsComponent implements OnInit, OnDestroy {
 
         this.zone.run(() => {
             this.refs2Display = (ref === "all") ? this.refs : [ref]
-            this.currentRef = ref
+	    this.currentRef = ref
         })
     }
 

@@ -46,8 +46,8 @@ export class WorkflowComponent implements OnInit, AfterViewInit, OnDestroy {
 	// Refresh the import/export ref list
         apiService.getReferences()
             .subscribe((references) => {
-		this.importRefs = references["imports"]
-		this.exportRefs = references["exports"]
+		this.importRefs = Object.keys(references["imports"])
+		this.exportRefs = Object.keys(references["exports"])
             })
 
 	// Refresh the import/export lists

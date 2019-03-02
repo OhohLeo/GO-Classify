@@ -116,8 +116,6 @@ func (f Fields) GetRawDatas(data interface{}) (results map[string][]string, err 
 
 	for _, ref := range reference.GetRefs(data) {
 
-		// TODO: Handle time.Time
-
 		// Handle string only
 		if ref.Type != "string" {
 			continue
@@ -167,7 +165,7 @@ type Tweak struct {
 	Source map[string]Fields `json:"source"`
 
 	// [ ComputedData/Item/Export ] => Field => Value
-	Destination map[string]Fields `json:"destination"`
+	Target map[string]Fields `json:"target"`
 }
 
 func NewTweak(src []byte) (*Tweak, error) {
@@ -197,13 +195,13 @@ func (t *Tweak) check(raw map[string]interface{}, expected map[string]Fields, ds
 }
 
 // Check source compatibility
-func (t *Tweak) Check(sourceRaw map[string]interface{}, destinationRaw map[string]interface{}) (err error) {
+func (t *Tweak) Check(sourceRaw map[string]interface{}, targetRaw map[string]interface{}) (err error) {
 
 	if err = t.check(sourceRaw, t.Source, false); err != nil {
 		return
 	}
 
-	if err = t.check(destinationRaw, t.Destination, true); err != nil {
+	if err = t.check(targetRaw, t.Target, true); err != nil {
 		return
 	}
 
@@ -307,7 +305,7 @@ func (t *Tweak) Tweak(src map[string]interface{}) (results map[string]map[string
 	// Based on ordered values : determined results for each result field
 	results = make(map[string]map[string]string)
 
-	for name, fields := range t.Destination {
+	for name, fields := range t.Target {
 
 		if results[name] == nil {
 			results[name] = make(map[string]string)
@@ -317,7 +315,7 @@ func (t *Tweak) Tweak(src map[string]interface{}) (results map[string]map[string
 
 			results[name][key], err = setResult(v.Value, raw)
 			if err != nil {
-				err = fmt.Errorf("invalid destination name '%s' key '%s' %s",
+				err = fmt.Errorf("invalid target name '%s' key '%s' %s",
 					name, key, err.Error())
 				return
 			}

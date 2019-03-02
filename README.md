@@ -12,7 +12,7 @@ B --> |Tweaks|C
 
 ## What is the purpose ?
 
-* Collect all my data in one document, store them in a specified directory and print them
+* Collect all my datas in one document, store them in a specified directory and print them
 * When I scan a document, store the data in the specified document
 * Classify all my movies/musics searching through APIs
 

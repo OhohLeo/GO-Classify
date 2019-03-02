@@ -38,7 +38,7 @@ export class ImportsComponent implements OnInit, OnDestroy {
         // Refresh the import ref list
         apiService.getReferences()
             .subscribe((references) => {
-                this.refs = references["imports"]
+                this.refs = Object.keys(references["imports"])
             })
 
         // Refresh the import list

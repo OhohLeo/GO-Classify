@@ -9,6 +9,7 @@ import { ExportsService } from './exports.service'
 
 import { ExportsComponent } from './exports.component'
 import { ExportsCreateComponent } from './create.component'
+import { ExportsDisplayComponent } from './display.component'
 import { FileCreateComponent } from './file/create.component'
 import { FileDisplayComponent } from './file/display.component'
 
@@ -23,9 +24,10 @@ import { FileDisplayComponent } from './file/display.component'
     providers: [ExportsService],
     declarations: [ExportsComponent,
 		   ExportsCreateComponent,
+		   ExportsDisplayComponent,
 		   FileCreateComponent,
 		   FileDisplayComponent],
-    exports: [ExportsComponent, ExportsCreateComponent]
+    exports: [ExportsComponent, ExportsCreateComponent, ExportsDisplayComponent]
 })
 
 export class ExportsModule { }

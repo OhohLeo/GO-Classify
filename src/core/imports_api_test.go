@@ -303,7 +303,7 @@ func TestApiGetPatchImportConfig(t *testing.T) {
 					Source: map[string]Fields{
 						"directory": map[string]*Value{},
 					},
-					Destination: map[string]Fields{
+					Target: map[string]Fields{
 						"collection": map[string]*Value{},
 					},
 				},
@@ -322,7 +322,7 @@ func TestApiGetPatchImportConfig(t *testing.T) {
 					Source: map[string]Fields{
 						"directory": map[string]*Value{},
 					},
-					Destination: map[string]Fields{
+					Target: map[string]Fields{
 						"collection": map[string]*Value{},
 					},
 				},
@@ -341,7 +341,7 @@ func TestApiGetPatchImportConfig(t *testing.T) {
 					Source: map[string]Fields{
 						"directory": map[string]*Value{},
 					},
-					Destination: map[string]Fields{
+					Target: map[string]Fields{
 						"collection": map[string]*Value{},
 					},
 				},

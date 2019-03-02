@@ -175,6 +175,27 @@ export class ApiService {
             })
         })
     }
+
+    // Get the collections references
+    getReferences() {
+
+        // Setup cache on the references
+        return new Observable(observer => {
+            if (this.references) {
+                observer.next(this.references)
+                return
+            }
+
+            let request = this.http.get(this.url + "references")
+                .map(this.extractData)
+                .catch(this.handleError);
+
+            request.subscribe(references => {
+                this.references = references
+                observer.next(references)
+            })
+        })
+    }
     
     getCollectionImport() {
 
@@ -256,27 +277,6 @@ export class ApiService {
 		console.error("CLOSE STREAM!")
                 eventSource.close()
             }
-        })
-    }
-
-    // Get the collections references
-    getReferences() {
-
-        // Setup cache on the references
-        return new Observable(observer => {
-            if (this.references) {
-                observer.next(this.references)
-                return
-            }
-
-            let request = this.http.get(this.url + "references")
-                .map(this.extractData)
-                .catch(this.handleError);
-
-            request.subscribe(references => {
-                this.references = references
-                observer.next(references)
-            })
         })
     }
 

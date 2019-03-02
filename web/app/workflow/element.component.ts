@@ -6,12 +6,22 @@ declare var jQuery: any
 
 @Component({
     selector: 'workflow-element',
-    templateUrl: './element.component.html',
-    styleUrls: [ './element.component.css' ]
+    template: `
+<div [ngSwitch]="ref">
+  <imports-display *ngSwitchCase="'import'" [element]="element"></imports-display>
+  <exports-display *ngSwitchCase="'export'" [element]="element"></exports-display>
+</div>
+`,
+    styles: [
+`div {
+    background-color: red;
+    color: white;
+}`]
 })
 
 export class ElementComponent implements OnInit {
 
+    @Input() ref: string
     @Input() element: BaseElement
 
     constructor(private zone: NgZone) {}
