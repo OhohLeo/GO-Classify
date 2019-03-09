@@ -1,18 +1,32 @@
 import { Injectable } from '@angular/core';
 
-import { Reference } from './reference'
+import { References, Reference } from './reference'
 import { BaseElement } from '../base'
 
 @Injectable()
 export class ReferencesService {
 
-    // Store refences as following format :
-    // { "ref/typ": { "data_ref": { "field": "type", ...}, ...}, ...}
-    references: Map<string, Reference> = new Map<string, Reference>()
+    references: References
 
     constructor() { }
 
-    setReferences(b: BaseElement, src: any) : Reference {
+    setReferences(src: any) : References {
+	try {
+	    let references = new References(src)
+	    this.references = references
+	    return references
+	}
+	catch (e) {
+	    console.error("All References can't handle source: ", e.message)
+	    return undefined
+	}
+    }
+
+    getReferences(): References {
+	return this.references
+    }
+    
+    setReference(b: BaseElement, src: any) : Reference {
 
 	if (src == undefined) {
 	    console.error(
@@ -20,11 +34,9 @@ export class ReferencesService {
 		    + b.getTypeRef() + " (" +  b.getName() + ")'")
 	    return undefined
 	}
-
+	
 	try {
-	    let reference = new Reference(b.getTypeRef(), src["datas"])
-	    this.references.set(b.getTypeRef(),  reference)
-	    return reference
+	    return this.references.setReference(b.getType(), b.getRef(), src)
 	}
 	catch (e) {
 	    console.error(
@@ -34,7 +46,7 @@ export class ReferencesService {
 	}
     }
 
-    getReferences(b: BaseElement) : Reference {
-	return this.references.get(b.getTypeRef())
+    getReference(b: BaseElement) : Reference {
+	return this.references.getReference(b.getTypeRef())
     }
 }

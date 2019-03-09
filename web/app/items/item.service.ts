@@ -9,7 +9,7 @@ export class ItemService {
 
     constructor(private apiService: ApiService) { }
 
-	getReferences(item: Item) {
+	getReference(item: Item) {
 
 		// return this.apiService.get(this.getCollectionPath(item), data)
         //     .map((rsp: Response) => {

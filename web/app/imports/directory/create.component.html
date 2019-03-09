@@ -2,14 +2,19 @@
   <div class="input-field col s6">
     <params-path [(ngModel)]="data.path"
 		 [type]="'imports'"
-		 [name]="'directory'">
+		 [name]="'directory'"
+		 [mode]="pathMode.DIRECTORY_ONLY">
     </params-path>
   </div>
   <div class="input-field col s6">
-    <input name="isRecursive"
-	   type="checkbox"
-	   id="isRecursive"
-	   [(ngModel)]="data.isRecursive" />
-    <label for="isRecursive">with sub-directories</label>
+    <p>
+      <label>
+	<input name="isRecursive"
+	       type="checkbox"
+	       class="filled-in"
+	       [(ngModel)]="data.isRecursive" />
+	<span>with sub-directories</span>
+      </label>
+    </p>
   </div>
 </div>

@@ -1,5 +1,5 @@
 import { Component, NgZone, Input, OnInit } from '@angular/core'
-
+import { Reference } from '../references/reference'
 import { BaseElement } from '../base'
 
 declare var jQuery: any
@@ -8,10 +8,10 @@ declare var jQuery: any
     selector: 'workflow-display',
     template: `
 <div>
-  <p>{{elementsRef}}/{{elementsType}}</p>
+  <p>{{typeRef}}</p>
   <workflow-element *ngFor="let element of elementList"
                     [element]="element"
-                    [ref]="elementsRef">
+                    [ref]="typeRef">
   </workflow-element>
 </div>
 `,
@@ -25,17 +25,19 @@ declare var jQuery: any
 
 export class DisplayComponent  implements OnInit {
 
-    @Input() elementsRef: string
-    @Input() elementsType: string
+    @Input() reference: Reference
     @Input() elements: Map<string, BaseElement[]>
 
+    public typeRef: string
     public elementList: Array<BaseElement> = []
 
     constructor(private zone: NgZone) {}
     
     ngOnInit() {
 	this.zone.run(() => {
-	    this.elementList = this.elements.get(this.elementsType)
+	    this.typeRef = this.reference.getTypeRef()
+	    this.elementList = this.elements.get(this.reference.ref)
+	    console.log("LIST OF ELEMENTS?", this.typeRef, this.elementList)
 	})
     }
 }

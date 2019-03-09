@@ -32,7 +32,7 @@
     "@angular/router": "^4.0.3",
     "core-js": "^2.6.5",
     "jquery": "^2.2.3",
-    "materialize-css": "^0.100.2",
+    "materialize-css": "^1.0.0",
     "ng2-pdf-viewer": "^3.0.8",
     "pdfjs": "^2.1.0",
     "rxjs": "^6.4.0",

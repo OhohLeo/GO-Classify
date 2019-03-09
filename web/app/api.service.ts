@@ -37,7 +37,6 @@ declare var EventSource: any
 export class ApiService {
 
     private url = "http://localhost:1234/"
-    private references: any
 
     private onCollectionChange: (collection: Collection,
 				 status: CollectionStatus) => void
@@ -144,7 +143,7 @@ export class ApiService {
 
         return new Observable(observer => {
 
-	    let references = this.referencesService.getReferences(this.collectionSelected)
+	    let references = this.referencesService.getReference(this.collectionSelected)
 	    if (references != undefined) {
 		observer.next(references)
 		return
@@ -155,7 +154,7 @@ export class ApiService {
                 .catch(this.handleError);
 
 	    request.subscribe((src) => {
-		let references = this.referencesService.setReferences(this.collectionSelected, src)
+		let references = this.referencesService.setReference(this.collectionSelected, src)
 		console.log("[COLLECTION REFERENCES] OK", references)
 		observer.next(references)
 	    })
@@ -176,13 +175,14 @@ export class ApiService {
         })
     }
 
-    // Get the collections references
+    // Get the classify references
     getReferences() {
 
         // Setup cache on the references
-        return new Observable(observer => {
-            if (this.references) {
-                observer.next(this.references)
+        return new Observable((observer) => {
+	    let references = this.referencesService.getReferences()
+            if (references) {
+                observer.next(references)
                 return
             }
 
@@ -190,8 +190,8 @@ export class ApiService {
                 .map(this.extractData)
                 .catch(this.handleError);
 
-            request.subscribe(references => {
-                this.references = references
+            request.subscribe((src) => {
+                let references = this.referencesService.setReferences(src)
                 observer.next(references)
             })
         })

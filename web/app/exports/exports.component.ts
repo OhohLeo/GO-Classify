@@ -7,6 +7,7 @@ import { ExportsService } from './exports.service'
 import { BaseCreateComponent } from '../tools/base_create.component'
 import { ApiService, Event } from '../api.service'
 
+import { References } from '../references/reference'
 import { BaseElement } from '../base'
 
 declare var jQuery: any;
@@ -34,8 +35,8 @@ export class ExportsComponent implements OnInit, OnDestroy {
 
         // Refresh the import ref list
         apiService.getReferences()
-            .subscribe((references) => {
-                this.refs = Object.keys(references["exports"])
+            .subscribe((references: References) => {
+                this.refs = references.getRefs("exports")
             })
 
         // Method called to refresh the export list

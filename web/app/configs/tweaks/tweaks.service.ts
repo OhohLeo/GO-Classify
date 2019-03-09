@@ -20,7 +20,7 @@ export class TweaksService {
     // If type is "exports" :
     //  - inputs are collection items
     //  - outputs are export items
-    getReferences(item: BaseElement) {
+    getReference(item: BaseElement) {
 
         return new Observable(observer => {
 
@@ -28,7 +28,7 @@ export class TweaksService {
 
 	    case "imports":
 		Observable.combineLatest(
-		    this.importsService.getReferences(item),
+		    this.importsService.getReference(item),
 		    this.apiService.getCollectionReferences()
 		).subscribe(([inputs, outputs]) => {
 		    observer.next([inputs, outputs])
@@ -38,7 +38,7 @@ export class TweaksService {
 	    case "exports":
 		// Observable.combineLatest(
 		//     this.apiService.getCollectionReferences()
-		//     this.exportsService.getReferences(item),
+		//     this.exportsService.getReference(item),
 		// ).subscribe(([inputs, outputs]) => {
 		//     observer.next([inputs, outputs])
 		// })

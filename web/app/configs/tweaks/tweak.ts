@@ -12,7 +12,7 @@ export class Tweaks {
 	    return
 	}
 	
-	this.refType = reference.name
+	this.refType = reference.getTypeRef()
 
 	reference.datas.forEach((value, key) => {
 	    this.datas.set(key, new Tweak(
@@ -51,7 +51,7 @@ export class Tweak {
     public fields: TweakField[] = []
 
     constructor(public isInput: boolean, public name: string, data: DataReference, src: any) {
-
+	
 	data.fields.forEach((value, key) => {
 	    this.fields.push(new TweakField(
 		isInput, key, value, undefined))

@@ -2,6 +2,7 @@ import { Component } from '@angular/core'
 import { ApiService } from '../api.service'
 import { CollectionsService } from '../collections/collections.service'
 import { Collection } from './collection'
+import { References } from '../references/reference'
 
 @Component({
     selector: 'collection-create',
@@ -15,14 +16,13 @@ export class CreateCollectionComponent {
     private websites: string[]
 
     constructor(private apiService: ApiService,
-				private collectionsService: CollectionsService) {
+		private collectionsService: CollectionsService) {
 
         apiService.getReferences()
-            .subscribe(
-				references => {
-					this.websites = references["websites"]
-					this.collections = references["collections"]
-				});
+            .subscribe((references : References) => {
+		this.websites = references.getRefs("websites")
+		this.collections = references.getRefs("collections")
+	    });
     }
 
     onSubmit() {

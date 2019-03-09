@@ -36,7 +36,7 @@ export class TweaksComponent implements OnInit {
 
     start(tweak) {
 	let item = this.item
-	this.tweakService.getReferences(item).subscribe((references) => {
+	this.tweakService.getReference(item).subscribe((references) => {
 	    
 	    if (tweak == undefined) {
 		console.error("[TWEAKS] tweak response is invalid")

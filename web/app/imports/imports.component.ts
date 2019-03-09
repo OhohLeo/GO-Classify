@@ -8,6 +8,7 @@ import { ConfigModalComponent } from './../configs/modal.component'
 import { ImportsService } from './imports.service'
 import { BaseCreateComponent } from '../tools/base_create.component'
 import { DirectoryCreateComponent } from './directory/create.component'
+import { References } from '../references/reference'
 import { BaseElement } from '../base'
 
 declare var jQuery: any;
@@ -37,8 +38,8 @@ export class ImportsComponent implements OnInit, OnDestroy {
 
         // Refresh the import ref list
         apiService.getReferences()
-            .subscribe((references) => {
-                this.refs = Object.keys(references["imports"])
+            .subscribe((references: References) => {
+                this.refs = references.getRefs("imports")
             })
 
         // Refresh the import list

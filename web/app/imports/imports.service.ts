@@ -182,10 +182,10 @@ export class ImportsService {
 	return "imports/" + i.name
     }
 
-    getReferences(item: BaseElement) {
+    getReference(item: BaseElement) {
         return new Observable(observer => {
 
-	    let references = this.referencesService.getReferences(item)
+	    let references = this.referencesService.getReference(item)
 	    if (references != null) {
 		observer.next(references)
 		return
@@ -193,7 +193,7 @@ export class ImportsService {
 
 	    this.apiService.get(this.getUrl(item) + "/references")
 		.subscribe((src) => {
-		    let references = this.referencesService.setReferences(item, src)
+		    let references = this.referencesService.setReference(item, src)
 		    console.log("[IMPORTS REFERENCES] OK", item, references)
 		    observer.next(references)
 		})

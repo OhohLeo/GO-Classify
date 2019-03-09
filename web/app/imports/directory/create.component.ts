@@ -2,6 +2,7 @@ import { Component, NgZone } from '@angular/core'
 import { ImportsService } from '../imports.service'
 import { ApiService } from '../../api.service'
 import { BaseCreateComponent } from '../../tools/base_create.component'
+import { PathMode } from '../../params/path.component'
 import { Directory } from './directory'
 
 @Component({
@@ -11,6 +12,7 @@ import { Directory } from './directory'
 
 export class DirectoryCreateComponent extends BaseCreateComponent {
 
+    public pathMode = PathMode
     public paths: string[] = []
 
     constructor(private zone: NgZone,

@@ -2,13 +2,14 @@
   <div class="col s3 no-padding-right">
     <workflow-create
        [workflowType]="workflowType.IMPORT"
-       [refs]="importRefs"></workflow-create>
-    <workflow-display
-       *ngFor="let importType of importTypes"
-       [elementsRef]="'import'"
-       [elementsType]="importType"
-       [elements]="imports">
-    </workflow-display>
+       [refs]="importRefNames"></workflow-create>
+    <ng-container *ngIf="imports">
+      <workflow-display
+	 *ngFor="let refType of importTypeRefNames"
+	 [reference]="references.getReference(refType)"
+	 [elements]="imports">
+      </workflow-display>
+    </ng-container>
   </div>
   <workflow-canvas #importsLinks class="col s2 no-padding"></workflow-canvas>
   <div class="col s2 no-padding">
@@ -18,7 +19,7 @@
   <div class="col s3 no-padding-left">
     <workflow-create
        [workflowType]="workflowType.EXPORT"
-       [refs]="exportRefs"></workflow-create>
+       [refs]="exportRefNames"></workflow-create>
   </div>
 </div>
 

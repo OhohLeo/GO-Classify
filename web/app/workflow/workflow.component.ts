@@ -11,6 +11,7 @@ import { WorkflowService } from './workflow.service'
 import { CanvasComponent } from './canvas.component'
 
 import { WorkflowType } from './workflow'
+import { References, Reference } from '../references/reference'
 import { BaseElement } from '../base'
 
 declare var jQuery: any;
@@ -28,11 +29,13 @@ export class WorkflowComponent implements OnInit, AfterViewInit, OnDestroy {
     
     public workflowType = WorkflowType
 
-    public importRefs: Array<string> = []
+    public references: References
+    
+    public importTypeRefNames: Array<string> = []
     public importTypes: Array<string> = []
     public imports: Map<string, BaseElement[]>
 	
-    public exportRefs: Array<string> = []
+    public exportTypeRefNames: Array<string> = []
     public exportTypes: Array<string> = []
     public exports: Map<string, BaseElement[]>
     
@@ -45,11 +48,12 @@ export class WorkflowComponent implements OnInit, AfterViewInit, OnDestroy {
 
 	// Refresh the import/export ref list
         apiService.getReferences()
-            .subscribe((references) => {
-		this.importRefs = Object.keys(references["imports"])
-		this.exportRefs = Object.keys(references["exports"])
+            .subscribe((references: References) => {
+		this.references = references
+		this.importTypeRefNames = references.getTypeRefs('imports')
+		this.exportTypeRefNames = references.getTypeRefs('exports')
             })
-
+	
 	// Refresh the import/export lists
         importsService.setUpdateList(() => {
             this.updateImports()
@@ -61,7 +65,7 @@ export class WorkflowComponent implements OnInit, AfterViewInit, OnDestroy {
     }
 
     ngOnInit() {
-	this.updateAll()
+ 	this.updateAll()
     }
 
     ngAfterViewInit() {
@@ -83,6 +87,7 @@ export class WorkflowComponent implements OnInit, AfterViewInit, OnDestroy {
                 this.zone.run(() => {
 		    this.importTypes = Array.from(imports.keys())
                     this.imports = imports
+		    console.log("IMPORTS?", this.imports)
                 })
             })
     }

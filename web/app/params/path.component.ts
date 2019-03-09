@@ -1,30 +1,31 @@
 import {
-    Component, NgZone, Input, Output, EventEmitter, OnInit, OnDestroy
+    Component, NgZone, Input, Output, EventEmitter, OnInit
 } from '@angular/core'
-import {
-    ControlValueAccessor, NG_VALUE_ACCESSOR
-} from '@angular/forms'
-
+import { ControlValueAccessor, NG_VALUE_ACCESSOR } from '@angular/forms'
 import { ParamsService } from './params.service'
 
-declare var jQuery: any
+export enum PathMode {
+    DIRECTORY_ONLY = 0,
+    FILES_ONLY,
+    DIRECTORY_AND_FILES,
+}
 
 @Component({
     selector: 'params-path',
     templateUrl: './path.component.html',
-    providers: [
-        {
-            provide: NG_VALUE_ACCESSOR,
-            useExisting: ParamsPathComponent,
-            multi: true
-        }
+    providers: [{
+        provide: NG_VALUE_ACCESSOR,
+        useExisting: ParamsPathComponent,
+        multi: true
+    }
     ],
 })
 
-export class ParamsPathComponent implements OnInit, ControlValueAccessor, OnDestroy {
+export class ParamsPathComponent implements OnInit, ControlValueAccessor {
 
     @Input() type: string
     @Input() name: string
+    @Input() mode: PathMode
     @Output() change = new EventEmitter<string>()
 
     private path: string
@@ -43,7 +44,7 @@ export class ParamsPathComponent implements OnInit, ControlValueAccessor, OnDest
     private propagateChange = (_: any) => { };
 
     constructor(private zone: NgZone,
-        private paramsService: ParamsService) { }
+		private paramsService: ParamsService) { }
 
     ngOnInit() {
 
@@ -56,10 +57,6 @@ export class ParamsPathComponent implements OnInit, ControlValueAccessor, OnDest
         this.zone.run(() => {
             this.displayPath = "Select path"
         })
-    }
-
-    ngOnDestroy() {
-        this.stop
     }
 
     // Initial value set to the component
@@ -86,21 +83,8 @@ export class ParamsPathComponent implements OnInit, ControlValueAccessor, OnDest
     // change events from the textarea
     private onChange(event) { }
 
-    onModal() {
-
-        if (this.action != undefined) {
-            return
-        }
-
+    start() {
         this.send(this.path)
-
-        this.action = jQuery('div#path').modal({
-            complete: () => {
-                this.stop()
-            }
-        })
-
-        this.action.modal("open")
     }
 
     send(path: string) {
@@ -144,7 +128,15 @@ export class ParamsPathComponent implements OnInit, ControlValueAccessor, OnDest
                     }
 
                     this.directories = result["directories"]
-                    this.files = result["files"]
+
+		    if (this.mode != PathMode.DIRECTORY_ONLY) {
+			this.files = result["files"]
+		    }
+
+		    if (this.mode != PathMode.FILES_ONLY) {
+			this.validatePathChange(this.displayPath)
+		    }
+		    
                 })
             })
     }
@@ -169,21 +161,8 @@ export class ParamsPathComponent implements OnInit, ControlValueAccessor, OnDest
         this.send(this.displayPath + directory)
     }
 
-    onValidate() {
-        this.stop()
+    validatePathChange(path: string) {
+	this.propagateChange(path)
+	this.change.emit(path)
     }
-
-    stop() {
-
-        if (this.action == undefined) {
-            return
-        }
-
-        this.action.modal('close')
-        this.action = undefined
-
-        // update the form
-        this.propagateChange(this.path)
-        this.change.emit(this.path)
-    }
-}
+ }
