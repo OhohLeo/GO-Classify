@@ -14,6 +14,8 @@ import { WorkflowComponent } from './workflow.component'
 import { CreateComponent } from './create.component'
 import { DisplayComponent } from './display.component'
 import { ElementComponent } from './element.component'
+import { DataComponent } from './data.component'
+import { AttributeComponent } from './attribute.component'
 import { CanvasComponent } from './canvas.component'
 
 
@@ -33,6 +35,8 @@ import { CanvasComponent } from './canvas.component'
 	CreateComponent,
 	DisplayComponent,
 	ElementComponent,
+	DataComponent,
+	AttributeComponent,
 	CanvasComponent,
     ],
     exports: [WorkflowComponent]

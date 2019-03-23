@@ -1,5 +1,5 @@
 import {
-    Component, NgZone, OnInit, AfterViewInit, OnDestroy,
+    ElementRef, Component, NgZone, OnInit, AfterViewInit, OnDestroy,
     ViewChild, Renderer
 } from '@angular/core'
 import { NgSwitch } from '@angular/common'
@@ -13,8 +13,6 @@ import { CanvasComponent } from './canvas.component'
 import { WorkflowType } from './workflow'
 import { References, Reference } from '../references/reference'
 import { BaseElement } from '../base'
-
-declare var jQuery: any;
 
 @Component({
     selector: 'workflow',
@@ -41,6 +39,7 @@ export class WorkflowComponent implements OnInit, AfterViewInit, OnDestroy {
     
     constructor(private zone: NgZone,
 		private render: Renderer,
+		private eltRef: ElementRef,
 		private apiService: ApiService,
 		private importsService: ImportsService,
 		private exportsService: ExportsService,
@@ -69,7 +68,7 @@ export class WorkflowComponent implements OnInit, AfterViewInit, OnDestroy {
     }
 
     ngAfterViewInit() {
-	console.log("AFTER VIEW INIT", this.importLinks, this.exportLinks)
+	console.log("WORKFLOW ELT REF", this.eltRef.nativeElement.height)
     }
 
     ngOnDestroy() {
@@ -87,7 +86,6 @@ export class WorkflowComponent implements OnInit, AfterViewInit, OnDestroy {
                 this.zone.run(() => {
 		    this.importTypes = Array.from(imports.keys())
                     this.imports = imports
-		    console.log("IMPORTS?", this.imports)
                 })
             })
     }

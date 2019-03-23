@@ -1,25 +1,38 @@
 import { Component, NgZone, Input, OnInit } from '@angular/core'
+import { Reference } from '../references/reference'
+import { DataReference } from '../references/data'
 import { BaseElement } from '../base'
-
-declare var jQuery: any
 
 @Component({
     selector: 'workflow-element',
-    templateUrl: './element.component.html',
-    styleUrls: ['./element.component.css']
+    template: `
+<div [ngSwitch]="reference.typ">
+  <imports-display *ngSwitchCase="'imports'" [element]="element"></imports-display>
+  <exports-display *ngSwitchCase="'exports'" [element]="element"></exports-display>
+</div>
+<workflow-data *ngFor="let data of datas"
+               [data]="data"
+               [element]="element">
+</workflow-data>
+`,
+    styles: [
+`div {
+    background-color: red;
+    color: white;
+}`]
 })
 
 export class ElementComponent implements OnInit {
 
-    @Input() ref: string
+    @Input() reference: Reference
     @Input() element: BaseElement
-	
-    constructor(private zone: NgZone) {
-	
 
-    }
+    public datas: Array<DataReference> = []
+    
+    constructor(private zone: NgZone) {}
     
     ngOnInit() {
-	console.log("ELEMENT!", this.element, this.ref)
+	this.datas = this.reference.getDataReferences()
+	console.log("ELEMENT!", this.element, this.datas)
     }
 }

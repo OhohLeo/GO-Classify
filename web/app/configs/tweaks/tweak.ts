@@ -1,4 +1,5 @@
-import { Reference, DataReference } from '../../references/reference'
+import { Reference } from '../../references/reference'
+import { DataReference, AttributeReference, DataValues } from '../../references/data'
 
 export class Tweaks {
 
@@ -25,7 +26,7 @@ export class Tweaks {
 	let datas = {}
 
 	this.datas.forEach((tweak, key) => {
-	    datas[key] = tweak.GetFields()
+	    datas[key] = tweak.GetAttributes()
 	})
 
 	return datas
@@ -48,52 +49,52 @@ export class Tweaks {
 
 export class Tweak {
 
-    public fields: TweakField[] = []
+    public attributes: TweakAttribute[] = []
 
     constructor(public isInput: boolean, public name: string, data: DataReference, src: any) {
 	
-	data.fields.forEach((value, key) => {
-	    this.fields.push(new TweakField(
-		isInput, key, value, undefined))
+	data.getAttributes().forEach((attribute) => {
+	    this.attributes.push(new TweakAttribute(
+		isInput, attribute.name, attribute.format, undefined))
 	})
 
-	this.fields.sort()
+	this.attributes.sort()
     }
 
-    GetFields() {
+    GetAttributes() {
 
-	let fields = {}
+	let attributes = {}
 
-	this.fields.forEach((field, key) => {
-	    fields[field.name] = {
-		"value": field.src != "" ? field.src : "",
-		"format": field.typ,
+	this.attributes.forEach((attribute) => {
+	    attributes[attribute.name] = {
+		"value": attribute.src != "" ? attribute.src : "",
+		"format": attribute.typ,
 	    }
 	})
 
-	return fields
+	return attributes
     }
 
     GetValues() {
 
 	let values = {}
 
-	this.fields.forEach((field, key) => {
+	this.attributes.forEach((attribute) => {
 
-	    // Ignore empty field
-	    if (!field.src) {
+	    // Ignore empty attribute
+	    if (!attribute.src) {
 		return
 	    }
 
 	    let value
 
-	    if (field.isInput) {
-		value = { "regexp": field.src }
+	    if (attribute.isInput) {
+		value = { "regexp": attribute.src }
 	    } else {
-		value = { "value": field.src }
+		value = { "value": attribute.src }
 	    }
 
-	    values[field.name] = value
+	    values[attribute.name] = value
 	})
 
 	return values
@@ -104,7 +105,7 @@ export class Tweak {
     }
 }
 
-export class TweakField {
+export class TweakAttribute {
 
     public tag: string
 
@@ -132,7 +133,7 @@ export class TweakField {
 	}
     }
 
-    compare(field: TweakField): number {
-	return this.name.localeCompare(field.name)
+    compare(attribute: TweakAttribute): number {
+	return this.name.localeCompare(attribute.name)
     }
 }

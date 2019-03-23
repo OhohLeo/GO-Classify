@@ -11,11 +11,17 @@
       </workflow-display>
     </ng-container>
   </div>
-  <workflow-canvas #importsLinks class="col s2 no-padding"></workflow-canvas>
+  <workflow-canvas #importsLinks class="col s2 no-padding"
+		   [name]="'imports'"
+		   [height]="2000">
+  </workflow-canvas>
   <div class="col s2 no-padding">
     <h6>Collection</h6>
   </div>
-  <workflow-canvas #exportsLinks class="col s2 no-padding"></workflow-canvas>
+  <workflow-canvas #exportsLinks class="col s2 no-padding"
+		   [name]="'exports'"
+		   [height]="2000">
+  </workflow-canvas>
   <div class="col s3 no-padding-left">
     <workflow-create
        [workflowType]="workflowType.EXPORT"

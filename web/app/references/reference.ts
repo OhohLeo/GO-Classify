@@ -1,3 +1,5 @@
+import { DataReference, AttributeReference } from '../references/data'
+
 export class References {
 
     // Store references with following format :
@@ -7,8 +9,7 @@ export class References {
     // Store all types with following format :
     // { "ref": [type, ...], ...}
     refsByType: Map<string, Array<string>> = new Map<string, Array<string>>()
-    
-    
+        
     constructor(src: any) {
 	if (src == undefined) {
 	    throw new Error("no references found")
@@ -72,7 +73,7 @@ export class Reference {
 	let datas = src["datas"]
 	if (datas != undefined) {
 	    for (let name of Object.keys(datas)) {
-		this.datas.set(name, new DataReference(name, datas[name]))
+		this.datas.set(name, new DataReference(typeRef, name, datas[name]))
 	    }
 	}
     }
@@ -80,29 +81,15 @@ export class Reference {
     getTypeRef(): string {
 	return this.typ + "/" + this.ref
     }
+
+    getDataNames(): Array<string> {
+	return Array.from(this.datas.keys()).sort()
+    }
+
+    getDataReferences(): Array<DataReference> {
+	return Array.from(this.datas.values())
+    }
     
 }
 
-export class DataReference {
 
-    // Handle reference with following format :
-    // { "field": "type", ...}
-    fields: Map<string, string> = new Map<string, string>()
-
-    constructor(public name: string, src: any) {
-
-	if (src == undefined) {
-	    throw new Error("DataReference '" + name + "' found no data")
-	}
-
-	for (let field of Object.keys(src)) {
-
-	    let typ = src[field]
-	    if (typ == undefined) {
-		throw new Error("DataReference found no data with '" + typ + "'")
-	    }
-
-	    this.fields.set(field, typ)
-	}
-    }
-}

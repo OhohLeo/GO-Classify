@@ -2,16 +2,14 @@ import { Component, NgZone, Input, OnInit } from '@angular/core'
 import { Reference } from '../references/reference'
 import { BaseElement } from '../base'
 
-declare var jQuery: any
-
 @Component({
     selector: 'workflow-display',
     template: `
-<div>
+<div *ngIf="elementList">
   <p>{{typeRef}}</p>
   <workflow-element *ngFor="let element of elementList"
                     [element]="element"
-                    [ref]="typeRef">
+                    [reference]="reference">
   </workflow-element>
 </div>
 `,
@@ -37,7 +35,6 @@ export class DisplayComponent  implements OnInit {
 	this.zone.run(() => {
 	    this.typeRef = this.reference.getTypeRef()
 	    this.elementList = this.elements.get(this.reference.ref)
-	    console.log("LIST OF ELEMENTS?", this.typeRef, this.elementList)
 	})
     }
 }

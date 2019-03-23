@@ -1,7 +1,5 @@
-import {
-    Component, NgZone, OnInit, AfterViewInit, OnDestroy,
-    ViewChild, Renderer
-} from '@angular/core'
+import { ElementRef, Component, NgZone, Input, OnInit, AfterViewInit, OnDestroy, ViewChild, Renderer } from '@angular/core'
+import { WorkflowService } from './workflow.service'
 
 class Rectangle {
     constructor (public name: string,
@@ -26,7 +24,11 @@ class Line {
 `
 })
 
-export class CanvasComponent implements AfterViewInit {
+export class CanvasComponent implements OnInit, AfterViewInit {
+
+    @Input() name: string
+    @Input() height: number
+    
     @ViewChild("position") position    
     private width: number
 
@@ -39,26 +41,59 @@ export class CanvasComponent implements AfterViewInit {
     @ViewChild("lines") canvasLines
     private contextLines
     private lines : Array<Line> = []
-    private lineWidth: number = 3   
+    private lineWidth: number = 3
+
+    constructor(private eltRef: ElementRef,
+		private zone: NgZone,
+		private workflowService: WorkflowService) {}
+
+    ngOnInit() {
+	this.workflowService.setAddLinkSlotCallback(
+	    this.name, (name: string, offsetTop: number) => { this.addLinkSlot(name, offsetTop) })
+    }
     
     ngAfterViewInit() {
-	let canvas =  this.canvasRectangles.nativeElement
-	this.contextRectangles = canvas.getContext("2d")
-	this.contextLines = this.canvasLines.nativeElement.getContext("2d")
+	let canvasRectangles =  this.canvasRectangles.nativeElement
+	canvasRectangles.height = this.height
+	this.contextRectangles = canvasRectangles.getContext("2d")
+
+	let canvasLines = this.canvasLines.nativeElement	
+	canvasLines.height = this.height
+	this.contextLines = canvasLines.getContext("2d")
 	this.width = this.canvasRectangles.nativeElement.width
 
-	this.addStart("toto", "blue", 100)
-	this.addEnd("toto", "red", 100)
-
 	let position = this.position.nativeElement
-	canvas.addEventListener('mousedown', (event) => this.onStartLine(position, event))
-	canvas.addEventListener('mousemove', (event) => this.onMoveLine(position, event))
-	canvas.addEventListener('mouseup', (event) => this.onAddLine(position, event))
+	canvasRectangles.addEventListener('mousedown', (event) => this.onStartLine(position, event))
+	canvasRectangles.addEventListener('mousemove', (event) => this.onMoveLine(position, event))
+	canvasRectangles.addEventListener('mouseup', (event) => this.onAddLine(position, event))
     }
 
+    addLinkSlot(name: string, offsetTop: number) {
+	let isCollectionLink = name.startsWith("collections")
+	offsetTop -= this.eltRef.nativeElement.offsetTop
+	switch (this.name) {
+	case "imports":
+	    if (isCollectionLink) {
+		this.addEnd(name, "blue", offsetTop)
+		return
+	    } 
+	    this.addStart(name, "red", offsetTop)
+	    return
+	case "exports":
+	    if (isCollectionLink) {
+		this.addStart(name, "blue", offsetTop)
+		return
+	    }
+	    this.addEnd(name, "yellow", offsetTop)
+	    return
+	}	   
+    }
+		      
+    
     onStartLine(position, event) {
 	let startRectangle = this.collideWithRectangle(
 	    event.x - position.offsetLeft, event.y - position.offsetTop)
+	console.log("StartLINE", startRectangle)
 	if (startRectangle == undefined) {
 	    this.resetAll()
 	    return
@@ -108,6 +143,11 @@ export class CanvasComponent implements AfterViewInit {
     }
 
     addRectangle(name: string, color: string, x: number, y: number) {
+	if (this.contextRectangles == undefined) {
+	    let canvas =  this.canvasRectangles.nativeElement
+	    this.contextRectangles = canvas.getContext("2d")
+	}
+
 	this.contextRectangles.fillStyle = color
 	let rectangle = this.contextRectangles.fillRect(x, y, this.rectangleWidth, this.rectangleWidth)
 	this.rectangles.push(new Rectangle(name, x, y))
