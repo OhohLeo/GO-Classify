@@ -1,13 +1,15 @@
-package core
+package api
 
 import (
-	"github.com/ant0ine/go-json-rest/rest"
 	"net/http"
+
+	"github.com/ant0ine/go-json-rest/rest"
+	"github.com/ohohleo/classify/core"
 )
 
-func (c *Classify) getItemById(w rest.ResponseWriter, r *rest.Request) *Item {
+func (a *API) getItemById(w rest.ResponseWriter, r *rest.Request) *core.Item {
 
-	collection := c.getCollectionByName(w, r)
+	collection := a.getCollectionByName(w, r)
 	if collection == nil {
 		return nil
 	}
@@ -22,10 +24,10 @@ func (c *Classify) getItemById(w rest.ResponseWriter, r *rest.Request) *Item {
 }
 
 // GET /collections/:name/items/:id?content="..."
-func (c *Classify) ApiGetCollectionSingleItem(w rest.ResponseWriter, r *rest.Request) {
+func (a *API) GetCollectionSingleItem(w rest.ResponseWriter, r *rest.Request) {
 
 	// Check the collection and item exist
-	item := c.getItemById(w, r)
+	item := a.getItemById(w, r)
 	if item == nil {
 		return
 	}
@@ -49,10 +51,10 @@ func (c *Classify) ApiGetCollectionSingleItem(w rest.ResponseWriter, r *rest.Req
 }
 
 // PATCH /collections/:name/items/:id
-func (c *Classify) ApiPatchCollectionSingleItem(w rest.ResponseWriter, r *rest.Request) {
+func (a *API) PatchCollectionSingleItem(w rest.ResponseWriter, r *rest.Request) {
 
 	// Check the collection exist
-	collection := c.getCollectionByName(w, r)
+	collection := a.getCollectionByName(w, r)
 	if collection == nil {
 		return
 	}
@@ -61,15 +63,15 @@ func (c *Classify) ApiPatchCollectionSingleItem(w rest.ResponseWriter, r *rest.R
 }
 
 // DELETE /collections/:name/items/:id
-func (c *Classify) ApiDeleteCollectionSingleItem(w rest.ResponseWriter, r *rest.Request) {
+func (a *API) DeleteCollectionSingleItem(w rest.ResponseWriter, r *rest.Request) {
 
 	// Check the collection exist
-	collection := c.getCollectionByName(w, r)
+	collection := a.getCollectionByName(w, r)
 	if collection == nil {
 		return
 	}
 
-	id, err := GetIdFromString(r.PathParam("id"))
+	id, err := core.GetIdFromString(r.PathParam("id"))
 	if err != nil {
 		rest.Error(w, err.Error(), http.StatusBadRequest)
 		return

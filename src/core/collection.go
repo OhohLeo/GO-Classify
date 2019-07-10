@@ -10,26 +10,22 @@ import (
 	"github.com/ohohleo/classify/data"
 	"github.com/ohohleo/classify/database"
 	"github.com/ohohleo/classify/exports"
-	"github.com/ohohleo/classify/imports"
-	"github.com/ohohleo/classify/reference"
 	"github.com/ohohleo/classify/websites"
 )
 
 type Collection struct {
-	Id   uint64 `json:"id"`
-	Name string `json:"name"`
+	Id     uint64 `json:"id"`
+	Name   string `json:"name"`
+	Engine collections.Collection
+	Config *CollectionConfig
 
 	buffer *Buffer
 	items  *Items
-	config *CollectionConfig
 
 	events chan CollectionEvent
-	engine collections.Collection
 
-	blackImports BlackList
-
-	imports  map[string]imports.Import
-	exports  []exports.Export
+	imports  map[string]*Import
+	exports  map[string]*Export
 	websites map[string]websites.Website
 }
 
@@ -44,27 +40,39 @@ type CollectionParams struct {
 	Websites []string
 }
 
-type References struct {
-	Datas map[string]map[string]string `json:"datas"`
-}
-
 func (c *Collection) GetDatas() map[string]interface{} {
 	return map[string]interface{}{
 		"item": &Item{},
 	}
 }
 
-func (c *Collection) GetDatasReferences() map[string]map[string]string {
-	return map[string]map[string]string{
-		"item": reference.GetFieldTypes(&Item{}),
+func (c *Collection) GetDatasReferences() DatasReference {
+	return GetDatasReference(c.GetDatas())
+}
+
+func (c *Collection) GetReferences() References {
+	references := References{
+		Datas:   c.GetDatasReferences(),
+		Imports: make(map[string]DatasReference),
+		Exports: make(map[string]DatasReference),
 	}
+
+	for name, i := range c.imports {
+		references.Imports[name] = i.GetDatasReferences()
+	}
+
+	for name, e := range c.exports {
+		references.Exports[name] = e.GetDatasReferences()
+	}
+
+	return references
 }
 
 // Add new import to the collection
-func (c *Collection) AddImport(name string, i imports.Import) error {
+func (c *Collection) AddImport(name string, i *Import) error {
 
 	if c.imports == nil {
-		c.imports = make(map[string]imports.Import)
+		c.imports = make(map[string]*Import)
 	}
 
 	if _, ok := c.imports[name]; ok {
@@ -76,7 +84,7 @@ func (c *Collection) AddImport(name string, i imports.Import) error {
 	c.imports[name] = i
 
 	// Update data configuration
-	c.config.UpdateDatas(i)
+	c.Config.UpdateDatas(i.engine)
 
 	return nil
 }
@@ -93,11 +101,11 @@ func (c *Collection) DeleteImport(name string) error {
 	delete(c.imports, name)
 
 	// Reset datas config
-	c.config.Datas = nil
+	c.Config.Datas = nil
 
 	// Refresh new list
 	for _, i := range c.imports {
-		c.config.UpdateDatas(i)
+		c.Config.UpdateDatas(i.engine)
 	}
 
 	return nil
@@ -118,7 +126,7 @@ func (c *Collection) Store2DB(db *database.Database) error {
 	}
 
 	// Convert to JSON
-	configJson, err := json.Marshal(c.config)
+	configJson, err := json.Marshal(c.Config)
 	if err != nil {
 		return err
 	}
@@ -132,7 +140,7 @@ func (c *Collection) Store2DB(db *database.Database) error {
 	// Store the collection
 	lastId, err := db.Insert("collections", &database.GenStruct{
 		Name:   c.Name,
-		Ref:    uint64(c.engine.GetRef()),
+		Ref:    uint64(c.Engine.GetRef()),
 		Config: configJson,
 		Params: paramsJson,
 	})
@@ -144,14 +152,14 @@ func (c *Collection) Store2DB(db *database.Database) error {
 
 // Store configuration on DataBase
 func (c *Collection) StoreConfig2DB(db *database.Database) error {
-	return c.config.Store2DB(c, db)
+	return c.Config.Store2DB(c, db)
 }
 
 func (c *Collection) Delete2DB(db *database.Database) error {
 
 	return db.Delete("collections", &database.GenStruct{
 		Name: c.Name,
-		Ref:  uint64(c.engine.GetRef()),
+		Ref:  uint64(c.Engine.GetRef()),
 	}, "name = :name AND ref = :ref")
 }
 
@@ -197,7 +205,6 @@ func (c *Collection) ActivateBuffer() {
 }
 
 func (c *Collection) DisableBuffer() error {
-
 	if c.buffer == nil {
 		return fmt.Errorf("collection '%s' buffer already disabled", c.Name)
 	}
@@ -208,7 +215,6 @@ func (c *Collection) DisableBuffer() error {
 }
 
 func (c *Collection) Search(src string, item *BufferItem) {
-
 	// Launch research through web
 	if len(c.websites) > 0 {
 		c.SearchWeb(item)
@@ -226,7 +232,6 @@ func (c *Collection) Search(src string, item *BufferItem) {
 
 // SearchWeb launch resarch through specified websites
 func (c *Collection) SearchWeb(item *BufferItem) {
-
 	// Get name to search
 	keywords := item.WebQuery
 
@@ -250,16 +255,6 @@ func (c *Collection) SearchWeb(item *BufferItem) {
 
 // OnInput handle new data to classify
 func (c *Collection) OnInput(id Id, input data.Data) (item *BufferItem, err error) {
-
-	// Check if data is not already blacklisted
-	if c.blackImports != nil {
-
-		if c.blackImports.Match(input.GetName()) {
-			err = fmt.Errorf("blacklisted : %s", input.GetName())
-			return
-		}
-	}
-
 	// Create a new item
 	item = NewBufferItem(id)
 
@@ -269,7 +264,7 @@ func (c *Collection) OnInput(id Id, input data.Data) (item *BufferItem, err erro
 		item.AddImportData(input)
 
 		// Get Cleaned name
-		item.SetCleanedName(c.config.Import.Banned, c.config.Import.Separators)
+		item.SetCleanedName(c.Config.Import.Banned, c.Config.Import.Separators)
 
 		// Store item to the buffer collection
 		c.buffer.Add(item.Item.Engine.GetName(), item)
@@ -302,13 +297,12 @@ func (c *Collection) OnInput(id Id, input data.Data) (item *BufferItem, err erro
 }
 
 func (c *Collection) onDataInput(d data.Data) error {
-
 	// Get data ref name
 	refName := d.GetRef().String()
 
 	// Call method ApplyConfig if it exists
 	if inputData, ok := d.(data.DataConfig); ok {
-		if err := inputData.ApplyConfig(c.config.Datas[refName]); err != nil {
+		if err := inputData.ApplyConfig(c.Config.Datas[refName]); err != nil {
 			return err
 		}
 	}
@@ -326,7 +320,6 @@ func (c *Collection) onDataInput(d data.Data) error {
 }
 
 func (c *Collection) SendCollectionEvent(src string, status string, item *Item) {
-
 	if c.events == nil {
 		return
 	}
@@ -340,7 +333,6 @@ func (c *Collection) SendCollectionEvent(src string, status string, item *Item) 
 }
 
 func (c *Collection) GetBuffer() []*BufferItem {
-
 	if c.buffer == nil {
 		return []*BufferItem{}
 	}
@@ -353,7 +345,6 @@ func (c *Collection) ResetBuffer() {
 }
 
 func (c *Collection) GetBufferItems() []*Item {
-
 	if c.items == nil {
 		return []*Item{}
 	}
@@ -366,7 +357,6 @@ func (c *Collection) ResetItems() {
 }
 
 func (c *Collection) Validate(id string, d data.Data) (item *BufferItem, err error) {
-
 	if c.buffer == nil {
 		err = fmt.Errorf("buffer not initialized")
 		return
@@ -392,7 +382,6 @@ func (c *Collection) Validate(id string, d data.Data) (item *BufferItem, err err
 }
 
 func (c *Collection) GetItemByString(idStr string) (*Item, error) {
-
 	id, err := GetIdFromString(idStr)
 	if err != nil {
 		return nil, err
@@ -407,7 +396,6 @@ func (c *Collection) GetItem(id Id) (*Item, error) {
 }
 
 func (c *Collection) GetItems() []*Item {
-
 	return c.items.GetCurrentList()
 }
 
@@ -420,11 +408,10 @@ func (c *Collection) RemoveItem(id Id) error {
 }
 
 func (c *Collection) SetExports(exports []exports.Export) {
-	c.exports = exports
+	//c.exports = exports
 }
 
 // OnOutput export data from classify
 func (c *Collection) onOutput(item *BufferItem) error {
-
 	return nil
 }

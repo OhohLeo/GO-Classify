@@ -55,25 +55,16 @@ func (i *Import) GetRefs() []*reference.Ref {
 	return reference.GetRefs(i.engine)
 }
 
-func (i *Import) GetDatasReferences() map[string]map[string]string {
-	references := make(map[string]map[string]string)
-
+func (i *Import) GetDatas() map[string]interface{} {
+	result := make(map[string]interface{})
 	for _, data := range i.engine.GetDatasReferences() {
-		references[data.GetRef().String()] = reference.GetFieldTypes(data)
+		result[data.GetRef().String()] = data
 	}
-
-	return references
+	return result
 }
 
-func (i *Import) GetConfigDatasReferences() map[string][]*reference.Ref {
-
-	res := make(map[string][]*reference.Ref)
-
-	for _, data := range i.engine.GetDatasReferences() {
-		res[data.GetRef().String()] = reference.GetRefs(data)
-	}
-
-	return res
+func (i *Import) GetDatasReferences() DatasReference {
+	return GetDatasReference(i.GetDatas())
 }
 
 func (i *Import) HasCollection(collectionName string) (ok bool) {
@@ -269,7 +260,22 @@ func (c *Classify) GetImportsByNames(names []string) (imports map[string]*Import
 	return
 }
 
-// Add new import process
+// Create import process and store it
+func (c *Classify) CreateImport(name string, ref imports.Ref, inParams json.RawMessage, collections map[string]*Collection) (i *Import, outParams interface{}, err error) {
+	i, outParams, err = c.AddImport(name, ref, inParams, collections)
+	if err != nil {
+		return
+	}
+
+	// Handle DB storage
+	if err = i.Store2DB(c.database); err != nil {
+		return
+	}
+
+	return
+}
+
+// Add import process
 func (c *Classify) AddImport(name string, ref imports.Ref, inParams json.RawMessage, collections map[string]*Collection) (i *Import, outParams interface{}, err error) {
 
 	// Nécessite l'existence d'au moins une collection
@@ -342,7 +348,7 @@ func (c *Classify) AddImport(name string, ref imports.Ref, inParams json.RawMess
 	for _, collection := range collections {
 
 		// Ignore already existing import error
-		collection.AddImport(name, i.engine)
+		collection.AddImport(name, i)
 
 		i.configs[collection.Name] = NewConfigs(collection, nil)
 	}
@@ -465,14 +471,11 @@ func (c *Classify) StartImports(imports map[string]*Import, collections map[stri
 			c.SendImportEvent(name, true)
 
 			for {
-
 				if input, ok := <-channel; ok {
 
 					// For each collections linked with the importation
 					for _, config := range i.configs {
-
 						collection := config.Collection
-
 						id := data.GetId(input)
 						if _, err := collection.OnInput(Id(id), input); err != nil {
 							log.Printf("[%s x %d] %s\n",
@@ -496,7 +499,6 @@ func (c *Classify) StartImports(imports map[string]*Import, collections map[stri
 
 // Stop the importing process
 func (c *Classify) StopImports(imports map[string]*Import, collections map[string]*Collection) error {
-
 	// If no imports are specified : get all
 	if len(imports) == 0 {
 		imports = c.imports

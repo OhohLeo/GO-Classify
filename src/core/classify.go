@@ -13,10 +13,10 @@ type Classify struct {
 	config      *Config
 	database    *database.Database
 	requests    *requests.RequestsPool
-	Server      *Server
+	events      chan *Event
 	imports     map[string]*Import
 	exports     map[string]*Export
-	collections map[string]*Collection
+	Collections map[string]*Collection
 	websites    map[string]websites.Website
 }
 
@@ -25,8 +25,9 @@ type Config struct {
 	Imports     map[string]json.RawMessage `json:"imports"`
 	Exports     map[string]json.RawMessage `json:"exports"`
 
-	// Server configuration
-	Server ServerConfig `json:"server"`
+	API struct {
+		URL string `json:"url,omitempty"`
+	} `json:"api,omitempty"`
 
 	// Database configuration
 	DataBase database.Config `json:"database"`
@@ -35,13 +36,11 @@ type Config struct {
 }
 
 // Application startup
-func Start(config *Config) (c *Classify, err error) {
-
+func NewClassify(config *Config) (c *Classify, events chan *Event, err error) {
 	c = new(Classify)
 
 	log.Println("Reading configuration ...")
 
-	// Check configurations
 	err = c.CheckCollectionsConfig(config.Collections)
 	if err != nil {
 		return
@@ -67,17 +66,12 @@ func Start(config *Config) (c *Classify, err error) {
 	// HTTP requests
 	c.requests = requests.New(2, true)
 
-	// Create server
-	server, err := c.CreateServer(config.Server)
-	if err != nil {
-		return
-	}
-
-	// Store server
-	c.Server = server
-
 	// Store config file
 	c.config = config
+
+	// Init events output channel
+	events = make(chan *Event)
+	c.events = events
 
 	// Specify that the application start
 	go func() {
@@ -87,11 +81,22 @@ func Start(config *Config) (c *Classify, err error) {
 	return
 }
 
-// Stop application
-func (c *Classify) Stop() {
-	c.Server.Stop()
-}
-
 func getRandomId() uint64 {
 	return uint64(rand.Int63())
+}
+
+type Event struct {
+	Event  string      `json:"event"`
+	Status string      `json:"status"`
+	Name   string      `json:"name"`
+	Data   interface{} `json:"data"`
+}
+
+func (c *Classify) SendEvent(event string, status string, name string, data interface{}) {
+	c.events <- &Event{
+		Event:  event,
+		Status: status,
+		Name:   name,
+		Data:   data,
+	}
 }

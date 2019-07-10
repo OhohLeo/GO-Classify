@@ -122,7 +122,7 @@ func (c *Classify) StartDB(config *Config) (err error) {
 	// Retreive all stored collection configurations
 	for collection, config := range configs {
 
-		if err = collection.config.Update(config); err != nil {
+		if err = collection.Config.Update(config); err != nil {
 			return
 		}
 	}

@@ -1,4 +1,4 @@
-package core
+package api
 
 import (
 	"encoding/json"
@@ -6,13 +6,14 @@ import (
 	"net/http"
 
 	"github.com/ant0ine/go-json-rest/rest"
+	"github.com/ohohleo/classify/core"
 	"github.com/ohohleo/classify/imports"
 )
 
 // getImportByName get from Url parameters import
-func (c *Classify) getImportByName(w rest.ResponseWriter, r *rest.Request) *Import {
+func (a *API) getImportByName(w rest.ResponseWriter, r *rest.Request) *core.Import {
 
-	i, err := c.GetImportByName(r.PathParam("name"))
+	i, err := a.Classify.GetImportByName(r.PathParam("name"))
 	if err != nil {
 		rest.Error(w, err.Error(), http.StatusBadRequest)
 		return nil
@@ -22,7 +23,7 @@ func (c *Classify) getImportByName(w rest.ResponseWriter, r *rest.Request) *Impo
 }
 
 // getImportNamesAndCollections get from Url parameters imports and the collections
-func (c *Classify) getImportNamesAndCollections(r *rest.Request) (imports map[string]*Import, collections map[string]*Collection, err error) {
+func (a *API) getImportNamesAndCollections(r *rest.Request) (imports map[string]*core.Import, collections map[string]*core.Collection, err error) {
 
 	// From the url query list
 	values := r.URL.Query()
@@ -33,13 +34,13 @@ func (c *Classify) getImportNamesAndCollections(r *rest.Request) (imports map[st
 	}
 
 	// Check and get the import list
-	imports, err = c.GetImportsByNames(importList)
+	imports, err = a.Classify.GetImportsByNames(importList)
 	if err != nil {
 		return
 	}
 
 	// Check and get the collection list
-	collections, err = c.GetCollectionsByNames(values["collection"])
+	collections, err = a.Classify.GetCollectionsByNames(values["collection"])
 	if err != nil {
 		return
 	}
@@ -48,7 +49,7 @@ func (c *Classify) getImportNamesAndCollections(r *rest.Request) (imports map[st
 }
 
 // getImportNamesAndCollections get from Url parameters imports and the collections
-func (c *Classify) getSingleCollectionByQuery(w rest.ResponseWriter, r *rest.Request) *Collection {
+func (a *API) getSingleCollectionByQuery(w rest.ResponseWriter, r *rest.Request) *core.Collection {
 
 	// From the url query list
 	values := r.URL.Query()
@@ -59,7 +60,7 @@ func (c *Classify) getSingleCollectionByQuery(w rest.ResponseWriter, r *rest.Req
 	}
 
 	// Check and get the collection list
-	collection, err := c.GetCollection(values["collection"][0])
+	collection, err := a.Classify.GetCollection(values["collection"][0])
 	if err != nil {
 		rest.Error(w, err.Error(), http.StatusBadRequest)
 		return nil
@@ -68,7 +69,7 @@ func (c *Classify) getSingleCollectionByQuery(w rest.ResponseWriter, r *rest.Req
 	return collection
 }
 
-type ApiAddImportsBody struct {
+type AddImportsBody struct {
 	Name        string          `json:"name"`
 	Ref         string          `json:"ref"`
 	Collections []string        `json:"collections"`
@@ -77,10 +78,10 @@ type ApiAddImportsBody struct {
 
 // PostCollectionImport add a new import to the collection specified
 // POST /imports
-func (c *Classify) ApiAddImport(w rest.ResponseWriter, r *rest.Request) {
+func (a *API) AddImport(w rest.ResponseWriter, r *rest.Request) {
 
 	// Get import parameters
-	var body ApiAddImportsBody
+	var body AddImportsBody
 	err := r.DecodeJsonPayload(&body)
 	if err != nil {
 		rest.Error(w, fmt.Sprintf("invalid json body: %s", err.Error()), http.StatusBadRequest)
@@ -88,7 +89,7 @@ func (c *Classify) ApiAddImport(w rest.ResponseWriter, r *rest.Request) {
 	}
 
 	// Check and get the collection list
-	collections, err := c.GetCollectionsByNames(body.Collections)
+	collections, err := a.Classify.GetCollectionsByNames(body.Collections)
 	if err != nil {
 		rest.Error(w, err.Error(), http.StatusBadRequest)
 		return
@@ -101,7 +102,7 @@ func (c *Classify) ApiAddImport(w rest.ResponseWriter, r *rest.Request) {
 		return
 	}
 
-	i, outParams, err := c.AddImport(body.Name, ref, body.Params, collections)
+	i, outParams, err := a.Classify.CreateImport(body.Name, ref, body.Params, collections)
 	if err != nil {
 
 		// Manque de paramètres
@@ -114,26 +115,20 @@ func (c *Classify) ApiAddImport(w rest.ResponseWriter, r *rest.Request) {
 		return
 	}
 
-	// Handle DB storage
-	if err := i.Store2DB(c.database); err != nil {
-		rest.Error(w, err.Error(), http.StatusBadRequest)
-		return
-	}
-
 	w.WriteJson(i)
 }
 
 // List all the imports selected by id or by collections
 // GET /imports?name=IMPORT_NAME&collection=COLLECTION_NAME
-func (c *Classify) ApiGetImports(w rest.ResponseWriter, r *rest.Request) {
+func (a *API) GetImports(w rest.ResponseWriter, r *rest.Request) {
 
-	names, collections, err := c.getImportNamesAndCollections(r)
+	names, collections, err := a.getImportNamesAndCollections(r)
 	if err != nil {
 		rest.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 
-	res, err := c.GetImports(names, collections)
+	res, err := a.Classify.GetImports(names, collections)
 	if err != nil {
 		rest.Error(w, err.Error(), http.StatusBadRequest)
 		return
@@ -142,18 +137,18 @@ func (c *Classify) ApiGetImports(w rest.ResponseWriter, r *rest.Request) {
 	w.WriteJson(res)
 }
 
-// ApiDeleteImport remove specified import selected by id and by the
+// DeleteImport remove specified import selected by id and by the
 // collections
 // DELETE /imports?name=IMPORT_NAME&collection=COLLECTION_NAME
-func (c *Classify) ApiDeleteImport(w rest.ResponseWriter, r *rest.Request) {
+func (a *API) DeleteImport(w rest.ResponseWriter, r *rest.Request) {
 
-	names, collections, err := c.getImportNamesAndCollections(r)
+	names, collections, err := a.getImportNamesAndCollections(r)
 	if err != nil {
 		rest.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 
-	if err := c.DeleteImports(names, collections); err != nil {
+	if err := a.Classify.DeleteImports(names, collections); err != nil {
 		rest.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
@@ -163,15 +158,15 @@ func (c *Classify) ApiDeleteImport(w rest.ResponseWriter, r *rest.Request) {
 
 // Launch the analysis of the collection import
 // PUT /imports/start?name=IMPORT_NAME&collection=COLLECTION_NAME
-func (c *Classify) ApiStartImport(w rest.ResponseWriter, r *rest.Request) {
+func (a *API) StartImport(w rest.ResponseWriter, r *rest.Request) {
 
-	names, collections, err := c.getImportNamesAndCollections(r)
+	names, collections, err := a.getImportNamesAndCollections(r)
 	if err != nil {
 		rest.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 
-	if err := c.StartImports(names, collections); err != nil {
+	if err := a.Classify.StartImports(names, collections); err != nil {
 		rest.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
@@ -181,15 +176,15 @@ func (c *Classify) ApiStartImport(w rest.ResponseWriter, r *rest.Request) {
 
 // Stop the analysis of the collection import
 // PUT /imports/stop?name=IMPORT_NAME&collection=COLLECTION_NAME
-func (c *Classify) ApiStopImport(w rest.ResponseWriter, r *rest.Request) {
+func (a *API) StopImport(w rest.ResponseWriter, r *rest.Request) {
 
-	names, collections, err := c.getImportNamesAndCollections(r)
+	names, collections, err := a.getImportNamesAndCollections(r)
 	if err != nil {
 		rest.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 
-	if err := c.StopImports(names, collections); err != nil {
+	if err := a.Classify.StopImports(names, collections); err != nil {
 		rest.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
@@ -197,29 +192,27 @@ func (c *Classify) ApiStopImport(w rest.ResponseWriter, r *rest.Request) {
 	w.WriteHeader(http.StatusNoContent)
 }
 
-func (c *Classify) ApiGetImportReferences(w rest.ResponseWriter, r *rest.Request) {
-
-	// Récupération de l'importation
-	i := c.getImportByName(w, r)
+func (a *API) GetImportReferences(w rest.ResponseWriter, r *rest.Request) {
+	i := a.getImportByName(w, r)
 	if i == nil {
 		return
 	}
 
-	w.WriteJson(References{
+	w.WriteJson(core.References{
 		Datas: i.GetDatasReferences(),
 	})
 }
 
 // List all config imports
 // GET /imports/:name/config?collection=COLLECTION_NAME{&references}
-func (c *Classify) ApiGetImportConfig(w rest.ResponseWriter, r *rest.Request) {
+func (a *API) GetImportConfig(w rest.ResponseWriter, r *rest.Request) {
 
-	i := c.getImportByName(w, r)
+	i := a.getImportByName(w, r)
 	if i == nil {
 		return
 	}
 
-	collection := c.getSingleCollectionByQuery(w, r)
+	collection := a.getSingleCollectionByQuery(w, r)
 	if collection == nil {
 		return
 	}
@@ -235,7 +228,7 @@ func (c *Classify) ApiGetImportConfig(w rest.ResponseWriter, r *rest.Request) {
 		config.GetRefs()
 	} else if config.References != nil {
 		// Otherwise d not display References
-		config = &Configs{
+		config = &core.Configs{
 			Generic:  config.Generic,
 			Specific: config.Specific,
 		}
@@ -246,19 +239,19 @@ func (c *Classify) ApiGetImportConfig(w rest.ResponseWriter, r *rest.Request) {
 
 // Set config imports
 // PATCH /imports/:name/config?collection=COLLECTION_NAME
-func (c *Classify) ApiPatchImportConfig(w rest.ResponseWriter, r *rest.Request) {
+func (a *API) PatchImportConfig(w rest.ResponseWriter, r *rest.Request) {
 
-	i := c.getImportByName(w, r)
+	i := a.getImportByName(w, r)
 	if i == nil {
 		return
 	}
 
-	collection := c.getSingleCollectionByQuery(w, r)
+	collection := a.getSingleCollectionByQuery(w, r)
 	if collection == nil {
 		return
 	}
 
-	var newConfigs Configs
+	var newConfigs core.Configs
 	err := r.DecodeJsonPayload(&newConfigs)
 	if err != nil {
 		rest.Error(w, "invalid json body", http.StatusBadRequest)
@@ -277,15 +270,15 @@ func (c *Classify) ApiPatchImportConfig(w rest.ResponseWriter, r *rest.Request) 
 
 // Handle import params
 // PUT /imports/:name/params/:param
-func (c *Classify) ApiPutImportParams(w rest.ResponseWriter, r *rest.Request) {
+func (a *API) PutImportParams(w rest.ResponseWriter, r *rest.Request) {
 
 	// Check if 'name' is an existing import
 	name := r.PathParam("name")
-	i, err := c.GetImportByName(name)
+	i, err := a.Classify.GetImportByName(name)
 	if err != nil {
 
 		// Otherwise try to create an ephemerous import with type specified
-		i, err = NewImport(name)
+		i, err = core.NewImport(name)
 		if err != nil {
 			rest.Error(w, err.Error(), http.StatusBadRequest)
 			return

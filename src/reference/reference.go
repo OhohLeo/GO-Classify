@@ -33,9 +33,13 @@ func GetRefs(data interface{}) []*Ref {
 	return getRefsByValue(reflect.ValueOf(data).Elem())
 }
 
-func GetFieldTypes(data interface{}) map[string]string {
+type Attribute struct {
+	Name string `json:"-"`
+	Type string `json:"type"`
+}
 
-	result := make(map[string]string)
+func GetAttributes(data interface{}) map[string]Attribute {
+	result := make(map[string]Attribute)
 
 	for _, ref := range getRefsByValue(reflect.ValueOf(data).Elem()) {
 
@@ -59,7 +63,10 @@ func GetFieldTypes(data interface{}) map[string]string {
 			continue
 		}
 
-		result[ref.Name] = ref.Type
+		result[ref.Name] = Attribute{
+			Name: ref.Name,
+			Type: ref.Type,
+		}
 	}
 
 	return result

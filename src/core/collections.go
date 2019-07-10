@@ -31,7 +31,7 @@ func NewCollection(typ string) (*Collection, error) {
 
 	return &Collection{
 		Name:   typ,
-		engine: buildCollection.ForceCreate(),
+		Engine: buildCollection.ForceCreate(),
 	}, nil
 }
 
@@ -81,44 +81,32 @@ func (c *Classify) GetCollectionsByNames(names []string) (map[string]*Collection
 	return collections, nil
 }
 
-func (c *Classify) AddCollection(name string, ref collections.Ref, config json.RawMessage, params json.RawMessage) (collection *Collection, err error) {
-
-	// var website websites.Website
-
-	// // Check if the websites does exists
-	// websites := make([]websites.Website, 0)
-	// for _, name := range webNames {
-
-	// 	website, err = c.AddWebsite(name)
-	// 	if err != nil {
-	// 		return
-	// 	}
-
-	// 	// Add new website
-	// 	websites = append(websites, website)
-	// }
+// Create collection to store
+func (c *Classify) CreateCollection(name string, ref collections.Ref, config json.RawMessage, params json.RawMessage) (collection *Collection, err error) {
 
 	// Add stored collection
-	collection, err = c.addCollection(name, ref, config, params)
+	collection, err = c.AddCollection(name, ref, config, params)
 	if err != nil {
 		return
 	}
 
 	log.Printf("Add collection '%s' as '%s'\n", name, ref.String())
 
-	// // Add websites to the collection created
-	// for _, website := range websites {
-	// 	collection.AddWebsite(website)
-	// }
+	// Store collection if enable
+	if c.database != nil {
+		if err = collection.Store2DB(c.database); err != nil {
+			return
+		}
+	}
 
 	return
 }
 
-// Add a new collection
-func (c *Classify) addCollection(name string, ref collections.Ref, config json.RawMessage, params json.RawMessage) (collection *Collection, err error) {
+// Add an already stored collection
+func (c *Classify) AddCollection(name string, ref collections.Ref, config json.RawMessage, params json.RawMessage) (collection *Collection, err error) {
 
 	// Check that the name of the collection is unique
-	if _, ok := c.collections[name]; ok {
+	if _, ok := c.Collections[name]; ok {
 		err = fmt.Errorf("collection '%s' already exists", name)
 		return
 	}
@@ -140,25 +128,25 @@ func (c *Classify) addCollection(name string, ref collections.Ref, config json.R
 	collection = &Collection{
 		Name:   name,
 		items:  NewItems(),
-		config: NewCollectionConfig(),
-		engine: collectionEngine,
+		Config: NewCollectionConfig(),
+		Engine: collectionEngine,
 		events: eventsChannel,
 	}
 
 	// Store configuration received
 	if config != nil {
-		err = json.Unmarshal(config, collection.config)
+		err = json.Unmarshal(config, collection.Config)
 		if err != nil {
 			return
 		}
 	}
 
-	if c.collections == nil {
-		c.collections = make(map[string]*Collection)
+	if c.Collections == nil {
+		c.Collections = make(map[string]*Collection)
 	}
 
 	// Store the collection
-	c.collections[name] = collection
+	c.Collections[name] = collection
 
 	go func() {
 
@@ -177,7 +165,7 @@ func (c *Classify) addCollection(name string, ref collections.Ref, config json.R
 // Remove an existing collection
 func (c *Classify) DeleteCollection(name string) (err error) {
 
-	collection, ok := c.collections[name]
+	collection, ok := c.Collections[name]
 
 	// Check that the name of the collection is unique
 	if ok == false {
@@ -195,14 +183,14 @@ func (c *Classify) DeleteCollection(name string) (err error) {
 		}
 	}
 
-	delete(c.collections, name)
+	delete(c.Collections, name)
 	return
 }
 
 // Return an existing collection
 func (c *Classify) GetCollection(name string) (*Collection, error) {
 
-	collection, ok := c.collections[name]
+	collection, ok := c.Collections[name]
 
 	// Check that the name of the collection is unique
 	if ok == false {
@@ -217,7 +205,7 @@ func (c *Classify) ModifyCollection(
 	name string, newName string, newRefStr string) (isModified bool, err error) {
 
 	// Check that the name of the collection exists
-	collection, ok := c.collections[name]
+	collection, ok := c.Collections[name]
 	if ok == false {
 		err = fmt.Errorf("collection '%s' not existing", name)
 		return
@@ -234,14 +222,14 @@ func (c *Classify) ModifyCollection(
 			return
 		}
 
-		if newRef != collection.engine.GetRef() {
+		if newRef != collection.Engine.GetRef() {
 
 			// // Check the collection type
 			// newCollection := newCollections[newRef]
 
-			// delete(c.collections, name)
+			// delete(c.Collections, name)
 			// collection = newCollection()
-			// c.collections[name] = newCollection()
+			// c.Collections[name] = newCollection()
 			// isModified = true
 		}
 	}
@@ -249,15 +237,15 @@ func (c *Classify) ModifyCollection(
 	if newName != "" && newName != name {
 
 		// Check that a collection called as newName doesn't exist
-		_, ok := c.collections[newName]
+		_, ok := c.Collections[newName]
 		if ok {
 			isModified = false
 			err = fmt.Errorf("collection '%s' already existing", newName)
 			return
 		}
 
-		// delete(c.collections, name)
-		// c.collections[newName] = collection
+		// delete(c.Collections, name)
+		// c.Collections[newName] = collection
 		// isModified = true
 	}
 
@@ -265,7 +253,7 @@ func (c *Classify) ModifyCollection(
 }
 
 // Returns the type of collection
-func (c *Classify) GetCollectionRefs() map[string]References {
+func (c *Classify) GetCollectionReferences() map[string]References {
 	references := make(map[string]References)
 
 	for _, name := range collections.REF_IDX2STR {

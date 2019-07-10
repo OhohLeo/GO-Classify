@@ -45,15 +45,16 @@ func NewExport(typ string) (*Export, error) {
 func (e *Export) GetRefs() []*reference.Ref {
 	return reference.GetRefs(e.engine)
 }
-
-func (e *Export) GetDatasReferences() map[string]map[string]string {
-	references := make(map[string]map[string]string)
-
+func (e *Export) GetDatas() map[string]interface{} {
+	result := make(map[string]interface{})
 	for _, data := range e.engine.GetDatasReferences() {
-		references[data.GetRef().String()] = reference.GetFieldTypes(data)
+		result[data.GetRef().String()] = data
 	}
+	return result
+}
 
-	return references
+func (e *Export) GetDatasReferences() DatasReference {
+	return GetDatasReference(e.GetDatas())
 }
 
 func (e *Export) HasCollection(name string) (ok bool) {
@@ -203,7 +204,22 @@ func (c *Classify) GetExportsByNames(names []string) (exports map[string]*Export
 	return
 }
 
-// Add new export process
+// Create export process and store it
+func (c *Classify) CreateExport(name string, ref exports.Ref, params json.RawMessage, collections map[string]*Collection) (e *Export, err error) {
+	e, err = c.AddExport(name, ref, params, collections)
+	if err != nil {
+		return
+	}
+
+	// Handle DB storage
+	if err = e.Store2DB(c.database); err != nil {
+		return
+	}
+
+	return
+}
+
+// Add export process
 func (c *Classify) AddExport(name string, ref exports.Ref, params json.RawMessage, collections map[string]*Collection) (e *Export, err error) {
 
 	// Nécessite l'existence d'au moins une collection

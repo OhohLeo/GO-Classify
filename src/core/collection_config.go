@@ -121,7 +121,7 @@ func (c *CollectionConfig) Store2DB(collection *Collection, db *database.Databas
 	// Update the collection config
 	return db.Update("collections", &database.GenStruct{
 		Name:   collection.Name,
-		Ref:    uint64(collection.engine.GetRef()),
+		Ref:    uint64(collection.Engine.GetRef()),
 		Config: configStr,
 	}, []string{"config"}, "name = :name AND ref = :ref")
 }

@@ -3,13 +3,14 @@ package main
 import (
 	"encoding/json"
 	"flag"
-	"github.com/ohohleo/classify/core"
 	"log"
 	"os"
+
+	"github.com/ohohleo/classify/api"
+	"github.com/ohohleo/classify/core"
 )
 
 func main() {
-
 	// Get application flags
 	var configPath, serverUrl string
 	flag.StringVar(&configPath, "config", "config.json", "Config file path")
@@ -21,7 +22,6 @@ func main() {
 	// Check if config path does exists
 	file, err := os.Open(configPath)
 	if err == nil {
-
 		// Decode config file
 		decoder := json.NewDecoder(file)
 		err := decoder.Decode(&config)
@@ -31,17 +31,27 @@ func main() {
 		}
 	}
 
-	// Priority for flags parameters
-	if serverUrl != "" {
-		config.Server.Url = serverUrl
-	}
-
-	// Start application
-	classify, err := core.Start(&config)
+	classify, events, err := core.NewClassify(&config)
 	if err != nil {
 		log.Fatal(err.Error())
 	}
 
-	// Start server
-	classify.Server.Start()
+	if config.API.URL != "" {
+		api, err := api.NewAPI(classify, config.API.URL)
+		if err != nil {
+			log.Fatal(err.Error())
+		}
+
+		go func() {
+			for event := range events {
+				api.SendEvent(event)
+			}
+		}()
+
+		if err = api.Start(); err != nil {
+			log.Fatal(err.Error())
+		}
+
+		return
+	}
 }
