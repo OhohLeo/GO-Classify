@@ -27,10 +27,10 @@ B --> |Tweaks|C
 
 ```
 # To launch classify server
-go run src/main.go
+go run server/main.go
 
-# To launch classify website
-cd web
+# To launch classify client
+cd client
 npm install
 npm start
 ```
@@ -51,7 +51,6 @@ rehash
 exec zsh
 nvm install v8.10.0
 nvm use v8.10.0
-
 ```
 
 ## Current API

@@ -1,7 +1,8 @@
 *#
 *~
-web/typings
-web/node_modules
-web/src/**/*.js*
+client/typings
+client/node_modules
+client/src/**/*.js*
+client/dist
 *.log
-web/dist
+
