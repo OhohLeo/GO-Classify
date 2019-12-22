@@ -24,18 +24,17 @@ func (t *TMDB) SetConfig(config map[string]string) bool {
 	fmt.Printf("SetConfig %+v\n", config)
 
 	// Get API key
-	apiKey, ok := config["api_key"]
-	if ok {
+	if apiKey, ok := config["api_key"]; ok {
 		t.apiKey = apiKey
 	}
 
 	// Get Poster Path
-	posterPath, ok := config["poster_path"]
-	if ok {
+	if posterPath, ok := config["poster_path"]; ok {
 		t.posterPath = posterPath
 	}
 
-	t.api = api.Init(apiKey)
+	// TODO : fix api
+	// t.api = api.Init(apiKey)
 
 	return true
 }
