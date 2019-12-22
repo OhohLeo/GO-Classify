@@ -101,8 +101,7 @@ func (a *API) GetAPI(server *Server) (*rest.Api, error) {
 		rest.Delete("/imports", a.DeleteImport),
 		rest.Put("/imports/start", a.StartImport),
 		rest.Put("/imports/stop", a.StopImport),
-		rest.Get("/imports/:name/references", a.GetImportReferences),
-		rest.Get("/imports/:name/config", a.GetImportConfig),
+		rest.Get("/imports/:name", a.GetImport),
 		rest.Patch("/imports/:name/config", a.PatchImportConfig),
 		rest.Put("/imports/:name/params/:param", a.PutImportParams),
 

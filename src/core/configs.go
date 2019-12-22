@@ -7,8 +7,8 @@ import (
 type Configs struct {
 	Collection *Collection                 `json:"-"`
 	Generic    *GenericConfig              `json:"generic"`
-	Tweak      *Tweak                      `json:"tweak"`
 	Specific   interface{}                 `json:"specific,omitempty"`
+	Tweak      *Tweak                      `json:"tweak"`
 	References map[string][]*reference.Ref `json:"references,omitempty"`
 }
 

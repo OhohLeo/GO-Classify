@@ -7,6 +7,7 @@ import (
 
 	"github.com/ant0ine/go-json-rest/rest"
 	"github.com/ohohleo/classify/core"
+	"github.com/ohohleo/classify/data"
 	"github.com/ohohleo/classify/imports"
 )
 
@@ -121,17 +122,26 @@ func (a *API) AddImport(w rest.ResponseWriter, r *rest.Request) {
 // List all the imports selected by id or by collections
 // GET /imports?name=IMPORT_NAME&collection=COLLECTION_NAME
 func (a *API) GetImports(w rest.ResponseWriter, r *rest.Request) {
-
 	names, collections, err := a.getImportNamesAndCollections(r)
 	if err != nil {
 		rest.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 
-	res, err := a.Classify.GetImports(names, collections)
+	importList, err := a.Classify.GetImports(names, collections)
 	if err != nil {
 		rest.Error(w, err.Error(), http.StatusBadRequest)
 		return
+	}
+
+	type ImportBody struct {
+		Params imports.Import `json:"params"`
+		Ref    string         `json:"ref"`
+	}
+
+	res := make(map[string]ImportBody)
+	for name, i := range importList {
+		res[name] = ImportBody{i, i.GetRef().String()}
 	}
 
 	w.WriteJson(res)
@@ -141,7 +151,6 @@ func (a *API) GetImports(w rest.ResponseWriter, r *rest.Request) {
 // collections
 // DELETE /imports?name=IMPORT_NAME&collection=COLLECTION_NAME
 func (a *API) DeleteImport(w rest.ResponseWriter, r *rest.Request) {
-
 	names, collections, err := a.getImportNamesAndCollections(r)
 	if err != nil {
 		rest.Error(w, err.Error(), http.StatusBadRequest)
@@ -159,7 +168,6 @@ func (a *API) DeleteImport(w rest.ResponseWriter, r *rest.Request) {
 // Launch the analysis of the collection import
 // PUT /imports/start?name=IMPORT_NAME&collection=COLLECTION_NAME
 func (a *API) StartImport(w rest.ResponseWriter, r *rest.Request) {
-
 	names, collections, err := a.getImportNamesAndCollections(r)
 	if err != nil {
 		rest.Error(w, err.Error(), http.StatusBadRequest)
@@ -177,7 +185,6 @@ func (a *API) StartImport(w rest.ResponseWriter, r *rest.Request) {
 // Stop the analysis of the collection import
 // PUT /imports/stop?name=IMPORT_NAME&collection=COLLECTION_NAME
 func (a *API) StopImport(w rest.ResponseWriter, r *rest.Request) {
-
 	names, collections, err := a.getImportNamesAndCollections(r)
 	if err != nil {
 		rest.Error(w, err.Error(), http.StatusBadRequest)
@@ -192,21 +199,9 @@ func (a *API) StopImport(w rest.ResponseWriter, r *rest.Request) {
 	w.WriteHeader(http.StatusNoContent)
 }
 
-func (a *API) GetImportReferences(w rest.ResponseWriter, r *rest.Request) {
-	i := a.getImportByName(w, r)
-	if i == nil {
-		return
-	}
-
-	w.WriteJson(core.References{
-		Datas: i.GetDatasReferences(),
-	})
-}
-
-// List all config imports
-// GET /imports/:name/config?collection=COLLECTION_NAME{&references}
-func (a *API) GetImportConfig(w rest.ResponseWriter, r *rest.Request) {
-
+// Get import informations
+// GET /imports/:name?references
+func (a *API) GetImport(w rest.ResponseWriter, r *rest.Request) {
 	i := a.getImportByName(w, r)
 	if i == nil {
 		return
@@ -217,30 +212,42 @@ func (a *API) GetImportConfig(w rest.ResponseWriter, r *rest.Request) {
 		return
 	}
 
-	config, err := i.GetConfig(collection.Name)
+	config, err := i.GetConfig(collection)
 	if err != nil {
 		rest.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 
-	// Do we need to display references?
+	type ImportBody struct {
+		Ref          string         `json:"ref"`
+		Input        imports.Import `json:"input"`
+		OutputFormat []data.Data    `json:"output_format,omitempty"`
+		Config       *core.Configs  `json:"config"`
+	}
+
+	engine := i.GetEngine()
+	body := ImportBody{
+		Ref:   engine.GetRef().String(),
+		Input: engine,
+	}
+
 	if _, ok := r.URL.Query()["references"]; ok {
+		body.OutputFormat = engine.GetDatasReferences()
 		config.GetRefs()
 	} else if config.References != nil {
-		// Otherwise d not display References
 		config = &core.Configs{
 			Generic:  config.Generic,
 			Specific: config.Specific,
 		}
 	}
+	body.Config = config
 
-	w.WriteJson(config)
+	w.WriteJson(body)
 }
 
 // Set config imports
 // PATCH /imports/:name/config?collection=COLLECTION_NAME
 func (a *API) PatchImportConfig(w rest.ResponseWriter, r *rest.Request) {
-
 	i := a.getImportByName(w, r)
 	if i == nil {
 		return
@@ -260,7 +267,7 @@ func (a *API) PatchImportConfig(w rest.ResponseWriter, r *rest.Request) {
 
 	fmt.Printf("[DECODE CONFIG] %+v\n", newConfigs)
 
-	if err := i.SetConfig(collection.Name, &newConfigs); err != nil {
+	if err := i.SetConfig(collection, &newConfigs); err != nil {
 		rest.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
@@ -271,7 +278,6 @@ func (a *API) PatchImportConfig(w rest.ResponseWriter, r *rest.Request) {
 // Handle import params
 // PUT /imports/:name/params/:param
 func (a *API) PutImportParams(w rest.ResponseWriter, r *rest.Request) {
-
 	// Check if 'name' is an existing import
 	name := r.PathParam("name")
 	i, err := a.Classify.GetImportByName(name)

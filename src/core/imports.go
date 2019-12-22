@@ -35,7 +35,7 @@ type Import struct {
 
 	engine imports.Import
 
-	configs map[string]*Configs
+	configs map[*Collection]*Configs
 	params  map[string]params.Param
 }
 
@@ -49,6 +49,10 @@ func NewImport(typ string) (*Import, error) {
 		Name:   typ,
 		engine: buildImport.ForceCreate(),
 	}, nil
+}
+
+func (i *Import) GetEngine() imports.Import {
+	return i.engine
 }
 
 func (i *Import) GetRefs() []*reference.Ref {
@@ -67,8 +71,8 @@ func (i *Import) GetDatasReferences() DatasReference {
 	return GetDatasReference(i.GetDatas())
 }
 
-func (i *Import) HasCollection(collectionName string) (ok bool) {
-	_, ok = i.configs[collectionName]
+func (i *Import) HasCollection(collection *Collection) (ok bool) {
+	_, ok = i.configs[collection]
 	return
 }
 
@@ -77,8 +81,8 @@ func (i *Import) HasCollections(collections map[string]*Collection) bool {
 
 	if len(collections) > 0 {
 
-		for name, _ := range collections {
-			if i.HasCollection(name) {
+		for _, collection := range collections {
+			if i.HasCollection(collection) {
 				return true
 			}
 		}
@@ -90,19 +94,19 @@ func (i *Import) HasCollections(collections map[string]*Collection) bool {
 	return true
 }
 
-func (i *Import) GetConfig(collectionName string) (configs *Configs, err error) {
+func (i *Import) GetConfig(collection *Collection) (configs *Configs, err error) {
 
 	var ok bool
-	if configs, ok = i.configs[collectionName]; !ok {
-		err = fmt.Errorf("no config found for collection '%s'", collectionName)
+	if configs, ok = i.configs[collection]; !ok {
+		err = fmt.Errorf("no config found for collection '%s'", collection.Name)
 	}
 	return
 }
 
-func (i *Import) SetConfig(collectionName string, newConfigs *Configs) (err error) {
+func (i *Import) SetConfig(collection *Collection, newConfigs *Configs) (err error) {
 
 	var configs *Configs
-	configs, err = i.GetConfig(collectionName)
+	configs, err = i.GetConfig(collection)
 	if err != nil {
 		return
 	}
@@ -342,7 +346,7 @@ func (c *Classify) AddImport(name string, ref imports.Ref, inParams json.RawMess
 	}
 
 	// Set collection list to the import
-	i.configs = make(map[string]*Configs)
+	i.configs = make(map[*Collection]*Configs)
 
 	// Add import to the collection
 	for _, collection := range collections {
@@ -350,7 +354,7 @@ func (c *Classify) AddImport(name string, ref imports.Ref, inParams json.RawMess
 		// Ignore already existing import error
 		collection.AddImport(name, i)
 
-		i.configs[collection.Name] = NewConfigs(collection, nil)
+		i.configs[collection] = NewConfigs(collection, nil)
 	}
 
 	return
@@ -377,7 +381,7 @@ func (c *Classify) DeleteImports(importList map[string]*Import, collections map[
 	for importName, i := range importList {
 
 		// Unlink the collection with the specified import
-		for collectionName, collection := range collections {
+		for _, collection := range collections {
 
 			if err = i.Unlink2DB(c.database, collection); err != nil {
 				return
@@ -387,7 +391,7 @@ func (c *Classify) DeleteImports(importList map[string]*Import, collections map[
 			collection.DeleteImport(importName)
 
 			// in the import collection list
-			delete(i.configs, collectionName)
+			delete(i.configs, collection)
 		}
 
 		// If no collection are linked with specified import
@@ -404,10 +408,9 @@ func (c *Classify) DeleteImports(importList map[string]*Import, collections map[
 	return
 }
 
-// Get the whole list of imports by Type
-func (c *Classify) GetImports(importList map[string]*Import, collections map[string]*Collection) (res map[string]map[string]imports.Import, err error) {
-
-	res = make(map[string]map[string]imports.Import)
+// Get the whole list of imports
+func (c *Classify) GetImports(importList map[string]*Import, collections map[string]*Collection) (res map[string]imports.Import, err error) {
+	res = make(map[string]imports.Import)
 
 	// If no importList are specified : get all
 	if len(importList) == 0 {
@@ -415,25 +418,17 @@ func (c *Classify) GetImports(importList map[string]*Import, collections map[str
 	}
 
 	for name, i := range importList {
-
 		if i.HasCollections(collections) == false {
 			continue
 		}
 
-		ref := i.engine.GetRef()
-
-		if res[ref.String()] == nil {
-			res[ref.String()] = make(map[string]imports.Import)
-		}
-
-		res[ref.String()][name] = i.engine
+		res[name] = i.engine
 	}
 
 	return
 }
 
 func (c *Classify) SendImportEvent(name string, status bool) {
-
 	var statusStr string
 	if status {
 		statusStr = "start"

@@ -19,7 +19,7 @@
 			"api_key":"80e1027731e519ce1f4faacf21ecc13a"
 		}
     },
-    "server": {
+    "api": {
 		"url": "localhost:1234"
     }
 }

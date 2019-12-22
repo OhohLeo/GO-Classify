@@ -200,10 +200,11 @@ func TestGetImport(t *testing.T) {
 			ExpectedCode: http.StatusOK,
 			ExpectedBody: `{
   "directory": {
-    "directory": {
+    "params": {
       "path": "",
       "is_recursive": false
-    }
+    },
+    "ref": "directory"
   }
 }`,
 		},
