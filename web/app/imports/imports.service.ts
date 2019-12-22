@@ -18,7 +18,6 @@ export class ImportsService {
     enableCache: boolean
     imports: Map<string, BaseElement[]> = new Map<string, BaseElement[]>()
     importsByName: Map<string, BaseElement> = new Map<string, BaseElement>()
-    configs: any
     updateList: any
 
     private eventObservers = {}
@@ -91,7 +90,7 @@ export class ImportsService {
             return
         }
 
-	let name = i.getName()
+	let name = i.getID()
 	if (this.hasSameImportName(name)) {
 	    console.error("Already existing name " + name)
             return
@@ -182,25 +181,6 @@ export class ImportsService {
 	return "imports/" + i.name
     }
 
-    getReference(item: BaseElement) {
-        return new Observable(observer => {
-
-	    let references = this.referencesService.getReference(item)
-	    if (references != null) {
-		observer.next(references)
-		return
-	    }
-
-	    this.apiService.get(this.getUrl(item) + "/references")
-		.subscribe((src) => {
-		    let references = this.referencesService.setReference(item, src)
-		    console.log("[IMPORTS REFERENCES] OK", item, references)
-		    observer.next(references)
-		})
-	})
-    }
-
-
     startImport(i: BaseElement) {
         return this.actionImport(true, i)
     }
@@ -248,8 +228,10 @@ export class ImportsService {
                 this.imports = new Map<string, BaseElement[]>()
                 this.importsByName = new Map<string, BaseElement>()
 
-                for (let importRef in rsp) {
+                for (let importName in rsp) {
+		    let importRsp = rsp[importName]
 
+		    let importRef = importRsp["ref"]
                     let convert = this.convertToImport[importRef]
                     if (convert === undefined) {
                         console.error(
@@ -257,42 +239,17 @@ export class ImportsService {
                         continue
                     }
 
-                    for (let importName in rsp[importRef]) {
-                        let i = convert(importName, rsp[importRef][importName])
-                        if (i === undefined)
-                            continue
+                    let i = convert(importName, importRsp["params"])
+                    if (i === undefined)
+                        continue
 
-                        this.add(i)
-                    }
+                    this.add(i)
                 }
 
                 this.enableCache = true
 
                 observer.next(this.imports)
             })
-        })
-    }
-
-    // Ask for current import config list
-    getImportsConfig(importRef: string) {
-        return new Observable(observer => {
-
-            // Import config list should not change a lot
-            if (this.configs) {
-                observer.next(this.configs[importRef])
-                return
-            }
-
-            // Ask for the current import config list
-            return this.apiService.get("imports/config")
-                .subscribe(rsp => {
-
-                    // Store as cache the current import config list
-                    this.configs = rsp
-
-                    // Return the import config list
-                    observer.next(rsp[importRef])
-                })
         })
     }
 

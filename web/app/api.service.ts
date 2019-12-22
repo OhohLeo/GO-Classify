@@ -135,14 +135,12 @@ export class ApiService {
     }
 
     getCollectionReferences() {
-
 	let collectionUrl = this.getCollectionUrl()
         if (collectionUrl == undefined) {
             return
         }
 
         return new Observable(observer => {
-
 	    let references = this.referencesService.getReference(this.collectionSelected)
 	    if (references != undefined) {
 		observer.next(references)
@@ -154,7 +152,8 @@ export class ApiService {
                 .catch(this.handleError);
 
 	    request.subscribe((src) => {
-		let references = this.referencesService.setReference(this.collectionSelected, src)
+		let references = this.referencesService.setReference(
+		    this.collectionSelected, src["datas"])
 		console.log("[COLLECTION REFERENCES] OK", references)
 		observer.next(references)
 	    })
@@ -162,7 +161,6 @@ export class ApiService {
     }
 
     getReferencesFromSrc(src: string, name: string) {
-
         // Setup cache on the references
         return new Observable(observer => {
             let request = this.http.get(this.url + "/" + src + "/" + name + "/references")

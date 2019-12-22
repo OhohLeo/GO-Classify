@@ -1,31 +1,37 @@
 <div class="row">
-  <div class="col s3 no-padding-right">
-    <workflow-create
-       [workflowType]="workflowType.IMPORT"
-       [refs]="importRefNames"></workflow-create>
-    <ng-container *ngIf="imports">
-      <workflow-display
-	 *ngFor="let refType of importTypeRefNames"
-	 [reference]="references.getReference(refType)"
-	 [elements]="imports">
-      </workflow-display>
-    </ng-container>
+  <div class="col s4 no-padding-right">
+    <workflow-select [workflowType]="workflowType.IMPORT"
+		     (eventInstance)="setImportInstance($event)"></workflow-select>
   </div>
-  <workflow-canvas #importsLinks class="col s2 no-padding"
-		   [name]="'imports'"
-		   [height]="2000">
-  </workflow-canvas>
-  <div class="col s2 no-padding">
-    <h6>Collection</h6>
+  <div class="col s8">
+    <workflow-instance
+      *ngIf="importInstance"
+      [instance]="importInstance"
+      [collection]="collection">
+    </workflow-instance>
   </div>
-  <workflow-canvas #exportsLinks class="col s2 no-padding"
-		   [name]="'exports'"
-		   [height]="2000">
-  </workflow-canvas>
-  <div class="col s3 no-padding-left">
-    <workflow-create
-       [workflowType]="workflowType.EXPORT"
-       [refs]="exportRefNames"></workflow-create>
+</div>
+<div class="row">
+  <div class="col s4 no-padding-right">
+    <h6>COLLECTION</h6>
+  </div>
+  <div class="col s8">
+    <workflow-collection
+      [collection]="collection">
+    </workflow-collection>
+  </div>
+</div>
+<div class="row">
+  <div class="col s4 no-padding-right">
+    <workflow-select [workflowType]="workflowType.EXPORT"
+		     (eventInstance)="setExportInstance($event)"></workflow-select>
+  </div>
+  <div class="col s8">
+    <workflow-instance
+      *ngIf="exportInstance"
+      [instance]="exportInstance"
+      [collection]="collection">
+    </workflow-instance>
   </div>
 </div>
 

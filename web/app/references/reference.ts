@@ -63,18 +63,15 @@ export class Reference {
     // Handle reference with following format :
     // { "datas": { "field": "type", ...}, ...}
     public datas: Map<string, DataReference> = new Map<string, DataReference>()
-
+      
     constructor(public typ: string, public ref: string, src: any) {
 	let typeRef = typ + "/" + ref
 	if (src == undefined) {
 	    throw new Error("no data reference found for " + typeRef)
 	}
 
-	let datas = src["datas"]
-	if (datas != undefined) {
-	    for (let name of Object.keys(datas)) {
-		this.datas.set(name, new DataReference(typeRef, name, datas[name]))
-	    }
+	for (let name of Object.keys(src)) {
+	    this.datas.set(name, new DataReference(typeRef, name, src[name]))
 	}
     }
 

@@ -14,13 +14,13 @@ export class ModifyCollectionComponent {
     private websites: string[]
 
     constructor(private apiService: ApiService,
-				private collectionsService: CollectionsService) {
+		private collectionsService: CollectionsService) {
 
         apiService.getReferences()
             .subscribe(
-				references => {
-					this.websites = references["websites"]
-				});
+		references => {
+		    this.websites = references["websites"]
+		});
     }
 
     onSubmit() {

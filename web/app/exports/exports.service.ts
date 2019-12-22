@@ -85,7 +85,7 @@ export class ExportsService {
             return
         }
 
-	let name = i.getName()
+	let name = i.getID()
 	if (this.hasSameExportName(name)) {
 	    console.error("Already existing name " + name)
             return

@@ -3,7 +3,7 @@
 	<ul class="collection">
 	    <li id="{{item.id}}" class="collection row" *ngFor="let item of buffers">
 		<div class="col s3" (click)="onItem(item)">{{item.probability}}</div>
-		<div class="col s3" (click)="onItem(item)">{{item.getName()}}</div>
+		<div class="col s3" (click)="onItem(item)">{{item.getI()}}</div>
 		<div class="col s3" *ngIf="item.match">
 		    <buffer-movie *ngIf="item.match.ref === 'movie'"
 				  [movie]="item.match">

@@ -1,24 +1,30 @@
 <div class="row">
   <h6>{{workflowRef[workflowType]}}
     <i class="material-icons"
-       (click)="onNewWorkflow()">plus_one</i>
+       (click)="onInstanceCreated()">plus_one</i>
   </h6>
-</div> 
+</div>
+<div [hidden]="instances.length <= 0" class="row">
+  <label for="selectInstance">{{workflowRef[workflowType]}}</label>
+  <select #selectInstance name="selectInstance"
+          [(ngModel)]="currentInstanceID"
+	  (change)="onInstanceChanged($event.target.value)"
+          class="browser-default">
+    <option *ngFor="let instance of instances; let i = index"
+	    [value]="instance.getID()"
+	    [selected]="i == selectedInstance ? true : null">
+      {{instance.getRef() + " - " + instance.display()}}
+    </option>
+  </select>
+</div>
 <div id="workflow-{{workflowType}}" class="modal">
   <h5>New {{workflowRef[workflowType]}}</h5>
   <div class="modal-content">
     <div class="row">
-      <input name="name"
-	     type="string"
-	     id="name"
-	     [(ngModel)]="workflow.name" />
-      <label for="name">Name</label>
-    </div>
-    <div class="row">
       <label for="ref">Type</label>
       <select name="ref"
               [(ngModel)]="workflow.ref"
-              class="browser-default">
+	      class="browser-default">
 	<option *ngFor="let ref of refs" [value]="ref">
 	  {{ref}}
 	</option>

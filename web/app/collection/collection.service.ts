@@ -11,5 +11,5 @@ import { Event } from '../api.service'
 
 @Injectable()
 export class CollectionService {
-	constructor(private apiService: ApiService) { }
+    constructor(private apiService: ApiService) { }
 }

@@ -21,6 +21,14 @@ export class DataReference {
 	}
     }
 
+    getRefName() : string {
+	return this.typeRef.split("/")[0]
+    }
+
+    getTypeName() : string {
+	return this.typeRef.split("/")[1]
+    }
+    
     getAttributeNames(): Array<string> {
 	return Array.from(this.attributes.keys()).sort()
     }

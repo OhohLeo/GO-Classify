@@ -27,11 +27,10 @@ export class ReferencesService {
     }
     
     setReference(b: BaseElement, src: any) : Reference {
-
 	if (src == undefined) {
 	    console.error(
 		"References can't handle empty source from '"
-		    + b.getTypeRef() + " (" +  b.getName() + ")'")
+		    + b.getTypeRef() + " (" +  b.getID() + ")'")
 	    return undefined
 	}
 	
@@ -47,6 +46,10 @@ export class ReferencesService {
     }
 
     getReference(b: BaseElement) : Reference {
+	if (this.references == undefined) {
+	    return undefined
+	}
+	
 	return this.references.getReference(b.getTypeRef())
     }
 }

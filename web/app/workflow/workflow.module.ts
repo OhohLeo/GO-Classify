@@ -7,16 +7,14 @@ import { ReferencesModule } from '../references/references.module'
 import { ImportsModule } from '../imports/imports.module'
 import { ExportsModule } from '../exports/exports.module'
 import { ToolsModule } from '../tools/tools.module'
+import { ConfigsModule } from '../configs/configs.module'
 
 import { WorkflowService } from './workflow.service'
 
 import { WorkflowComponent } from './workflow.component'
-import { CreateComponent } from './create.component'
-import { DisplayComponent } from './display.component'
-import { ElementComponent } from './element.component'
-import { DataComponent } from './data.component'
-import { AttributeComponent } from './attribute.component'
-import { CanvasComponent } from './canvas.component'
+import { SelectComponent } from './select.component'
+import { InstanceComponent } from './instance.component'
+import { CollectionComponent } from './collection.component'
 
 
 @NgModule({
@@ -27,17 +25,15 @@ import { CanvasComponent } from './canvas.component'
 	ReferencesModule,
 	ImportsModule,
 	ExportsModule,
-	ToolsModule
+	ToolsModule,
+	ConfigsModule
     ],
     providers: [WorkflowService],
     declarations: [
 	WorkflowComponent,
-	CreateComponent,
-	DisplayComponent,
-	ElementComponent,
-	DataComponent,
-	AttributeComponent,
-	CanvasComponent,
+	SelectComponent,
+	InstanceComponent,
+	CollectionComponent,
     ],
     exports: [WorkflowComponent]
 })

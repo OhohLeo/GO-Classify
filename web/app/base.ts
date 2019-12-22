@@ -14,7 +14,7 @@ export class BaseElement {
 	return this.typ + "/" + this.ref
     }
 
-    getName(): string {
+    getID(): string {
 	return String(Md5.hashStr(JSON.stringify(this.getParams())))
     }
 

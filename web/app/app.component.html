@@ -57,7 +57,7 @@
             </collection>
 	</div>
         <div *ngSwitchCase="appStatus.WORKFLOW">
-            <workflow></workflow>
+            <workflow [collection]="collection"></workflow>
         </div>
         <div *ngSwitchCase="appStatus.IMPORTS">
             <imports></imports>

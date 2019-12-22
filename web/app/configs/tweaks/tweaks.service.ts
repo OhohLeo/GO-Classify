@@ -28,7 +28,7 @@ export class TweaksService {
 
 	    case "imports":
 		Observable.combineLatest(
-		    this.importsService.getReference(item),
+		    this.importsService.getImports(),
 		    this.apiService.getCollectionReferences()
 		).subscribe(([inputs, outputs]) => {
 		    observer.next([inputs, outputs])
